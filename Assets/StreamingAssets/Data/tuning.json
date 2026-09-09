@@ -958,5 +958,317 @@
       "unit": "L/min",
       "comment": "Field refuel rate from the service truck."
     }
+  },
+  "lifts": {
+    "windExposurePer100m": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.12,
+      "unit": "frac/100m",
+      "comment": "Wind at the top terminal rises this fraction per 100 m above the base (ridge exposure)."
+    },
+    "singlesLineCapacityFactor": {
+      "value": 1.08,
+      "min": 1.0,
+      "max": 1.15,
+      "unit": "x",
+      "comment": "Singles line fills empty seats: +5-10% effective capacity."
+    },
+    "noMazeCapacityFactor": {
+      "value": 0.85,
+      "min": 0.7,
+      "max": 0.95,
+      "unit": "x",
+      "comment": "Without a loading maze the load zone runs ragged."
+    },
+    "capacityAtZeroCondition": {
+      "value": 0.6,
+      "min": 0.3,
+      "max": 0.9,
+      "unit": "x",
+      "comment": "Capacity factor of a worn-out lift (slowed for safety)."
+    },
+    "breakdownRateAtZeroCondition": {
+      "value": 6,
+      "min": 2,
+      "max": 12,
+      "unit": "x",
+      "comment": "Breakdown rate multiplier at condition 0 (1x at new)."
+    },
+    "breakdownRepairHoursMean": {
+      "value": 2.5,
+      "min": 0.5,
+      "max": 8,
+      "unit": "h",
+      "comment": "Mean downtime of an unscheduled stop (drive fault, rope position sensor, grip test)."
+    },
+    "breakdownCostFracOfCapex": {
+      "value": 0.0006,
+      "min": 0.0001,
+      "max": 0.003,
+      "unit": "frac",
+      "comment": "Repair cost of a breakdown as a fraction of capex."
+    },
+    "inspectionHours": {
+      "value": 3,
+      "min": 1,
+      "max": 8,
+      "unit": "h",
+      "comment": "Lift closed for a periodic inspection."
+    },
+    "inspectionCostFracOfCapex": {
+      "value": 0.0015,
+      "min": 0.0005,
+      "max": 0.005,
+      "unit": "frac",
+      "comment": "Periodic inspection fee as a fraction of capex."
+    },
+    "inspectionConditionGain": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.2,
+      "unit": "0-1",
+      "comment": "Condition restored by an inspection with adjustments."
+    },
+    "conditionLossPerOperatingHour": {
+      "value": 0.0012,
+      "min": 0.0004,
+      "max": 0.004,
+      "unit": "0-1/h",
+      "comment": "Condition lost per operating hour (annual maintenance keeps it up)."
+    },
+    "conditionRecoveryPerDay": {
+      "value": 0.006,
+      "min": 0,
+      "max": 0.02,
+      "unit": "0-1/day",
+      "comment": "Daily maintenance crew recovery."
+    },
+    "depreciationYears": {
+      "value": 25,
+      "min": 15,
+      "max": 35,
+      "unit": "years",
+      "comment": "Straight-line book depreciation of a lift."
+    }
+  },
+  "guests": {
+    "walkSpeedMs": {
+      "value": 1.3,
+      "min": 1.0,
+      "max": 1.6,
+      "unit": "m/s",
+      "comment": "Walking in ski boots."
+    },
+    "snowReportReferencePqi": {
+      "value": 70,
+      "min": 50,
+      "max": 85,
+      "unit": "PQI",
+      "comment": "Snow report score at which PQI neither helps nor hurts demand."
+    },
+    "freshSnowBonusPqi": {
+      "value": 80,
+      "min": 70,
+      "max": 95,
+      "unit": "PQI",
+      "comment": "Above this snow-report score a fresh-snow buzz adds demand."
+    },
+    "stormWindKmh": {
+      "value": 50,
+      "min": 30,
+      "max": 80,
+      "unit": "km/h",
+      "comment": "Wind above which the forecast keeps guests home."
+    },
+    "stormSnowCmPerHour": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "cm/h",
+      "comment": "Snowfall rate above which driving up is a deterrent."
+    },
+    "bitterColdC": {
+      "value": -18,
+      "min": -25,
+      "max": -10,
+      "unit": "C",
+      "comment": "Below this, demand drops."
+    },
+    "guestsPerCar": {
+      "value": 2.6,
+      "min": 1.5,
+      "max": 4,
+      "unit": "guests",
+      "comment": "Occupancy per car for parking revenue."
+    },
+    "halfDayFromHour": {
+      "value": 12.5,
+      "min": 11.5,
+      "max": 13.5,
+      "unit": "h",
+      "comment": "Arrivals after this pay the half-day rate."
+    },
+    "lunchFromHour": {
+      "value": 11.5,
+      "min": 11,
+      "max": 12.5,
+      "unit": "h",
+      "comment": "Lunch window start."
+    },
+    "lunchToHour": {
+      "value": 14.0,
+      "min": 13,
+      "max": 15,
+      "unit": "h",
+      "comment": "Lunch window end."
+    },
+    "lunchProbPerVisit": {
+      "value": 0.55,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "prob",
+      "comment": "Chance a cohort at the base in the lunch window eats."
+    },
+    "lunchMinutes": {
+      "value": 40,
+      "min": 20,
+      "max": 70,
+      "unit": "min",
+      "comment": "Time spent eating."
+    },
+    "leaveMinutes": {
+      "value": 15,
+      "min": 5,
+      "max": 30,
+      "unit": "min",
+      "comment": "Time from deciding to leave until gone."
+    },
+    "noLiftPatienceMin": {
+      "value": 25,
+      "min": 10,
+      "max": 60,
+      "unit": "min",
+      "comment": "Minutes a cohort waits at the base with nothing to ride before leaving."
+    },
+    "leaveAfterGiveUpProb": {
+      "value": 0.25,
+      "min": 0,
+      "max": 0.6,
+      "unit": "prob",
+      "comment": "Chance a cohort that gives up on a queue leaves the resort."
+    },
+    "queueRefMin": {
+      "value": 20,
+      "min": 10,
+      "max": 40,
+      "unit": "min",
+      "comment": "Queue wait that costs a full queue-weight of satisfaction."
+    },
+    "speedFactorAtPqi0": {
+      "value": 0.45,
+      "min": 0.2,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Skiing speed factor on a PQI-0 surface (moguls, ice, bare)."
+    },
+    "speedRefGradeDeg": {
+      "value": 14,
+      "min": 8,
+      "max": 20,
+      "unit": "deg",
+      "comment": "Grade at which archetype ski speed applies."
+    },
+    "fatiguePerLap": {
+      "value": 0.09,
+      "min": 0.03,
+      "max": 0.2,
+      "unit": "0-1",
+      "comment": "Fatigue per run for an 8-lap-a-day guest."
+    },
+    "comfortColdStartC": {
+      "value": -8,
+      "min": -15,
+      "max": 0,
+      "unit": "C",
+      "comment": "Below this open chairs get uncomfortable."
+    },
+    "comfortColdRangeC": {
+      "value": 14,
+      "min": 8,
+      "max": 25,
+      "unit": "C",
+      "comment": "Degrees below comfortColdStartC for full discomfort."
+    },
+    "comfortWindRefKmh": {
+      "value": 45,
+      "min": 25,
+      "max": 70,
+      "unit": "km/h",
+      "comment": "Wind for full discomfort on an exposed chair."
+    },
+    "satStart": {
+      "value": 0.65,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "Satisfaction a cohort arrives with."
+    },
+    "satPqiWeight": {
+      "value": 0.55,
+      "min": 0.2,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Satisfaction delta per lap per unit of (PQI/100 - neutral)."
+    },
+    "satPqiNeutral": {
+      "value": 0.62,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "PQI/100 that neither pleases nor annoys."
+    },
+    "satQueueWeight": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty scale for queues."
+    },
+    "satTerrainWeight": {
+      "value": 0.25,
+      "min": 0.05,
+      "max": 0.6,
+      "unit": "x",
+      "comment": "Satisfaction scale for terrain match."
+    },
+    "satComfortWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.6,
+      "unit": "x",
+      "comment": "Satisfaction scale for ride comfort/weather exposure."
+    },
+    "satFoodWeight": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.4,
+      "unit": "x",
+      "comment": "Satisfaction from a meal."
+    },
+    "satPriceWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty per +100% ticket price over the act base."
+    },
+    "satParkingWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty for unplowed lots."
+    }
   }
 }
