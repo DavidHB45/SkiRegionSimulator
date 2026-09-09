@@ -1,28 +1,129 @@
 using System;
+using System.Collections.Generic;
+using AlpineSim.Core.Lifts;
+using AlpineSim.Core.Math;
 using AlpineSim.Core.Pistes;
 using AlpineSim.Core.Sim;
+using AlpineSim.Core.Snow;
+using AlpineSim.Core.Tasks;
 
 namespace AlpineSim.Core.Roads
 {
     /// <summary>
-    /// Access road, parking lots and lift ramps. Computes each zone's ClearanceScore hourly from
-    /// snow depth, salt and ice on its cells (guests' parking satisfaction and arrival throughput
-    /// read it), auto-generates PlowRoad / ClearLot / Spread / BlowRamp tasks when thresholds in
-    /// tuning roads.* are crossed, and applies plow/spreader effects reported by the vehicle
-    /// system. Ticks after Snow, before Lifts.
+    /// Access road, parking lots and lift ramps. Computes each zone's ClearanceScore from the snow
+    /// depth, salt and ice on its cells (guest arrivals and parking satisfaction read it), auto-
+    /// generates PlowRoad / ClearLot / Spread / BlowRamp tasks when tuning roads.* thresholds are
+    /// crossed, and reports drifted-in lift ramps that block opening. Ticks after Snow, before Lifts.
     /// </summary>
     public sealed class RoadSystem : ISimSystem
     {
         public string Name => "Roads";
 
-        public void Initialize(SimContext ctx, bool newGame) => throw new NotImplementedException("M6: RoadSystem.Initialize");
-        public void Tick(SimContext ctx, float dt) => throw new NotImplementedException("M6: RoadSystem.Tick");
+        public void Initialize(SimContext ctx, bool newGame)
+        {
+            if (newGame) Recompute(ctx);
+        }
 
         public float Clearance(SimContext ctx, SurfaceZone zone) => zone.ClearanceScore;
-        /// <summary>0..1 access factor for guest arrivals (road clearance) and parking (lots).</summary>
-        public float AccessFactor(SimContext ctx) => throw new NotImplementedException("M6");
-        public float ParkingFactor(SimContext ctx) => throw new NotImplementedException("M6");
-        /// <summary>Whether a lift's loading ramp is drifted in (blocks opening until blown out).</summary>
-        public bool RampBlocked(SimContext ctx, int liftId) => throw new NotImplementedException("M6");
+
+        public float AccessFactor(SimContext ctx)
+        {
+            float worst = 100f;
+            foreach (var z in ctx.World.Pistes.Zones) if (z.Kind == ZoneKind.Road) worst = MathF.Min(worst, z.ClearanceScore);
+            return MathUtil.Clamp01(ctx.Tuning.Curve("roads.accessByClearance", worst));
+        }
+
+        public float ParkingFactor(SimContext ctx)
+        {
+            float sum = 0f; int n = 0;
+            foreach (var z in ctx.World.Pistes.Zones) if (z.Kind == ZoneKind.Lot) { sum += z.ClearanceScore; n++; }
+            if (n == 0) return 1f;
+            return MathUtil.Clamp01(ctx.Tuning.Curve("roads.parkingByClearance", sum / n));
+        }
+
+        public bool RampBlocked(SimContext ctx, int liftId)
+        {
+            var lift = ctx.World.Lifts.Get(liftId);
+            if (lift == null) return false;
+            float threshold = ctx.Tuning.F("roads.rampBlockedClearance");
+            foreach (var z in ctx.World.Pistes.Zones)
+            {
+                if (z.Kind != ZoneKind.LiftRamp || z.Points.Count == 0) continue;
+                if (Vec2.Distance(z.Points[0], lift.Bottom) < z.RadiusM + 5f || Vec2.Distance(z.Points[0], lift.Top) < z.RadiusM + 5f)
+                    if (z.ClearanceScore < threshold) return true;
+            }
+            return false;
+        }
+
+        public void Tick(SimContext ctx, float dt)
+        {
+            if (!ctx.Time.IsMinuteStart) return;
+            if (ctx.Time.MinuteOfHour % ctx.Tuning.I("roads.clearanceUpdateMinutes") != 0) return;
+            Recompute(ctx);
+            AutoTasks(ctx);
+        }
+
+        private void Recompute(SimContext ctx)
+        {
+            var grid = ctx.World.Snow;
+            var t = ctx.Tuning;
+            foreach (var z in ctx.World.Pistes.Zones)
+            {
+                if (z.Kind == ZoneKind.BaseArea || z.Cells.Count == 0) { z.ClearanceScore = 100f; continue; }
+                double depth = 0, salt = 0, ice = 0;
+                foreach (var id in z.Cells)
+                {
+                    depth += grid.TotalDepthMm(id);
+                    salt += grid.Salt[id];
+                    if (grid.ColumnDensity(id) > t.F("roads.iceDensity") && grid.TotalDepthMm(id) > 2f) ice += 1;
+                }
+                int n = z.Cells.Count;
+                float meanDepth = (float)(depth / n);
+                float iceFrac = (float)(ice / n);
+                float blocked = z.Kind == ZoneKind.Lot ? t.F("roads.lotBlockedMm") : (z.Kind == ZoneKind.LiftRamp ? t.F("roads.rampBlockedMm") : t.F("roads.roadBlockedMm"));
+                float clear = z.Kind == ZoneKind.Lot ? t.F("roads.lotClearMm") : (z.Kind == ZoneKind.LiftRamp ? t.F("roads.rampClearMm") : t.F("roads.roadClearMm"));
+                float score = 100f * (1f - MathUtil.InverseLerp(clear, blocked, meanDepth));
+                // ice without salt makes a plowed surface still poor
+                if (z.Kind != ZoneKind.LiftRamp) score *= 1f - iceFrac * t.F("roads.icePenalty") * MathUtil.Clamp01(1f - (float)(salt / n) / t.F("roads.saltFullKgM2"));
+                z.ClearanceScore = MathUtil.Clamp(score, 0f, 100f);
+            }
+        }
+
+        private static bool HasActiveAutoTask(SimContext ctx, TaskSystem ts, string zoneId, TaskKind kind)
+        {
+            var tasks = ts.All(ctx);
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                var t = tasks[i];
+                if (t.AutoGenerated && t.Kind == kind && t.TargetId == zoneId && t.IsActive) return true;
+            }
+            return false;
+        }
+
+        private void AutoTasks(SimContext ctx)
+        {
+            if (!ctx.TryGetSystem<TaskSystem>(out var ts)) return;
+            var t = ctx.Tuning;
+            float below = t.F("roads.autoTaskClearanceBelow");
+            var w = ctx.World.Weather.Current;
+            foreach (var z in ctx.World.Pistes.Zones)
+            {
+                if (z.Kind == ZoneKind.BaseArea || z.Kind == ZoneKind.CatTrack) continue;
+                if (z.ClearanceScore >= below) continue;
+                TaskKind kind = z.Kind == ZoneKind.Lot ? TaskKind.ClearLot : (z.Kind == ZoneKind.LiftRamp ? TaskKind.BlowRamp : TaskKind.PlowRoad);
+                if (!HasActiveAutoTask(ctx, ts, z.Id, kind))
+                {
+                    string title = kind == TaskKind.ClearLot ? "Clear " + z.Id : (kind == TaskKind.BlowRamp ? "Blow out " + z.Id : "Plow " + z.Id);
+                    var created = ts.Create(ctx, kind, title, z.Center, z.Id, -1, 1f, z.Kind == ZoneKind.Road ? 3f : 2f);
+                    created.AutoGenerated = true;
+                }
+                // icy road after a plow wants salt
+                if (z.Kind == ZoneKind.Road && w.TempC < t.F("roads.spreadWhenBelowC") && w.TempC > t.F("roads.saltEffectiveMinC") && !HasActiveAutoTask(ctx, ts, z.Id, TaskKind.Spread))
+                {
+                    var salt = ts.Create(ctx, TaskKind.Spread, "Salt " + z.Id, z.Center, z.Id, -1, 1f, 1.5f);
+                    salt.AutoGenerated = true;
+                }
+            }
+        }
     }
 }

@@ -435,6 +435,131 @@
       "max": 600,
       "unit": "mm",
       "comment": "Depth a road plow removes per pass (to within a residual)."
+    },
+    "roadClearMm": {
+      "value": 20,
+      "min": 5,
+      "max": 50,
+      "unit": "mm",
+      "comment": "Mean snow depth on a road that still scores 100 (hardpack residue)."
+    },
+    "roadBlockedMm": {
+      "value": 220,
+      "min": 100,
+      "max": 400,
+      "unit": "mm",
+      "comment": "Mean depth at which the access road scores 0 (cars cannot get up)."
+    },
+    "lotClearMm": {
+      "value": 30,
+      "min": 10,
+      "max": 60,
+      "unit": "mm",
+      "comment": "Lot depth for a full score."
+    },
+    "lotBlockedMm": {
+      "value": 280,
+      "min": 100,
+      "max": 500,
+      "unit": "mm",
+      "comment": "Lot depth at score 0."
+    },
+    "rampClearMm": {
+      "value": 150,
+      "min": 50,
+      "max": 300,
+      "unit": "mm",
+      "comment": "Ramp snow depth for full score (ramps are snow, shaped)."
+    },
+    "rampBlockedMm": {
+      "value": 700,
+      "min": 400,
+      "max": 1200,
+      "unit": "mm",
+      "comment": "Ramp depth at which a lift cannot load (drifted in)."
+    },
+    "rampBlockedClearance": {
+      "value": 25,
+      "min": 5,
+      "max": 50,
+      "unit": "score",
+      "comment": "Ramp clearance score below which the lift cannot open."
+    },
+    "iceDensity": {
+      "value": 620,
+      "min": 550,
+      "max": 700,
+      "unit": "kg/m3",
+      "comment": "Column density counted as ice on pavement."
+    },
+    "icePenalty": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Score lost when the whole surface is unsalted ice."
+    },
+    "saltFullKgM2": {
+      "value": 0.03,
+      "min": 0.01,
+      "max": 0.08,
+      "unit": "kg/m2",
+      "comment": "Salt load that fully neutralises ice (20-30 g/m2 typical application)."
+    },
+    "autoTaskClearanceBelow": {
+      "value": 55,
+      "min": 30,
+      "max": 80,
+      "unit": "score",
+      "comment": "Below this clearance the road system posts a plow/clear/blow job automatically."
+    },
+    "spreadWhenBelowC": {
+      "value": -1,
+      "min": -4,
+      "max": 2,
+      "unit": "C",
+      "comment": "Post a salting job for the road when the air is below this."
+    },
+    "clearanceUpdateMinutes": {
+      "value": 10,
+      "min": 5,
+      "max": 30,
+      "unit": "min",
+      "comment": "How often clearance scores are recomputed."
+    },
+    "accessByClearance": {
+      "xs": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100
+      ],
+      "ys": [
+        0.15,
+        0.35,
+        0.7,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "comment": "Fraction of demand that reaches the resort by road clearance score."
+    },
+    "parkingByClearance": {
+      "xs": [
+        0,
+        30,
+        60,
+        100
+      ],
+      "ys": [
+        0.4,
+        0.7,
+        0.9,
+        1.0
+      ],
+      "comment": "Parking satisfaction factor by lot clearance score."
     }
   },
   "vehicles": {
@@ -1336,6 +1461,276 @@
       "max": 4000,
       "unit": "h",
       "comment": "Nozzle set life before output drops 30%."
+    }
+  },
+  "construction": {
+    "minLiftLengthM": {
+      "value": 30,
+      "min": 20,
+      "max": 60,
+      "unit": "m",
+      "comment": "Shortest buildable line (a beginner carpet)."
+    },
+    "minLiftVerticalM": {
+      "value": 5,
+      "min": 2,
+      "max": 15,
+      "unit": "m",
+      "comment": "A lift must gain at least this much height."
+    },
+    "terminalConcreteM3": {
+      "value": 60,
+      "min": 30,
+      "max": 150,
+      "unit": "m3",
+      "comment": "Concrete per terminal foundation."
+    },
+    "concreteKgPerM3": {
+      "value": 2400,
+      "min": 2300,
+      "max": 2500,
+      "unit": "kg/m3",
+      "comment": "Density of concrete hauled by mixer trucks."
+    },
+    "workHoursPerDay": {
+      "value": 9,
+      "min": 6,
+      "max": 12,
+      "unit": "h",
+      "comment": "Construction crew working day, for build-time estimates."
+    },
+    "depositFrac": {
+      "value": 0.4,
+      "min": 0.2,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Equipment order deposit paid at commit."
+    },
+    "deliveryFrac": {
+      "value": 0.4,
+      "min": 0.2,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Instalment paid when terminals are placed (equipment delivered)."
+    },
+    "liftCorridorWidthM": {
+      "value": 12,
+      "min": 8,
+      "max": 20,
+      "unit": "m",
+      "comment": "Cleared corridor width under a lift line."
+    },
+    "minRunWidthM": {
+      "value": 15,
+      "min": 10,
+      "max": 25,
+      "unit": "m",
+      "comment": "Narrowest run that can be cut."
+    },
+    "maxRunWidthM": {
+      "value": 90,
+      "min": 60,
+      "max": 150,
+      "unit": "m",
+      "comment": "Widest run that can be cut in one project."
+    },
+    "maxRunGradeDeg": {
+      "value": 40,
+      "min": 30,
+      "max": 50,
+      "unit": "deg",
+      "comment": "Steepest segment a run may have (black runs 25-35 deg)."
+    },
+    "minRunLengthM": {
+      "value": 80,
+      "min": 40,
+      "max": 200,
+      "unit": "m",
+      "comment": "Shortest run worth cutting."
+    }
+  },
+  "fleet": {
+    "marketRefreshDays": {
+      "value": 7,
+      "min": 3,
+      "max": 14,
+      "unit": "days",
+      "comment": "Used market turns over weekly."
+    },
+    "candidateRefreshDays": {
+      "value": 7,
+      "min": 3,
+      "max": 14,
+      "unit": "days",
+      "comment": "New operator candidates weekly."
+    },
+    "usedListingsPerDefMax": {
+      "value": 2,
+      "min": 0,
+      "max": 4,
+      "unit": "count",
+      "comment": "Max used listings per machine class at a refresh."
+    },
+    "usedHoursFracMin": {
+      "value": 0.25,
+      "min": 0.05,
+      "max": 0.5,
+      "unit": "frac",
+      "comment": "Used machines: hour meter as a fraction of the rebuild interval, low end."
+    },
+    "usedHoursFracMax": {
+      "value": 1.2,
+      "min": 0.8,
+      "max": 1.6,
+      "unit": "frac",
+      "comment": "High end (past rebuild = cheap and risky)."
+    },
+    "hiddenDefectProbPerThousandHours": {
+      "value": 0.12,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "prob",
+      "comment": "Chance per 1,000 h that a used listing hides a defect."
+    },
+    "inspectionFee": {
+      "value": 1200,
+      "min": 300,
+      "max": 3000,
+      "unit": "USD",
+      "comment": "Pre-purchase inspection by an independent mechanic."
+    },
+    "leaseMonthlyFracOfPrice": {
+      "value": 0.028,
+      "min": 0.02,
+      "max": 0.04,
+      "unit": "frac",
+      "comment": "Monthly lease when the def gives no leaseMonthly (36-month lease ~ price)."
+    },
+    "rentDailyFracOfPrice": {
+      "value": 0.0065,
+      "min": 0.004,
+      "max": 0.01,
+      "unit": "frac",
+      "comment": "Daily rental rate (a peak week costs ~5% of the machine)."
+    },
+    "rentDefaultDays": {
+      "value": 7,
+      "min": 1,
+      "max": 30,
+      "unit": "days",
+      "comment": "Default rental length."
+    },
+    "tradeInFactor": {
+      "value": 0.9,
+      "min": 0.7,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Dealer trade-in credit as a fraction of resale value."
+    },
+    "pmHours": {
+      "value": 4,
+      "min": 2,
+      "max": 8,
+      "unit": "h",
+      "comment": "Shop hours for a 250 h service."
+    },
+    "pmCostFracOfPrice": {
+      "value": 0.0035,
+      "min": 0.001,
+      "max": 0.008,
+      "unit": "frac",
+      "comment": "PM service cost (fluids, filters, labour) as a fraction of price."
+    },
+    "pmWearRecovery": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.15,
+      "unit": "wear",
+      "comment": "Wear removed from each subsystem by a PM service (adjustments, fluids)."
+    },
+    "repairWearRecovery": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "wear",
+      "comment": "Wear removed from the repaired subsystem."
+    },
+    "rebuildHours": {
+      "value": 120,
+      "min": 60,
+      "max": 240,
+      "unit": "h",
+      "comment": "Shop hours for a rebuild."
+    },
+    "rebuildCostFracOfPrice": {
+      "value": 0.28,
+      "min": 0.15,
+      "max": 0.4,
+      "unit": "frac",
+      "comment": "Rebuild cost as a fraction of the new price."
+    },
+    "sendOutDays": {
+      "value": 6,
+      "min": 2,
+      "max": 14,
+      "unit": "days",
+      "comment": "Days a sent-out repair takes at multiplier 1."
+    },
+    "sendOutCostMultiplier": {
+      "value": 1.5,
+      "min": 1.1,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Cost multiplier for repairs sent to a dealer."
+    },
+    "fieldRepairMultiplier": {
+      "value": 1.4,
+      "min": 1.0,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Field repair cost vs shop."
+    },
+    "expressPartsMultiplier": {
+      "value": 2.0,
+      "min": 1.2,
+      "max": 3.0,
+      "unit": "x",
+      "comment": "Cost multiplier when parts are not in stock and must be expressed."
+    },
+    "fieldRefuelWorkHours": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "h",
+      "comment": "Service truck time at a stranded machine to refuel it."
+    },
+    "fieldRepairWorkHours": {
+      "value": 3,
+      "min": 1,
+      "max": 8,
+      "unit": "h",
+      "comment": "Service truck time for a field repair."
+    },
+    "fieldRefuelFrac": {
+      "value": 0.6,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "frac",
+      "comment": "Tank fraction a field refuel brings the machine to."
+    },
+    "shiftMinHoursPaid": {
+      "value": 4,
+      "min": 0,
+      "max": 8,
+      "unit": "h",
+      "comment": "Hired operators are paid at least this many hours a day even when idle (half rate)."
+    },
+    "fuelPriceDailyVolatilityScale": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Daily random-walk scale on the depot's price volatility."
     }
   }
 }

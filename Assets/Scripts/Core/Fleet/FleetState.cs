@@ -166,6 +166,11 @@ namespace AlpineSim.Core.Fleet
         public int InsurancePaidDay = -1;
         public double WagesToday;
         public double FleetValue;
+        /// <summary>Attachments owned but not mounted (ids; duplicates allowed).</summary>
+        public List<string> OwnedAttachments = new List<string>();
+        public bool AutoOrderParts = true;
+        public int CandidatesRefreshDay = -1;
+        public List<string> PmDueWarned = new List<string>();
 
         public OperatorState Operator(int id)
         {

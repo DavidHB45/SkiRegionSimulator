@@ -31,6 +31,8 @@ namespace AlpineSim.Core.Vehicles
         public Func<SimContext, VehicleState, OperatorProfile> OperatorLookup;
         /// <summary>Hook for the fleet system: refuel at the depot when an AI machine arrives.</summary>
         public Action<SimContext, VehicleState> DepotArrival;
+        /// <summary>Hook for the fleet system: extra wear multiplier (wash bay, storage).</summary>
+        public Func<SimContext, VehicleState, float> ExtraWearFactor;
 
         public struct OperatorProfile { public float Competence; public float MaxSlopeDeg; public bool Licensed; public int OperatorId; }
 
@@ -639,11 +641,12 @@ namespace AlpineSim.Core.Vehicles
             return rate;
         }
 
-        private static void ApplyWear(SimContext ctx, VehicleState v, VehicleDef def, float hours, TuningData t)
+        private void ApplyWear(SimContext ctx, VehicleState v, VehicleDef def, float hours, TuningData t)
         {
             float basePerHour = 1f / t.F("vehicles.wearHoursToFailureAtFullLoad");
             float load = MathF.Max(t.F("vehicles.wearIdleFraction"), v.LoadFrac);
             float shelter = v.Sheltered ? 1f : ctx.Data.Stations.Garage.UnshelteredWearMultiplier;
+            if (ExtraWearFactor != null) shelter *= ExtraWearFactor(ctx, v);
             var c = v.Condition;
             var w = def.WearRates;
             float cold = v.WarmupFrac < 0.5f ? 1.5f : 1f;

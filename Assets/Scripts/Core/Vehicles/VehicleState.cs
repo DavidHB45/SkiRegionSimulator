@@ -191,6 +191,8 @@ namespace AlpineSim.Core.Vehicles
         public float SaltKg;
         public float BrineL;
         public float WaterL;
+        /// <summary>Diesel carried by a fuel/service truck for field refuelling, litres.</summary>
+        public float FuelCargoL;
         public bool Sheltered;
         public bool Stranded;
         public string StrandedReason = "";

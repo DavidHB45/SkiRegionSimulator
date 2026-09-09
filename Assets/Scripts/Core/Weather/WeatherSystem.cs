@@ -8,8 +8,8 @@ namespace AlpineSim.Core.Weather
 {
     /// <summary>
     /// Hourly weather timeline generated per day from the climate profile (climate.json) with
-    /// autocorrelated temperature/wind anomalies and persistent storms, all from ctx.Rng.Fork(day)
-    /// so a save resumes the same weather. Publishes WeatherState.Current each hour at the reference
+    /// autocorrelated temperature/wind anomalies and persistent storms, all from seed-derived
+    /// streams (ctx.SeededRng) so a save resumes the same weather regardless of when a day is generated. Publishes WeatherState.Current each hour at the reference
     /// elevation (systems use SampleAt for other elevations), keeps a 5-day forecast whose error grows
     /// with lead time, and computes wet-bulb. Ticks first.
     /// </summary>
@@ -34,8 +34,11 @@ namespace AlpineSim.Core.Weather
                 w.TempAnomalyC = 0f; w.WindAnomaly = 0f; w.StormYesterday = false; w.StormDaysRun = 0;
             }
             EnsureThrough(ctx, ctx.Time.Day + 6);
-            w.Current = Actual(ctx, ctx.Time.AbsoluteHour).Clone();
-            IssueForecast(ctx);
+            if (newGame || w.Forecast.Count == 0)
+            {
+                w.Current = Actual(ctx, ctx.Time.AbsoluteHour).Clone();
+                IssueForecast(ctx);
+            }
         }
 
         public void Tick(SimContext ctx, float dt)
@@ -92,7 +95,7 @@ namespace AlpineSim.Core.Weather
             float windDir = L(p.WindDirMeanDeg, n.WindDirMeanDeg, t), windSpread = L(p.WindDirSpreadDeg, n.WindDirSpreadDeg, t);
             float humMean = L(p.HumidityMeanPct, n.HumidityMeanPct, t), cloudMean = L(p.CloudMean, n.CloudMean, t), lightningP = L(p.LightningProbability, n.LightningProbability, t);
 
-            var rng = ctx.Rng.Fork(1000 + day);
+            var rng = ctx.SeededRng(1000 + day);
             // AR(1) anomalies
             float rho = MathUtil.Clamp(c.TempAutocorrelation, 0f, 0.98f);
             w.TempAnomalyC = rho * w.TempAnomalyC + MathF.Sqrt(1f - rho * rho) * sd * rng.NextGaussian();
@@ -163,7 +166,7 @@ namespace AlpineSim.Core.Weather
             var w = ctx.World.Weather;
             var c = ctx.Data.Climate;
             long now = ctx.Time.AbsoluteHour;
-            var rng = ctx.Rng.Fork((int)(now * 7 + 99));
+            var rng = ctx.SeededRng((int)(now * 7 + 99));
             w.Forecast.Clear();
             w.ForecastIssuedHour = now;
             EnsureThrough(ctx, (int)((now + ForecastHours) / 24) + 1);
