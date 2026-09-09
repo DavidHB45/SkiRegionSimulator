@@ -94,10 +94,13 @@ namespace AlpineSim.Core.Data
         /// <summary>Float value of a scalar entry.</summary>
         public float F(string key)
         {
-            if (_cache.TryGetValue(key, out float v)) return v;
-            v = Entry(key).Value;
-            _cache[key] = v;
-            return v;
+            lock (_cache)
+            {
+                if (_cache.TryGetValue(key, out float v)) return v;
+                v = Entry(key).Value;
+                _cache[key] = v;
+                return v;
+            }
         }
 
         public int I(string key) => (int)System.Math.Round(F(key));
@@ -119,7 +122,7 @@ namespace AlpineSim.Core.Data
         {
             if (!_entries.TryGetValue(key, out var e)) { e = new TuningEntry { Key = key, Comment = "(override)" }; _entries[key] = e; }
             e.Value = value;
-            _cache[key] = value;
+            lock (_cache) _cache[key] = value;
         }
 
         /// <summary>Copy with independent overrides so one test cannot leak tuning into another.</summary>

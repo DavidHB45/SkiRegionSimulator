@@ -38,6 +38,11 @@ namespace AlpineSim.Core.Weather
         public float SeasonSnowfallCm;
         public float LapseRateCPer100m = 0.65f;
         public int LastGeneratedDay = -1;
+        /// <summary>Autocorrelated daily anomalies carried between generated days.</summary>
+        public float TempAnomalyC;
+        public float WindAnomaly;
+        public bool StormYesterday;
+        public int StormDaysRun;
 
         public WeatherSample At(long absoluteHour)
         {
@@ -68,4 +73,24 @@ namespace AlpineSim.Core.Weather
         public static float TempAtElevation(float baseTempC, float baseElevationM, float elevationM, float lapsePer100m)
             => baseTempC - (elevationM - baseElevationM) * 0.01f * lapsePer100m;
     }
+}
+
+namespace AlpineSim.Core.Weather
+{
+    /// <summary>One day of the forecast panel.</summary>
+    [System.Serializable]
+    public sealed class DailyForecastEntry
+    {
+        public int Day;
+        public float MinC;
+        public float MaxC;
+        public float SnowfallCm;
+        public float MaxWindKmh;
+        public float MinWetBulbC;
+        public float Confidence;
+        public string Summary = "";
+    }
+
+    public struct WeatherHourEvent { public long AbsoluteHour; public WeatherSample Sample; }
+    public struct ForecastIssuedEvent { public long AbsoluteHour; }
 }

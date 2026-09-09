@@ -30,12 +30,13 @@ namespace AlpineSim.Core.Snow
             var t = ctx.Tuning;
             var world = ctx.World;
             _baseElevation = ctx.Terrain.SampleHeight(ctx.Sim.Scenario.BaseArea.Pos);
+            _hasWeatherSystem = HasWeatherSystem(ctx);
             if (newGame)
             {
                 world.Snow = new SnowGrid(ctx.Terrain.SizeM, t.F("terrain.snowCellSizeM"), t.F("snow.freshDensityKgM3"));
                 world.Pistes = new PisteNetwork();
                 PisteNetworkBuilder.BuildFromScenario(ctx);
-                SimpleWeather.Apply(ctx, world.Weather);
+                if (!_hasWeatherSystem) SimpleWeather.Apply(ctx, world.Weather);
                 PqiCalculator.PublishAll(ctx);
             }
             else
@@ -46,7 +47,6 @@ namespace AlpineSim.Core.Snow
                 PisteNetworkBuilder.RebuildDerived(ctx);
                 world.Snow.MarkAllDirty();
             }
-            _hasWeatherSystem = HasWeatherSystem(ctx);
         }
 
         private static bool HasWeatherSystem(SimContext ctx)

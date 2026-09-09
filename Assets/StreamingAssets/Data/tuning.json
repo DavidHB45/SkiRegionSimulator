@@ -1270,5 +1270,72 @@
       "unit": "x",
       "comment": "Satisfaction penalty for unplowed lots."
     }
+  },
+  "weather": {
+    "windExposurePer100m": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.12,
+      "unit": "frac/100m",
+      "comment": "Wind increase per 100 m of elevation above the base for SampleAt."
+    }
+  },
+  "snowmaking": {
+    "snowPerWaterM3": {
+      "value": 2.2,
+      "min": 2.0,
+      "max": 2.5,
+      "unit": "m3 snow / m3 water",
+      "comment": "Brief: 1 m3 water -> 2-2.5 m3 machine snow."
+    },
+    "machineSnowDensityKgM3": {
+      "value": 400,
+      "min": 350,
+      "max": 450,
+      "unit": "kg/m3",
+      "comment": "Density of machine-made snow when the gun def gives none."
+    },
+    "hoseMaxM": {
+      "value": 120,
+      "min": 60,
+      "max": 200,
+      "unit": "m",
+      "comment": "Longest hose run from a hydrant to a gun."
+    },
+    "blowbackFactor": {
+      "value": 0.55,
+      "min": 0.3,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Output factor when a gun aims into the wind above 8 km/h."
+    },
+    "windDriftMPerKmh": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 1.2,
+      "unit": "m per km/h",
+      "comment": "Downwind drift of the plume per km/h of wind at full reach."
+    },
+    "pumpKwhPerM3Water": {
+      "value": 1.1,
+      "min": 0.6,
+      "max": 2.0,
+      "unit": "kWh/m3",
+      "comment": "Pumping energy per m3 of water at ~300 m head (brief: 1.5-4 kWh per m3 of snow total)."
+    },
+    "compressorKwPerM3Min": {
+      "value": 6.5,
+      "min": 4,
+      "max": 9,
+      "unit": "kW per m3/min",
+      "comment": "Compressor power per m3/min of air for lance guns."
+    },
+    "nozzleLifeHours": {
+      "value": 1500,
+      "min": 500,
+      "max": 4000,
+      "unit": "h",
+      "comment": "Nozzle set life before output drops 30%."
+    }
   }
 }
