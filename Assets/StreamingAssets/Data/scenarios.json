@@ -1,0 +1,103 @@
+{
+  "comment": "Playable scenarios. 'default' is the reference resort used by the game and by the regression tests. Map units are metres; X east, Y north; the map is 2048 x 2048 m (about 4.2 km2).",
+  "default": "default",
+  "scenarios": [
+    {
+      "Id": "default",
+      "DisplayName": "Silberhorn",
+      "Description": "A one-tow village hill under a 2,250 m ridge. Act I: one run, one T-bar, a tired groomer.",
+      "StartHour": 18,
+      "StartDayOfWeek": 4,
+      "StartSeasonDay": 0,
+      "StartCash": 260000,
+      "StartingAct": 1,
+      "Terrain": {
+        "SizeM": 2048,
+        "BaseElevationM": 1400,
+        "RidgeElevationM": 2250,
+        "RidgeY": 1850,
+        "RidgeFalloffM": 400,
+        "BackSlopeDropM": 120,
+        "LateralAmplitudeM": 60,
+        "LateralWavelengthM": 700,
+        "NoiseAmplitudeM": 35,
+        "NoiseFrequency": 0.0035,
+        "NoiseOctaves": 5,
+        "NoiseGain": 0.5,
+        "NoiseLacunarity": 2.05,
+        "RuggednessWithElevation": 1.2,
+        "SeedOffset": 0,
+        "NoBuildSlopeDeg": 42,
+        "Gorge": {
+          "Enabled": true,
+          "Y": 1150,
+          "XStart": 1250,
+          "XEnd": 2047,
+          "WidthM": 150,
+          "DepthM": 190,
+          "NoBuildDepthM": 25,
+          "Comment": "East gorge. Cuts the east bowl off from the base; the only way across in one lift is a 3S or a tram (span > 1,400 m)."
+        },
+        "FlatAreas": [
+          { "Id": "lotA", "X": 900, "Y": 200, "RadiusM": 70, "ElevationM": 1396, "BlendM": 40, "Comment": "Main parking lot" },
+          { "Id": "lotB", "X": 1180, "Y": 210, "RadiusM": 55, "ElevationM": 1397, "BlendM": 40, "Comment": "Overflow lot" },
+          { "Id": "eastBase", "X": 1700, "Y": 1400, "RadiusM": 90, "ElevationM": 1885, "BlendM": 60, "Comment": "East bowl landing: no lodge, no parking - the 3S trap" }
+        ]
+      },
+      "BaseArea": { "Id": "base", "X": 1024, "Y": 300 },
+      "BaseAreaRadiusM": 140,
+      "Landmarks": [
+        { "Id": "lodge", "X": 1024, "Y": 300 },
+        { "Id": "garage", "X": 960, "Y": 330 },
+        { "Id": "fuelDepot", "X": 930, "Y": 345 },
+        { "Id": "workshop", "X": 990, "Y": 350 },
+        { "Id": "pumpHouse", "X": 1080, "Y": 340 },
+        { "Id": "reservoir", "X": 1120, "Y": 330 },
+        { "Id": "roadEntry", "X": 1024, "Y": 40 }
+      ],
+      "Comment": "Silberhorn is the reference save for every regression test (Act IV trap, closed-book economy, terrain gating)."
+    },
+    {
+      "Id": "test_small",
+      "DisplayName": "Test Range (512 m)",
+      "Description": "Small deterministic map for unit tests that need a terrain but not the full resort.",
+      "StartHour": 18,
+      "StartDayOfWeek": 0,
+      "StartSeasonDay": 0,
+      "StartCash": 100000,
+      "StartingAct": 1,
+      "Terrain": {
+        "SizeM": 512,
+        "BaseElevationM": 1400,
+        "RidgeElevationM": 1650,
+        "RidgeY": 460,
+        "RidgeFalloffM": 60,
+        "BackSlopeDropM": 30,
+        "LateralAmplitudeM": 15,
+        "LateralWavelengthM": 300,
+        "NoiseAmplitudeM": 8,
+        "NoiseFrequency": 0.01,
+        "NoiseOctaves": 3,
+        "NoiseGain": 0.5,
+        "NoiseLacunarity": 2,
+        "RuggednessWithElevation": 0.5,
+        "SeedOffset": 7,
+        "NoBuildSlopeDeg": 42,
+        "Gorge": { "Enabled": false },
+        "FlatAreas": []
+      },
+      "BaseArea": { "Id": "base", "X": 256, "Y": 60 },
+      "BaseAreaRadiusM": 50,
+      "Landmarks": [
+        { "Id": "lodge", "X": 256, "Y": 60 },
+        { "Id": "garage", "X": 230, "Y": 70 },
+        { "Id": "fuelDepot", "X": 220, "Y": 80 },
+        { "Id": "workshop", "X": 240, "Y": 85 },
+        { "Id": "pumpHouse", "X": 280, "Y": 75 },
+        { "Id": "reservoir", "X": 300, "Y": 70 },
+        { "Id": "roadEntry", "X": 256, "Y": 10 }
+      ],
+      "Comment": "Unit-test terrain."
+    }
+  ]
+}

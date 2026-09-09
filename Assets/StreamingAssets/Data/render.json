@@ -1,0 +1,20 @@
+{
+  "Comment": "Presentation settings for the Unity layer. Not balance; still data so nothing is hard-coded.",
+  "TerrainChunkSizeM": 128,
+  "TerrainLod0StepM": 2,
+  "TerrainLod1StepM": 8,
+  "TerrainLod0DistanceM": 600,
+  "SnowMapTexelsPerMeter": 1,
+  "SnowMapMaxUpdatesPerFrame": 65536,
+  "CameraFarClipM": 6000,
+  "FreeCameraSpeedMs": 60,
+  "FreeCameraFastMultiplier": 4,
+  "MouseLookSensitivity": 0.15,
+  "GuestMarkerSizeM": 0.8,
+  "GuestVisualBatch": 1023,
+  "CorduroyWavelengthM": 0.12,
+  "CorduroyDepthM": 0.03,
+  "SnowDisplacementScale": 1,
+  "DebugOverlayAlpha": 0.75,
+  "UiScale": 1
+}

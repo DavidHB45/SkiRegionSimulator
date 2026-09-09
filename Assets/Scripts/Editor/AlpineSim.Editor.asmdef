@@ -1,0 +1,21 @@
+{
+  "name": "AlpineSim.Editor",
+  "rootNamespace": "AlpineSim.Editor",
+  "references": [
+    "AlpineSim.Core",
+    "AlpineSim.Unity",
+    "Unity.InputSystem",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

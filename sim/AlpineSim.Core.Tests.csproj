@@ -1,0 +1,38 @@
+<Project>
+  <!-- Both mirror projects share the /sim folder, so each gets its own obj/bin subfolder. -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/AlpineSim.Core.Tests/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/AlpineSim.Core.Tests/</BaseOutputPath>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <!--
+    Mirror build of the Unity EditMode test assembly (Assets/Scripts/Tests/**).
+    Tests use only the NUnit subset shared by Unity's test framework and NUnit 3.13,
+    and never reference UnityEngine.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>AlpineSim.Core.Tests</AssemblyName>
+    <RootNamespace>AlpineSim.Tests</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Deterministic>true</Deterministic>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Scripts/Tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="AlpineSim.Core.csproj" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

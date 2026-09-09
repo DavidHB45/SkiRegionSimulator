@@ -1,0 +1,4 @@
+<linker>
+  <!-- Keep the whole simulation core: WorldState and data records are mapped by reflection over public fields. -->
+  <assembly fullname="AlpineSim.Core" preserve="all" />
+</linker>

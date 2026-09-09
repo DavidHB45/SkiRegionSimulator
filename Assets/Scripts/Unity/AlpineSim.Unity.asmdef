@@ -1,0 +1,18 @@
+{
+  "name": "AlpineSim.Unity",
+  "rootNamespace": "AlpineSim.Unity",
+  "references": [
+    "AlpineSim.Core",
+    "Unity.InputSystem",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

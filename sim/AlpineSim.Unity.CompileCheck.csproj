@@ -1,0 +1,32 @@
+<Project>
+  <!--
+    Compile-checks the Unity layer (Assets/Scripts/Unity + Assets/Scripts/Editor) against the API
+    stubs in sim/UnityStubs. This is not a runnable assembly; it exists so CI can reject code that
+    would not compile in the editor. Real behaviour is only verified by the unity-test job.
+  -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/AlpineSim.Unity.CompileCheck/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/AlpineSim.Unity.CompileCheck/</BaseOutputPath>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>AlpineSim.Unity.CompileCheck</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <DefineConstants>UNITY_EDITOR;UNITY_STANDALONE;ALPINESIM_COMPILE_CHECK</DefineConstants>
+    <NoWarn>CS1591;CS0649</NoWarn>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Scripts/Unity/**/*.cs" />
+    <Compile Include="../Assets/Scripts/Editor/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="AlpineSim.Core.csproj" />
+    <ProjectReference Include="UnityStubs/UnityStubs.csproj" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

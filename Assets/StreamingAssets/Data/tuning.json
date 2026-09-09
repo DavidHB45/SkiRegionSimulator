@@ -1,0 +1,14 @@
+{
+  "comment": "Every balance number in Alpine Resort Simulator. Leaf = {value, min, max, unit, comment}. Curves = {xs, ys, comment}. Code reads by dotted key (e.g. snow.freshDensityKgM3) and never embeds a number. min/max are the real-world anchor range the value was chosen from; the value is designer-editable without recompiling.",
+  "simulation": {
+    "resortOpenHour": { "value": 9, "min": 8, "max": 10, "unit": "h", "comment": "Lifts open; day mode begins. Typical alpine resort 8:30-9:00." },
+    "resortCloseHour": { "value": 16, "min": 15, "max": 17, "unit": "h", "comment": "Lifts close; night mode (vehicle operation) begins after sweep." },
+    "nightShiftStartHour": { "value": 17, "min": 16, "max": 19, "unit": "h", "comment": "Grooming may start once patrol sweep is done." },
+    "guestsPerAgent": { "value": 4, "min": 1, "max": 50, "unit": "guests", "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed." },
+    "aiVehicleTickDivisor": { "value": 1, "min": 1, "max": 20, "unit": "ticks", "comment": "AI-driven vehicles integrate every N ticks with dt*N (LOD). Player vehicle always 1." }
+  },
+  "terrain": {
+    "mapSizeM": { "value": 2048, "min": 2048, "max": 5000, "unit": "m", "comment": "Heightmap edge at 1 m; 2048 = 4.2 km2. Region expansion to 12-20 km2 is M8." },
+    "snowCellSizeM": { "value": 0.5, "min": 0.25, "max": 1, "unit": "m", "comment": "Snow grid cell edge over the skiable envelope." }
+  }
+}

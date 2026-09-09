@@ -1,0 +1,32 @@
+<Project>
+  <!-- Both mirror projects share the /sim folder, so each gets its own obj/bin subfolder. -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/AlpineSim.Core/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/AlpineSim.Core/</BaseOutputPath>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <!--
+    Mirror build of the Unity Core assembly. It compiles exactly the same source
+    files that Unity compiles into AlpineSim.Core (Assets/Scripts/Core/**), so the
+    simulation can be built and tested with `dotnet test` and no Unity licence.
+    Core never references UnityEngine, which is what makes this possible.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>AlpineSim.Core</AssemblyName>
+    <RootNamespace>AlpineSim.Core</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>CS1591</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Assets/Scripts/Core/**/*.cs" />
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
