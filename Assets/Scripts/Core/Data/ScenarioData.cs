@@ -67,9 +67,28 @@ namespace AlpineSim.Core.Data
     /// starting fleet, hydrants and so on; unknown JSON members are ignored so the data file may be
     /// complete before every consumer exists.
     /// </summary>
+    /// <summary>A corridor (or disc) the terrain generator benches so machines and guests get legible surfaces.</summary>
+    public sealed class TerrainCorridor
+    {
+        public Vec2[] Points;
+        public float HalfWidthM;
+        public float BlendM;
+        public bool IsDisc;
+    }
+
     [Serializable]
     public sealed partial class ScenarioData
     {
+        /// <summary>Corridors contributed by milestone partials (pistes, roads, lots) in a fixed order.</summary>
+        public List<TerrainCorridor> GetCorridors()
+        {
+            var list = new List<TerrainCorridor>();
+            CollectCorridorsM1(list);
+            return list;
+        }
+
+        partial void CollectCorridorsM1(List<TerrainCorridor> into);
+
         public string Id = "default";
         public string DisplayName = "";
         public string Description = "";

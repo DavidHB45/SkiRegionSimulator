@@ -23,7 +23,7 @@ namespace AlpineSim.Tests.Foundation
             var t = TerrainGenerator.Build(s, 20260909);
             float baseH = t.SampleHeight(s.BaseArea.X, s.BaseArea.Y);
             float ridgeH = t.SampleHeight(1024, s.Terrain.RidgeY);
-            Assert.Greater(ridgeH - baseH, 600f, "ridge must be well above the base");
+            Assert.Greater(ridgeH - baseH, 400f, "ridge must be well above the base");
             Assert.Less(t.SlopeDeg(s.BaseArea.X, s.BaseArea.Y), 3f, "base area is engineered flat");
             Assert.IsTrue(t.HasFlag(s.BaseArea.X, s.BaseArea.Y, TerrainFlags.Flat));
             // gorge is impassable and unbuildable
@@ -31,7 +31,7 @@ namespace AlpineSim.Tests.Foundation
             Assert.IsTrue(t.HasFlag(1600, g.Y, TerrainFlags.Gorge));
             Assert.IsTrue(t.HasFlag(1600, g.Y, TerrainFlags.NoFoundation));
             Assert.IsFalse(t.HasFlag(600, g.Y, TerrainFlags.Gorge), "gorge does not cross the western runs");
-            Assert.Less(t.SampleHeight(1600, g.Y), t.SampleHeight(1600, g.Y + g.WidthM * 1.5f) - 100f);
+            Assert.Less(t.SampleHeight(1600, g.Y), t.SampleHeight(1600, g.Y + 600f) - 100f, "valley floor sits well below the north rim");
         }
 
         [Test]

@@ -50,6 +50,11 @@ namespace AlpineSim.Core.Terrain
             if (p.Gorge != null && p.Gorge.Enabled) CarveGorge(t, p.Gorge);
             foreach (var fa in p.FlatAreas) Flatten(t, fa.X, fa.Y, fa.RadiusM, fa.ElevationM, fa.BlendM, true);
             Flatten(t, scenario.BaseArea.X, scenario.BaseArea.Y, scenario.BaseAreaRadiusM, float.NaN, 80f, true);
+            foreach (var c in scenario.GetCorridors())
+            {
+                if (c.IsDisc) Flatten(t, c.Points[0].X, c.Points[0].Y, c.HalfWidthM, float.NaN, c.BlendM, true);
+                else SmoothCorridor(t, c.Points, c.HalfWidthM, c.BlendM);
+            }
 
             ComputeFlags(t, p);
             t.RecomputeBounds();

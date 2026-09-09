@@ -1,14 +1,440 @@
 {
   "comment": "Every balance number in Alpine Resort Simulator. Leaf = {value, min, max, unit, comment}. Curves = {xs, ys, comment}. Code reads by dotted key (e.g. snow.freshDensityKgM3) and never embeds a number. min/max are the real-world anchor range the value was chosen from; the value is designer-editable without recompiling.",
   "simulation": {
-    "resortOpenHour": { "value": 9, "min": 8, "max": 10, "unit": "h", "comment": "Lifts open; day mode begins. Typical alpine resort 8:30-9:00." },
-    "resortCloseHour": { "value": 16, "min": 15, "max": 17, "unit": "h", "comment": "Lifts close; night mode (vehicle operation) begins after sweep." },
-    "nightShiftStartHour": { "value": 17, "min": 16, "max": 19, "unit": "h", "comment": "Grooming may start once patrol sweep is done." },
-    "guestsPerAgent": { "value": 4, "min": 1, "max": 50, "unit": "guests", "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed." },
-    "aiVehicleTickDivisor": { "value": 1, "min": 1, "max": 20, "unit": "ticks", "comment": "AI-driven vehicles integrate every N ticks with dt*N (LOD). Player vehicle always 1." }
+    "resortOpenHour": {
+      "value": 9,
+      "min": 8,
+      "max": 10,
+      "unit": "h",
+      "comment": "Lifts open; day mode begins. Typical alpine resort 8:30-9:00."
+    },
+    "resortCloseHour": {
+      "value": 16,
+      "min": 15,
+      "max": 17,
+      "unit": "h",
+      "comment": "Lifts close; night mode (vehicle operation) begins after sweep."
+    },
+    "nightShiftStartHour": {
+      "value": 17,
+      "min": 16,
+      "max": 19,
+      "unit": "h",
+      "comment": "Grooming may start once patrol sweep is done."
+    },
+    "guestsPerAgent": {
+      "value": 4,
+      "min": 1,
+      "max": 50,
+      "unit": "guests",
+      "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed."
+    },
+    "aiVehicleTickDivisor": {
+      "value": 1,
+      "min": 1,
+      "max": 20,
+      "unit": "ticks",
+      "comment": "AI-driven vehicles integrate every N ticks with dt*N (LOD). Player vehicle always 1."
+    }
   },
   "terrain": {
-    "mapSizeM": { "value": 2048, "min": 2048, "max": 5000, "unit": "m", "comment": "Heightmap edge at 1 m; 2048 = 4.2 km2. Region expansion to 12-20 km2 is M8." },
-    "snowCellSizeM": { "value": 0.5, "min": 0.25, "max": 1, "unit": "m", "comment": "Snow grid cell edge over the skiable envelope." }
+    "mapSizeM": {
+      "value": 2048,
+      "min": 2048,
+      "max": 5000,
+      "unit": "m",
+      "comment": "Heightmap edge at 1 m; 2048 = 4.2 km2. Region expansion to 12-20 km2 is M8."
+    },
+    "snowCellSizeM": {
+      "value": 0.5,
+      "min": 0.25,
+      "max": 1,
+      "unit": "m",
+      "comment": "Snow grid cell edge over the skiable envelope."
+    }
+  },
+  "snow": {
+    "freshDensityKgM3": {
+      "value": 100,
+      "min": 70,
+      "max": 150,
+      "unit": "kg/m3",
+      "comment": "Density of the loose layer as tracked; fresh cold snowfall 70-150 kg/m3 (Judson & Doesken 2000)."
+    },
+    "snowfallDensityKgM3": {
+      "value": 100,
+      "min": 60,
+      "max": 200,
+      "unit": "kg/m3",
+      "comment": "Density at which snowfall is deposited; converted to loose depth at freshDensity."
+    },
+    "compactedLooseDensity": {
+      "value": 330,
+      "min": 250,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Density of loose snow after one track pass folds it into the pack."
+    },
+    "settledLooseDensity": {
+      "value": 200,
+      "min": 150,
+      "max": 260,
+      "unit": "kg/m3",
+      "comment": "Density of loose snow that settles under its own weight."
+    },
+    "settleFracPerHour": {
+      "value": 0.03,
+      "min": 0.01,
+      "max": 0.08,
+      "unit": "1/h",
+      "comment": "Fraction of the loose layer that settles into the pack per hour (fresh snow settles ~50% in a day)."
+    },
+    "compactionReferenceKpa": {
+      "value": 6,
+      "min": 4,
+      "max": 8,
+      "unit": "kPa",
+      "comment": "Ground pressure that gives full compaction effect; groomer tracks 4-8 kPa."
+    },
+    "compactLooseFractionPerPass": {
+      "value": 0.7,
+      "min": 0.4,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Fraction of the loose layer folded into the pack by one full track pass at reference pressure."
+    },
+    "compactionTargetDensityByKpa": {
+      "xs": [
+        0,
+        2,
+        4,
+        8,
+        20,
+        60,
+        200
+      ],
+      "ys": [
+        200,
+        300,
+        400,
+        480,
+        520,
+        560,
+        600
+      ],
+      "comment": "Packed density a track/tyre pressure drives toward (kPa -> kg/m3). Tracks 4-8 kPa, wheel loaders 60+, trucks 200+."
+    },
+    "compactionRatePerPass": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "How far one pass moves density toward its pressure target."
+    },
+    "rutPerVehiclePass": {
+      "value": 0.12,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "0-1",
+      "comment": "Roughness added by one track/tyre pass on soft snow."
+    },
+    "rutSoftDensityLo": {
+      "value": 300,
+      "min": 200,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Below this density snow ruts fully."
+    },
+    "rutSoftDensityRange": {
+      "value": 300,
+      "min": 200,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Above rutSoftDensityLo + this, snow stops rutting."
+    },
+    "corduroyDensityLo": {
+      "value": 480,
+      "min": 420,
+      "max": 520,
+      "unit": "kg/m3",
+      "comment": "Lower edge of the groomed corduroy density band (measured groomed piste 450-550)."
+    },
+    "corduroyDensityHi": {
+      "value": 600,
+      "min": 550,
+      "max": 650,
+      "unit": "kg/m3",
+      "comment": "Upper edge of the band; above it the pack reads as hard/icy."
+    },
+    "tillerHardeningRange": {
+      "value": 120,
+      "min": 60,
+      "max": 200,
+      "unit": "kg/m3",
+      "comment": "Work hardening per pass fades to zero this far above corduroyDensityHi, so ice (700) is an asymptote, not a wall."
+    },
+    "tillerTargetDensity": {
+      "value": 540,
+      "min": 480,
+      "max": 580,
+      "unit": "kg/m3",
+      "comment": "Density a full-width tiller re-lays the pack at (before the compaction bar)."
+    },
+    "tillerCompactionPerPass": {
+      "value": 12,
+      "min": 10,
+      "max": 40,
+      "unit": "kg/m3",
+      "comment": "Compaction-bar / work-hardening increment per pass. From fresh snow ~3 passes reach the band; ~9 passes with no new snow push past 600 into ice."
+    },
+    "tillerMoistureRetain": {
+      "value": 0.7,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "frac",
+      "comment": "Moisture kept after tilling (aeration dries the surface)."
+    },
+    "roughnessPerSkierPass": {
+      "value": 0.012,
+      "min": 0.001,
+      "max": 0.02,
+      "unit": "0-1",
+      "comment": "Roughness added per skier crossing a cell (x0.4 on hard pack, x1 on soft). ~200 passes on a groomed centre lane build moguls; a busy day puts 150-300 passes on the centre lane."
+    },
+    "skierIceRoughnessFactor": {
+      "value": 0.4,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Roughness multiplier on icy snow (skiers scrape rather than rut)."
+    },
+    "scrapeKgPerSkierPass": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 2.0,
+      "unit": "kg/m2",
+      "comment": "Snow mass a skier scrapes off a cell per pass on soft snow, moved downhill and to the edge."
+    },
+    "scrapeEdgeShare": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Share of scraped mass pushed toward the run edge rather than downhill."
+    },
+    "scrapeSlopeRefDeg": {
+      "value": 25,
+      "min": 15,
+      "max": 35,
+      "unit": "deg",
+      "comment": "Slope at which scraping is fully effective."
+    },
+    "scrapeMaxFractionPerPass": {
+      "value": 0.1,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Never scrape more than this fraction of a cell's mass in one pass."
+    },
+    "meltMmPerHourPerDegC": {
+      "value": 1.6,
+      "min": 1.0,
+      "max": 3.0,
+      "unit": "mm/h/C",
+      "comment": "Degree-hour melt factor (snow water equivalent 2-4 mm/day/C \u2248 0.1-0.17 mm/h/C of water; expressed as snow depth of runoff density)."
+    },
+    "meltRunoffDensity": {
+      "value": 400,
+      "min": 300,
+      "max": 500,
+      "unit": "kg/m3",
+      "comment": "Density used to convert melt depth into mass removed."
+    },
+    "sunMeltMmPerHour": {
+      "value": 2.5,
+      "min": 0,
+      "max": 6,
+      "unit": "mm/h",
+      "comment": "Additional melt on a fully sun-exposed cell under clear sky near 0 C."
+    },
+    "sunWarmingC": {
+      "value": 3,
+      "min": 0,
+      "max": 6,
+      "unit": "C",
+      "comment": "How much full sun warms the snow surface above air temperature."
+    },
+    "rainMeltFactor": {
+      "value": 2.0,
+      "min": 1.0,
+      "max": 4.0,
+      "unit": "mm snow / mm rain",
+      "comment": "Snow depth removed per mm of rain."
+    },
+    "windScourFracPerHourAt50kmh": {
+      "value": 0.06,
+      "min": 0.01,
+      "max": 0.2,
+      "unit": "frac/h",
+      "comment": "Loose snow lost per hour at 50 km/h wind (scales with wind squared)."
+    },
+    "moisturePerMeltMm": {
+      "value": 0.02,
+      "min": 0.005,
+      "max": 0.1,
+      "unit": "1/mm",
+      "comment": "Moisture gained per mm of melt."
+    },
+    "moistureFreezePerHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "1/h",
+      "comment": "Moisture removed per hour by refreezing."
+    },
+    "refreezeBelowC": {
+      "value": -2,
+      "min": -6,
+      "max": 0,
+      "unit": "C",
+      "comment": "Snow temperature below which wet snow refreezes."
+    },
+    "refreezeDensityPerHour": {
+      "value": 40,
+      "min": 10,
+      "max": 100,
+      "unit": "kg/m3/h",
+      "comment": "Density gain per hour at full moisture while refreezing."
+    },
+    "cellTempRelaxPerHour": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.9,
+      "unit": "frac/h",
+      "comment": "How fast a cell's snow temperature follows air + sun."
+    },
+    "skierLoosenKgPerPass": {
+      "value": 0.12,
+      "min": 0.02,
+      "max": 0.5,
+      "unit": "kg/m2",
+      "comment": "Pack chopped into loose granular snow per skier pass; the next tiller pass re-mixes it and pulls density back down, which keeps nightly grooming sustainable."
+    }
+  },
+  "pqi": {
+    "minCoverageMm": {
+      "value": 150,
+      "min": 100,
+      "max": 250,
+      "unit": "mm",
+      "comment": "Depth below which a cell counts as not covered (thin cover, rocks show)."
+    },
+    "densityBandLo": {
+      "value": 450,
+      "min": 400,
+      "max": 500,
+      "unit": "kg/m3",
+      "comment": "PQI density window low edge (softer than this is slow and ruts)."
+    },
+    "densityBandHi": {
+      "value": 600,
+      "min": 550,
+      "max": 650,
+      "unit": "kg/m3",
+      "comment": "PQI density window high edge (harder is icy)."
+    },
+    "densitySoftLo": {
+      "value": 250,
+      "min": 150,
+      "max": 350,
+      "unit": "kg/m3",
+      "comment": "Score falls to 0 this far below the band."
+    },
+    "densitySoftHi": {
+      "value": 110,
+      "min": 60,
+      "max": 150,
+      "unit": "kg/m3",
+      "comment": "Score falls to 0 this far above the band (ice at ~700)."
+    },
+    "groomHalfLifeHours": {
+      "value": 10,
+      "min": 6,
+      "max": 18,
+      "unit": "h",
+      "comment": "Freshness half-life since last groom."
+    },
+    "wCoverage": {
+      "value": 0.3,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: coverage"
+    },
+    "wDensity": {
+      "value": 0.2,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: density band"
+    },
+    "wRoughness": {
+      "value": 0.35,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: smoothness"
+    },
+    "wFreshness": {
+      "value": 0.15,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: freshness"
+    },
+    "bareCapFactor": {
+      "value": 0.3,
+      "min": 0,
+      "max": 1,
+      "unit": "x",
+      "comment": "PQI multiplier at zero coverage (a bare run is never good)."
+    }
+  },
+  "roads": {
+    "saltMeltMmPerHourPerKgM2": {
+      "value": 20,
+      "min": 5,
+      "max": 60,
+      "unit": "mm/h per kg/m2",
+      "comment": "Snow melt on salted pavement per kg/m2 of salt."
+    },
+    "saltEffectiveMinC": {
+      "value": -9,
+      "min": -15,
+      "max": -3,
+      "unit": "C",
+      "comment": "Rock salt stops working below about -9 C."
+    },
+    "saltDecayFracPerHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "frac/h",
+      "comment": "Salt lost per hour to traffic and runoff."
+    },
+    "brineEquivalentKgPerL": {
+      "value": 0.23,
+      "min": 0.15,
+      "max": 0.3,
+      "unit": "kg NaCl / L",
+      "comment": "23% brine."
+    },
+    "plowClearanceMmPerPass": {
+      "value": 400,
+      "min": 200,
+      "max": 600,
+      "unit": "mm",
+      "comment": "Depth a road plow removes per pass (to within a residual)."
+    }
   }
 }

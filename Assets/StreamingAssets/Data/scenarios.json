@@ -5,16 +5,16 @@
     {
       "Id": "default",
       "DisplayName": "Silberhorn",
-      "Description": "A one-tow village hill under a 2,250 m ridge. Act I: one run, one T-bar, a tired groomer.",
+      "Description": "A village hill under a 1,900 m ridge. Reference resort: a fixed-grip quad, a beginner T-bar, three runs, a tired fleet.",
       "StartHour": 18,
       "StartDayOfWeek": 4,
       "StartSeasonDay": 0,
       "StartCash": 260000,
-      "StartingAct": 1,
+      "StartingAct": 2,
       "Terrain": {
         "SizeM": 2048,
         "BaseElevationM": 1400,
-        "RidgeElevationM": 2250,
+        "RidgeElevationM": 1900,
         "RidgeY": 1850,
         "RidgeFalloffM": 400,
         "BackSlopeDropM": 120,
@@ -33,29 +33,1138 @@
           "Y": 1150,
           "XStart": 1250,
           "XEnd": 2047,
-          "WidthM": 150,
+          "WidthM": 800,
           "DepthM": 190,
-          "NoBuildDepthM": 25,
-          "Comment": "East gorge. Cuts the east bowl off from the base; the only way across in one lift is a 3S or a tram (span > 1,400 m)."
+          "NoBuildDepthM": 15,
+          "Comment": "Silberhorn valley: an 800 m wide, 190 m deep glacial trough east of x=1250. Its floor is unbuildable, so any lift from the base to the east bowl needs a single span of about 1,000 m: only a 3S or a reversible tram can do it."
         },
         "FlatAreas": [
-          { "Id": "lotA", "X": 900, "Y": 200, "RadiusM": 70, "ElevationM": 1396, "BlendM": 40, "Comment": "Main parking lot" },
-          { "Id": "lotB", "X": 1180, "Y": 210, "RadiusM": 55, "ElevationM": 1397, "BlendM": 40, "Comment": "Overflow lot" },
-          { "Id": "eastBase", "X": 1700, "Y": 1400, "RadiusM": 90, "ElevationM": 1885, "BlendM": 60, "Comment": "East bowl landing: no lodge, no parking - the 3S trap" }
+          {
+            "Id": "lotA",
+            "X": 900,
+            "Y": 200,
+            "RadiusM": 70,
+            "ElevationM": 1396,
+            "BlendM": 40,
+            "Comment": "Main parking lot"
+          },
+          {
+            "Id": "lotB",
+            "X": 1180,
+            "Y": 210,
+            "RadiusM": 55,
+            "ElevationM": 1397,
+            "BlendM": 40,
+            "Comment": "Overflow lot"
+          },
+          {
+            "Id": "eastBase",
+            "X": 1700,
+            "Y": 1400,
+            "RadiusM": 90,
+            "ElevationM": 1800,
+            "BlendM": 60,
+            "Comment": "East bowl landing: no lodge, no parking - the 3S trap"
+          }
         ]
       },
-      "BaseArea": { "Id": "base", "X": 1024, "Y": 300 },
+      "BaseArea": {
+        "Id": "base",
+        "X": 1024,
+        "Y": 300
+      },
       "BaseAreaRadiusM": 140,
       "Landmarks": [
-        { "Id": "lodge", "X": 1024, "Y": 300 },
-        { "Id": "garage", "X": 960, "Y": 330 },
-        { "Id": "fuelDepot", "X": 930, "Y": 345 },
-        { "Id": "workshop", "X": 990, "Y": 350 },
-        { "Id": "pumpHouse", "X": 1080, "Y": 340 },
-        { "Id": "reservoir", "X": 1120, "Y": 330 },
-        { "Id": "roadEntry", "X": 1024, "Y": 40 }
+        {
+          "Id": "lodge",
+          "X": 1024,
+          "Y": 300
+        },
+        {
+          "Id": "garage",
+          "X": 960,
+          "Y": 330
+        },
+        {
+          "Id": "fuelDepot",
+          "X": 930,
+          "Y": 345
+        },
+        {
+          "Id": "workshop",
+          "X": 990,
+          "Y": 350
+        },
+        {
+          "Id": "pumpHouse",
+          "X": 1080,
+          "Y": 340
+        },
+        {
+          "Id": "reservoir",
+          "X": 1120,
+          "Y": 330
+        },
+        {
+          "Id": "roadEntry",
+          "X": 1024,
+          "Y": 40
+        }
       ],
-      "Comment": "Silberhorn is the reference save for every regression test (Act IV trap, closed-book economy, terrain gating)."
+      "Comment": "Silberhorn is the reference save for every regression test (Act IV trap, closed-book economy, terrain gating).",
+      "Pistes": [
+        {
+          "Id": "meadow",
+          "Name": "Meadow",
+          "Difficulty": "Green",
+          "WidthM": 45,
+          "Points": [
+            {
+              "X": 1162,
+              "Y": 640
+            },
+            {
+              "X": 1140,
+              "Y": 560
+            },
+            {
+              "X": 1112,
+              "Y": 480
+            },
+            {
+              "X": 1096,
+              "Y": 430
+            }
+          ],
+          "TopNodeId": "lift:tbar:top",
+          "BottomNodeId": "lift:tbar:bottom",
+          "ExistsFromAct": 1,
+          "Comment": "Beginner slope under the T-bar. Act I's only run."
+        },
+        {
+          "Id": "village",
+          "Name": "Village Run",
+          "Difficulty": "Blue",
+          "WidthM": 40,
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1300
+            },
+            {
+              "X": 860,
+              "Y": 1150
+            },
+            {
+              "X": 940,
+              "Y": 1000
+            },
+            {
+              "X": 860,
+              "Y": 850
+            },
+            {
+              "X": 940,
+              "Y": 700
+            },
+            {
+              "X": 982,
+              "Y": 560
+            },
+            {
+              "X": 992,
+              "Y": 450
+            }
+          ],
+          "TopNodeId": "lift:quad:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 2,
+          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on."
+        },
+        {
+          "Id": "ridgebowl",
+          "Name": "Ridge Bowl",
+          "Difficulty": "Red",
+          "WidthM": 35,
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1300
+            },
+            {
+              "X": 1000,
+              "Y": 1180
+            },
+            {
+              "X": 1040,
+              "Y": 1050
+            },
+            {
+              "X": 1020,
+              "Y": 900
+            },
+            {
+              "X": 1000,
+              "Y": 750
+            },
+            {
+              "X": 1000,
+              "Y": 600
+            },
+            {
+              "X": 996,
+              "Y": 470
+            }
+          ],
+          "TopNodeId": "lift:quad:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 2,
+          "Comment": "Fall-line run from the quad top; steeper, ruts first."
+        },
+        {
+          "Id": "northface",
+          "Name": "North Face",
+          "Difficulty": "Black",
+          "WidthM": 30,
+          "Points": [
+            {
+              "X": 700,
+              "Y": 1620
+            },
+            {
+              "X": 690,
+              "Y": 1500
+            },
+            {
+              "X": 720,
+              "Y": 1380
+            },
+            {
+              "X": 760,
+              "Y": 1260
+            },
+            {
+              "X": 800,
+              "Y": 1120
+            },
+            {
+              "X": 840,
+              "Y": 980
+            },
+            {
+              "X": 880,
+              "Y": 860
+            },
+            {
+              "X": 920,
+              "Y": 720
+            },
+            {
+              "X": 960,
+              "Y": 580
+            },
+            {
+              "X": 986,
+              "Y": 462
+            }
+          ],
+          "TopNodeId": "lift:ridge:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 0,
+          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold)."
+        },
+        {
+          "Id": "eastbowl",
+          "Name": "East Bowl",
+          "Difficulty": "Red",
+          "WidthM": 45,
+          "Points": [
+            {
+              "X": 1700,
+              "Y": 1400
+            },
+            {
+              "X": 1650,
+              "Y": 1250
+            },
+            {
+              "X": 1600,
+              "Y": 1100
+            },
+            {
+              "X": 1560,
+              "Y": 950
+            },
+            {
+              "X": 1520,
+              "Y": 800
+            },
+            {
+              "X": 1470,
+              "Y": 650
+            },
+            {
+              "X": 1420,
+              "Y": 520
+            },
+            {
+              "X": 1300,
+              "Y": 470
+            },
+            {
+              "X": 1190,
+              "Y": 450
+            }
+          ],
+          "TopNodeId": "lift:gorge:top",
+          "BottomNodeId": "lift:gorge:bottom",
+          "ExistsFromAct": 0,
+          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap."
+        }
+      ],
+      "Zones": [
+        {
+          "Id": "accessRoad",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1024,
+              "Y": 40
+            },
+            {
+              "X": 1024,
+              "Y": 120
+            },
+            {
+              "X": 1010,
+              "Y": 200
+            },
+            {
+              "X": 1000,
+              "Y": 260
+            }
+          ],
+          "WidthM": 8,
+          "RadiusM": 0,
+          "Comment": "Access road from the valley to the base area."
+        },
+        {
+          "Id": "lotA",
+          "Kind": "Lot",
+          "Points": [
+            {
+              "X": 900,
+              "Y": 200
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 68,
+          "Comment": "Main parking lot (about 300 cars)."
+        },
+        {
+          "Id": "lotB",
+          "Kind": "Lot",
+          "Points": [
+            {
+              "X": 1180,
+              "Y": 210
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 52,
+          "Comment": "Overflow lot."
+        },
+        {
+          "Id": "lotRoad",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1000,
+              "Y": 260
+            },
+            {
+              "X": 930,
+              "Y": 215
+            },
+            {
+              "X": 900,
+              "Y": 200
+            }
+          ],
+          "WidthM": 7,
+          "RadiusM": 0,
+          "Comment": "Lot A spur."
+        },
+        {
+          "Id": "lotRoadB",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1000,
+              "Y": 260
+            },
+            {
+              "X": 1100,
+              "Y": 230
+            },
+            {
+              "X": 1180,
+              "Y": 210
+            }
+          ],
+          "WidthM": 7,
+          "RadiusM": 0,
+          "Comment": "Lot B spur."
+        },
+        {
+          "Id": "catTrackWest",
+          "Kind": "CatTrack",
+          "Points": [
+            {
+              "X": 960,
+              "Y": 330
+            },
+            {
+              "X": 900,
+              "Y": 420
+            },
+            {
+              "X": 840,
+              "Y": 540
+            },
+            {
+              "X": 800,
+              "Y": 700
+            },
+            {
+              "X": 810,
+              "Y": 860
+            },
+            {
+              "X": 850,
+              "Y": 1020
+            },
+            {
+              "X": 880,
+              "Y": 1160
+            },
+            {
+              "X": 920,
+              "Y": 1290
+            }
+          ],
+          "WidthM": 6,
+          "RadiusM": 0,
+          "Comment": "Machine access track from the garage to the quad top, west of Village Run."
+        },
+        {
+          "Id": "catTrackMeadow",
+          "Kind": "CatTrack",
+          "Points": [
+            {
+              "X": 1060,
+              "Y": 340
+            },
+            {
+              "X": 1110,
+              "Y": 420
+            },
+            {
+              "X": 1150,
+              "Y": 520
+            },
+            {
+              "X": 1168,
+              "Y": 630
+            }
+          ],
+          "WidthM": 5,
+          "RadiusM": 0,
+          "Comment": "Track to the T-bar top."
+        },
+        {
+          "Id": "quadBottomRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 990,
+              "Y": 435
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 22,
+          "Comment": "Quad loading ramp: drifts in; blow it out before opening."
+        },
+        {
+          "Id": "quadTopRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1305
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 20,
+          "Comment": "Quad unloading ramp."
+        },
+        {
+          "Id": "tbarBottomRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 1122,
+              "Y": 440
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 14,
+          "Comment": "T-bar loading area."
+        },
+        {
+          "Id": "tbarTopRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 1160,
+              "Y": 642
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 12,
+          "Comment": "T-bar unloading area."
+        }
+      ],
+      "InitialSnow": {
+        "PackedMm": 420,
+        "PackedDensity": 390,
+        "LooseMm": 80,
+        "OffPisteLooseMm": 220,
+        "OffPistePackedMm": 520,
+        "OffPisteDensity": 230,
+        "Roughness": 0.4,
+        "TempC": -6,
+        "Comment": "Mid-December base after a ten-day-old storm: an ungroomed 42 cm base with 8 cm of loose on top."
+      },
+      "SimpleWeather": {
+        "DayHighC": -2,
+        "NightLowC": -11,
+        "HumidityPct": 72,
+        "WindKmh": 12,
+        "WindDirDeg": 290,
+        "Script": [
+          {
+            "Day": 1,
+            "StartHour": 22,
+            "Hours": 6,
+            "SnowfallCmPerHour": 2.5,
+            "TempC": -7,
+            "WindKmh": 25,
+            "Comment": "First storm: 15 cm overnight"
+          },
+          {
+            "Day": 4,
+            "StartHour": 2,
+            "Hours": 8,
+            "SnowfallCmPerHour": 3.0,
+            "TempC": -5,
+            "WindKmh": 35,
+            "Comment": "Big dump: 24 cm, windy"
+          },
+          {
+            "Day": 8,
+            "StartHour": 18,
+            "Hours": 4,
+            "SnowfallCmPerHour": 1.5,
+            "TempC": -4,
+            "WindKmh": 15,
+            "Comment": ""
+          }
+        ],
+        "Comment": "Diurnal cycle plus scripted storms; replaced by the climate model in M5."
+      }
+    },
+    {
+      "Id": "act1",
+      "DisplayName": "Silberhorn: First Season",
+      "Description": "Act I. One T-bar, one green run, a 9,000-hour starter cat and $95k. Groom the Meadow every night, sell tickets, survive until the bank believes in you.",
+      "StartHour": 18,
+      "StartDayOfWeek": 4,
+      "StartSeasonDay": 0,
+      "StartCash": 95000,
+      "StartingAct": 1,
+      "Terrain": {
+        "SizeM": 2048,
+        "BaseElevationM": 1400,
+        "RidgeElevationM": 1900,
+        "RidgeY": 1850,
+        "RidgeFalloffM": 400,
+        "BackSlopeDropM": 120,
+        "LateralAmplitudeM": 60,
+        "LateralWavelengthM": 700,
+        "NoiseAmplitudeM": 35,
+        "NoiseFrequency": 0.0035,
+        "NoiseOctaves": 5,
+        "NoiseGain": 0.5,
+        "NoiseLacunarity": 2.05,
+        "RuggednessWithElevation": 1.2,
+        "SeedOffset": 0,
+        "NoBuildSlopeDeg": 42,
+        "Gorge": {
+          "Enabled": true,
+          "Y": 1150,
+          "XStart": 1250,
+          "XEnd": 2047,
+          "WidthM": 800,
+          "DepthM": 190,
+          "NoBuildDepthM": 15,
+          "Comment": "Silberhorn valley: an 800 m wide, 190 m deep glacial trough east of x=1250. Its floor is unbuildable, so any lift from the base to the east bowl needs a single span of about 1,000 m: only a 3S or a reversible tram can do it."
+        },
+        "FlatAreas": [
+          {
+            "Id": "lotA",
+            "X": 900,
+            "Y": 200,
+            "RadiusM": 70,
+            "ElevationM": 1396,
+            "BlendM": 40,
+            "Comment": "Main parking lot"
+          },
+          {
+            "Id": "lotB",
+            "X": 1180,
+            "Y": 210,
+            "RadiusM": 55,
+            "ElevationM": 1397,
+            "BlendM": 40,
+            "Comment": "Overflow lot"
+          },
+          {
+            "Id": "eastBase",
+            "X": 1700,
+            "Y": 1400,
+            "RadiusM": 90,
+            "ElevationM": 1800,
+            "BlendM": 60,
+            "Comment": "East bowl landing: no lodge, no parking - the 3S trap"
+          }
+        ]
+      },
+      "BaseArea": {
+        "Id": "base",
+        "X": 1024,
+        "Y": 300
+      },
+      "BaseAreaRadiusM": 140,
+      "Landmarks": [
+        {
+          "Id": "lodge",
+          "X": 1024,
+          "Y": 300
+        },
+        {
+          "Id": "garage",
+          "X": 960,
+          "Y": 330
+        },
+        {
+          "Id": "fuelDepot",
+          "X": 930,
+          "Y": 345
+        },
+        {
+          "Id": "workshop",
+          "X": 990,
+          "Y": 350
+        },
+        {
+          "Id": "pumpHouse",
+          "X": 1080,
+          "Y": 340
+        },
+        {
+          "Id": "reservoir",
+          "X": 1120,
+          "Y": 330
+        },
+        {
+          "Id": "roadEntry",
+          "X": 1024,
+          "Y": 40
+        }
+      ],
+      "Comment": "Campaign start. Everything above the Meadow is unbuilt terrain.",
+      "Pistes": [
+        {
+          "Id": "meadow",
+          "Name": "Meadow",
+          "Difficulty": "Green",
+          "WidthM": 45,
+          "Points": [
+            {
+              "X": 1162,
+              "Y": 640
+            },
+            {
+              "X": 1140,
+              "Y": 560
+            },
+            {
+              "X": 1112,
+              "Y": 480
+            },
+            {
+              "X": 1096,
+              "Y": 430
+            }
+          ],
+          "TopNodeId": "lift:tbar:top",
+          "BottomNodeId": "lift:tbar:bottom",
+          "ExistsFromAct": 1,
+          "Comment": "Beginner slope under the T-bar. Act I's only run."
+        },
+        {
+          "Id": "village",
+          "Name": "Village Run",
+          "Difficulty": "Blue",
+          "WidthM": 40,
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1300
+            },
+            {
+              "X": 860,
+              "Y": 1150
+            },
+            {
+              "X": 940,
+              "Y": 1000
+            },
+            {
+              "X": 860,
+              "Y": 850
+            },
+            {
+              "X": 940,
+              "Y": 700
+            },
+            {
+              "X": 982,
+              "Y": 560
+            },
+            {
+              "X": 992,
+              "Y": 450
+            }
+          ],
+          "TopNodeId": "lift:quad:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 2,
+          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on."
+        },
+        {
+          "Id": "ridgebowl",
+          "Name": "Ridge Bowl",
+          "Difficulty": "Red",
+          "WidthM": 35,
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1300
+            },
+            {
+              "X": 1000,
+              "Y": 1180
+            },
+            {
+              "X": 1040,
+              "Y": 1050
+            },
+            {
+              "X": 1020,
+              "Y": 900
+            },
+            {
+              "X": 1000,
+              "Y": 750
+            },
+            {
+              "X": 1000,
+              "Y": 600
+            },
+            {
+              "X": 996,
+              "Y": 470
+            }
+          ],
+          "TopNodeId": "lift:quad:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 2,
+          "Comment": "Fall-line run from the quad top; steeper, ruts first."
+        },
+        {
+          "Id": "northface",
+          "Name": "North Face",
+          "Difficulty": "Black",
+          "WidthM": 30,
+          "Points": [
+            {
+              "X": 700,
+              "Y": 1620
+            },
+            {
+              "X": 690,
+              "Y": 1500
+            },
+            {
+              "X": 720,
+              "Y": 1380
+            },
+            {
+              "X": 760,
+              "Y": 1260
+            },
+            {
+              "X": 800,
+              "Y": 1120
+            },
+            {
+              "X": 840,
+              "Y": 980
+            },
+            {
+              "X": 880,
+              "Y": 860
+            },
+            {
+              "X": 920,
+              "Y": 720
+            },
+            {
+              "X": 960,
+              "Y": 580
+            },
+            {
+              "X": 986,
+              "Y": 462
+            }
+          ],
+          "TopNodeId": "lift:ridge:top",
+          "BottomNodeId": "lift:quad:bottom",
+          "ExistsFromAct": 0,
+          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold)."
+        },
+        {
+          "Id": "eastbowl",
+          "Name": "East Bowl",
+          "Difficulty": "Red",
+          "WidthM": 45,
+          "Points": [
+            {
+              "X": 1700,
+              "Y": 1400
+            },
+            {
+              "X": 1650,
+              "Y": 1250
+            },
+            {
+              "X": 1600,
+              "Y": 1100
+            },
+            {
+              "X": 1560,
+              "Y": 950
+            },
+            {
+              "X": 1520,
+              "Y": 800
+            },
+            {
+              "X": 1470,
+              "Y": 650
+            },
+            {
+              "X": 1420,
+              "Y": 520
+            },
+            {
+              "X": 1300,
+              "Y": 470
+            },
+            {
+              "X": 1190,
+              "Y": 450
+            }
+          ],
+          "TopNodeId": "lift:gorge:top",
+          "BottomNodeId": "lift:gorge:bottom",
+          "ExistsFromAct": 0,
+          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap."
+        }
+      ],
+      "Zones": [
+        {
+          "Id": "accessRoad",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1024,
+              "Y": 40
+            },
+            {
+              "X": 1024,
+              "Y": 120
+            },
+            {
+              "X": 1010,
+              "Y": 200
+            },
+            {
+              "X": 1000,
+              "Y": 260
+            }
+          ],
+          "WidthM": 8,
+          "RadiusM": 0,
+          "Comment": "Access road from the valley to the base area."
+        },
+        {
+          "Id": "lotA",
+          "Kind": "Lot",
+          "Points": [
+            {
+              "X": 900,
+              "Y": 200
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 68,
+          "Comment": "Main parking lot (about 300 cars)."
+        },
+        {
+          "Id": "lotB",
+          "Kind": "Lot",
+          "Points": [
+            {
+              "X": 1180,
+              "Y": 210
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 52,
+          "Comment": "Overflow lot."
+        },
+        {
+          "Id": "lotRoad",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1000,
+              "Y": 260
+            },
+            {
+              "X": 930,
+              "Y": 215
+            },
+            {
+              "X": 900,
+              "Y": 200
+            }
+          ],
+          "WidthM": 7,
+          "RadiusM": 0,
+          "Comment": "Lot A spur."
+        },
+        {
+          "Id": "lotRoadB",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 1000,
+              "Y": 260
+            },
+            {
+              "X": 1100,
+              "Y": 230
+            },
+            {
+              "X": 1180,
+              "Y": 210
+            }
+          ],
+          "WidthM": 7,
+          "RadiusM": 0,
+          "Comment": "Lot B spur."
+        },
+        {
+          "Id": "catTrackWest",
+          "Kind": "CatTrack",
+          "Points": [
+            {
+              "X": 960,
+              "Y": 330
+            },
+            {
+              "X": 900,
+              "Y": 420
+            },
+            {
+              "X": 840,
+              "Y": 540
+            },
+            {
+              "X": 800,
+              "Y": 700
+            },
+            {
+              "X": 810,
+              "Y": 860
+            },
+            {
+              "X": 850,
+              "Y": 1020
+            },
+            {
+              "X": 880,
+              "Y": 1160
+            },
+            {
+              "X": 920,
+              "Y": 1290
+            }
+          ],
+          "WidthM": 6,
+          "RadiusM": 0,
+          "Comment": "Machine access track from the garage to the quad top, west of Village Run."
+        },
+        {
+          "Id": "catTrackMeadow",
+          "Kind": "CatTrack",
+          "Points": [
+            {
+              "X": 1060,
+              "Y": 340
+            },
+            {
+              "X": 1110,
+              "Y": 420
+            },
+            {
+              "X": 1150,
+              "Y": 520
+            },
+            {
+              "X": 1168,
+              "Y": 630
+            }
+          ],
+          "WidthM": 5,
+          "RadiusM": 0,
+          "Comment": "Track to the T-bar top."
+        },
+        {
+          "Id": "quadBottomRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 990,
+              "Y": 435
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 22,
+          "Comment": "Quad loading ramp: drifts in; blow it out before opening."
+        },
+        {
+          "Id": "quadTopRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 930,
+              "Y": 1305
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 20,
+          "Comment": "Quad unloading ramp."
+        },
+        {
+          "Id": "tbarBottomRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 1122,
+              "Y": 440
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 14,
+          "Comment": "T-bar loading area."
+        },
+        {
+          "Id": "tbarTopRamp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 1160,
+              "Y": 642
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 12,
+          "Comment": "T-bar unloading area."
+        }
+      ],
+      "InitialSnow": {
+        "PackedMm": 420,
+        "PackedDensity": 390,
+        "LooseMm": 80,
+        "OffPisteLooseMm": 220,
+        "OffPistePackedMm": 520,
+        "OffPisteDensity": 230,
+        "Roughness": 0.4,
+        "TempC": -6,
+        "Comment": "Mid-December base after a ten-day-old storm: an ungroomed 42 cm base with 8 cm of loose on top."
+      },
+      "SimpleWeather": {
+        "DayHighC": -2,
+        "NightLowC": -11,
+        "HumidityPct": 72,
+        "WindKmh": 12,
+        "WindDirDeg": 290,
+        "Script": [
+          {
+            "Day": 1,
+            "StartHour": 22,
+            "Hours": 6,
+            "SnowfallCmPerHour": 2.5,
+            "TempC": -7,
+            "WindKmh": 25,
+            "Comment": "First storm: 15 cm overnight"
+          },
+          {
+            "Day": 4,
+            "StartHour": 2,
+            "Hours": 8,
+            "SnowfallCmPerHour": 3.0,
+            "TempC": -5,
+            "WindKmh": 35,
+            "Comment": "Big dump: 24 cm, windy"
+          },
+          {
+            "Day": 8,
+            "StartHour": 18,
+            "Hours": 4,
+            "SnowfallCmPerHour": 1.5,
+            "TempC": -4,
+            "WindKmh": 15,
+            "Comment": ""
+          }
+        ],
+        "Comment": "Diurnal cycle plus scripted storms; replaced by the climate model in M5."
+      }
     },
     {
       "Id": "test_small",
@@ -83,21 +1192,178 @@
         "RuggednessWithElevation": 0.5,
         "SeedOffset": 7,
         "NoBuildSlopeDeg": 42,
-        "Gorge": { "Enabled": false },
+        "Gorge": {
+          "Enabled": false
+        },
         "FlatAreas": []
       },
-      "BaseArea": { "Id": "base", "X": 256, "Y": 60 },
+      "BaseArea": {
+        "Id": "base",
+        "X": 256,
+        "Y": 60
+      },
       "BaseAreaRadiusM": 50,
       "Landmarks": [
-        { "Id": "lodge", "X": 256, "Y": 60 },
-        { "Id": "garage", "X": 230, "Y": 70 },
-        { "Id": "fuelDepot", "X": 220, "Y": 80 },
-        { "Id": "workshop", "X": 240, "Y": 85 },
-        { "Id": "pumpHouse", "X": 280, "Y": 75 },
-        { "Id": "reservoir", "X": 300, "Y": 70 },
-        { "Id": "roadEntry", "X": 256, "Y": 10 }
+        {
+          "Id": "lodge",
+          "X": 256,
+          "Y": 60
+        },
+        {
+          "Id": "garage",
+          "X": 230,
+          "Y": 70
+        },
+        {
+          "Id": "fuelDepot",
+          "X": 220,
+          "Y": 80
+        },
+        {
+          "Id": "workshop",
+          "X": 240,
+          "Y": 85
+        },
+        {
+          "Id": "pumpHouse",
+          "X": 280,
+          "Y": 75
+        },
+        {
+          "Id": "reservoir",
+          "X": 300,
+          "Y": 70
+        },
+        {
+          "Id": "roadEntry",
+          "X": 256,
+          "Y": 10
+        }
       ],
-      "Comment": "Unit-test terrain."
+      "Comment": "Unit-test terrain.",
+      "Pistes": [
+        {
+          "Id": "t1",
+          "Name": "Test Run",
+          "Difficulty": "Blue",
+          "WidthM": 30,
+          "Points": [
+            {
+              "X": 256,
+              "Y": 400
+            },
+            {
+              "X": 250,
+              "Y": 300
+            },
+            {
+              "X": 256,
+              "Y": 200
+            },
+            {
+              "X": 256,
+              "Y": 110
+            }
+          ],
+          "TopNodeId": "lift:t:top",
+          "BottomNodeId": "lift:t:bottom",
+          "ExistsFromAct": 1,
+          "Comment": "Straight test run 290 m long."
+        },
+        {
+          "Id": "t2",
+          "Name": "Test Run 2",
+          "Difficulty": "Red",
+          "WidthM": 24,
+          "Points": [
+            {
+              "X": 300,
+              "Y": 380
+            },
+            {
+              "X": 310,
+              "Y": 280
+            },
+            {
+              "X": 300,
+              "Y": 180
+            },
+            {
+              "X": 280,
+              "Y": 115
+            }
+          ],
+          "TopNodeId": "lift:t:top",
+          "BottomNodeId": "lift:t:bottom",
+          "ExistsFromAct": 1,
+          "Comment": "Second test run."
+        }
+      ],
+      "Zones": [
+        {
+          "Id": "road",
+          "Kind": "Road",
+          "Points": [
+            {
+              "X": 256,
+              "Y": 10
+            },
+            {
+              "X": 256,
+              "Y": 60
+            }
+          ],
+          "WidthM": 6,
+          "RadiusM": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "lot",
+          "Kind": "Lot",
+          "Points": [
+            {
+              "X": 210,
+              "Y": 40
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 25,
+          "Comment": ""
+        },
+        {
+          "Id": "ramp",
+          "Kind": "LiftRamp",
+          "Points": [
+            {
+              "X": 256,
+              "Y": 105
+            }
+          ],
+          "WidthM": 0,
+          "RadiusM": 12,
+          "Comment": ""
+        }
+      ],
+      "InitialSnow": {
+        "PackedMm": 400,
+        "PackedDensity": 380,
+        "LooseMm": 60,
+        "OffPisteLooseMm": 200,
+        "OffPistePackedMm": 500,
+        "OffPisteDensity": 220,
+        "Roughness": 0.35,
+        "TempC": -6,
+        "Comment": "test"
+      },
+      "SimpleWeather": {
+        "DayHighC": -3,
+        "NightLowC": -12,
+        "HumidityPct": 70,
+        "WindKmh": 10,
+        "WindDirDeg": 270,
+        "Script": [],
+        "Comment": "No storms: tests add snow explicitly."
+      }
     }
   ]
 }
