@@ -19,6 +19,8 @@ namespace AlpineSim.Core.Sim
         /// <summary>Upper bound on ticks per Advance call so slow frames cannot spiral. Compression then slips, deterministically.</summary>
         public int MaxTicksPerAdvance { get; set; } = 400;
         public long TotalTicksStepped { get; private set; }
+        /// <summary>Fraction of the next tick already elapsed in real time (0..1), for view interpolation.</summary>
+        public float InterpolationAlpha => (float)System.Math.Max(0.0, System.Math.Min(1.0, _accumulator * SimTime.TicksPerSecond));
 
         public SimulationClock(Simulation sim) { _sim = sim ?? throw new ArgumentNullException(nameof(sim)); }
 

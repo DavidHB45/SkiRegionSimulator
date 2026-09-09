@@ -71,3 +71,14 @@ namespace AlpineSim.Core.Tasks
     public struct TaskBlockedEvent { public int TaskId; public string Reason; }
     public struct TaskCancelledEvent { public int TaskId; }
 }
+
+namespace AlpineSim.Core.Tasks
+{
+    /// <summary>Eligibility of one machine for a task, for the fleet and task screens.</summary>
+    public struct TaskCandidate
+    {
+        public int VehicleId;
+        public bool Eligible;
+        public string Reason;
+    }
+}

@@ -436,5 +436,527 @@
       "unit": "mm",
       "comment": "Depth a road plow removes per pass (to within a residual)."
     }
+  },
+  "vehicles": {
+    "gravity": {
+      "value": 9.81,
+      "min": 9.81,
+      "max": 9.81,
+      "unit": "m/s2",
+      "comment": "Standard gravity."
+    },
+    "shearStrengthByDensity": {
+      "xs": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700
+      ],
+      "ys": [
+        3,
+        6,
+        10,
+        18,
+        30,
+        45,
+        60
+      ],
+      "comment": "Snow shear strength (kPa) by column density; Shapiro et al. snow mechanics ranges. Ground pressure above this means slip and sinkage."
+    },
+    "tractionByDensity": {
+      "xs": [
+        100,
+        250,
+        400,
+        520,
+        600,
+        650,
+        700
+      ],
+      "ys": [
+        0.32,
+        0.45,
+        0.55,
+        0.62,
+        0.55,
+        0.38,
+        0.25
+      ],
+      "comment": "Track/ground friction coefficient by snow density: soft snow is weak, groomed pack grips best, ice is slick."
+    },
+    "tireTractionFactor": {
+      "value": 0.7,
+      "min": 0.5,
+      "max": 0.9,
+      "unit": "x",
+      "comment": "Wheeled machines get this fraction of tracked traction on snow (chains restore part of it)."
+    },
+    "chainsTractionBonus": {
+      "value": 0.2,
+      "min": 0.1,
+      "max": 0.35,
+      "unit": "x",
+      "comment": "Added to tireTractionFactor when the tyre spec has chains."
+    },
+    "sinkageFactor": {
+      "value": 0.65,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Track sinkage as a fraction of loose depth scaled by pressure/shear ratio."
+    },
+    "sinkageMaxM": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 0.8,
+      "unit": "m",
+      "comment": "Cap on sinkage."
+    },
+    "rollingResistanceBase": {
+      "value": 0.05,
+      "min": 0.02,
+      "max": 0.1,
+      "unit": "coeff",
+      "comment": "Rolling resistance of tracks on groomed snow."
+    },
+    "rollingResistancePerSinkageM": {
+      "value": 0.9,
+      "min": 0.3,
+      "max": 2.0,
+      "unit": "coeff/m",
+      "comment": "Extra rolling resistance per metre of sinkage (deep fresh snow is hard work)."
+    },
+    "driveEfficiency": {
+      "value": 0.82,
+      "min": 0.7,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Hydrostatic/powershift drivetrain efficiency engine to track."
+    },
+    "brakeDecelMs2": {
+      "value": 4.0,
+      "min": 2.0,
+      "max": 6.0,
+      "unit": "m/s2",
+      "comment": "Service brake deceleration."
+    },
+    "coastDecelMs2": {
+      "value": 0.8,
+      "min": 0.3,
+      "max": 1.5,
+      "unit": "m/s2",
+      "comment": "Deceleration with throttle released (hydrostatic braking)."
+    },
+    "spinInPlaceYawRadS": {
+      "value": 0.55,
+      "min": 0.3,
+      "max": 0.9,
+      "unit": "rad/s",
+      "comment": "Skid-steer counter-rotation yaw rate at standstill."
+    },
+    "maxYawRadS": {
+      "value": 1.1,
+      "min": 0.6,
+      "max": 1.6,
+      "unit": "rad/s",
+      "comment": "Yaw rate cap for any chassis."
+    },
+    "sideSlipDamping": {
+      "value": 2.5,
+      "min": 1.0,
+      "max": 5.0,
+      "unit": "1/s",
+      "comment": "Damping of lateral sliding on side slopes."
+    },
+    "walkBehindSpeedMs": {
+      "value": 1.2,
+      "min": 0.8,
+      "max": 1.6,
+      "unit": "m/s",
+      "comment": "Walk-behind blower pace."
+    },
+    "walkBehindYawRadS": {
+      "value": 1.0,
+      "min": 0.5,
+      "max": 1.5,
+      "unit": "rad/s",
+      "comment": "Walk-behind turn rate."
+    },
+    "articulationMaxDeg": {
+      "value": 40,
+      "min": 30,
+      "max": 45,
+      "unit": "deg",
+      "comment": "Centre-pivot steering limit for artic haulers and loaders."
+    },
+    "wheelbaseFracOfBody": {
+      "value": 0.6,
+      "min": 0.5,
+      "max": 0.75,
+      "unit": "frac",
+      "comment": "Wheelbase as a fraction of body length (Ackermann yaw)."
+    },
+    "bladeFrictionCoeff": {
+      "value": 0.45,
+      "min": 0.3,
+      "max": 0.7,
+      "unit": "coeff",
+      "comment": "Resistance coefficient of snow sliding along a blade."
+    },
+    "bladeSpillFracPerM": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.15,
+      "unit": "frac/m",
+      "comment": "Fraction of the blade load shed to the windrows per metre travelled."
+    },
+    "bladeLoadDensity": {
+      "value": 380,
+      "min": 300,
+      "max": 450,
+      "unit": "kg/m3",
+      "comment": "Density of snow rolling in front of a blade."
+    },
+    "tillerDragNPerM": {
+      "value": 2200,
+      "min": 1000,
+      "max": 4000,
+      "unit": "N/m",
+      "comment": "Tiller drag per metre of working width at full depth."
+    },
+    "tillerHydraulicLoadKw": {
+      "value": 45,
+      "min": 20,
+      "max": 90,
+      "unit": "kW",
+      "comment": "Hydraulic power a full-width tiller draws at rated speed (adds engine load)."
+    },
+    "bladeLiftRatePerS": {
+      "value": 0.9,
+      "min": 0.5,
+      "max": 1.5,
+      "unit": "1/s",
+      "comment": "Blade lift travel per second at full hydraulic warm-up."
+    },
+    "bladeAngleRateRadS": {
+      "value": 0.5,
+      "min": 0.3,
+      "max": 0.8,
+      "unit": "rad/s",
+      "comment": "12-way blade rotation rate."
+    },
+    "bladeMaxAngleRad": {
+      "value": 0.5,
+      "min": 0.3,
+      "max": 0.7,
+      "unit": "rad",
+      "comment": "Maximum blade angle either way."
+    },
+    "blowerIntakeDepthMm": {
+      "value": 600,
+      "min": 300,
+      "max": 1200,
+      "unit": "mm",
+      "comment": "Depth a rotary blower head clears in one pass."
+    },
+    "bucketScoopSeconds": {
+      "value": 4,
+      "min": 2,
+      "max": 8,
+      "unit": "s",
+      "comment": "Seconds a bucket takes to fill when scooping."
+    },
+    "bucketDumpSeconds": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "s",
+      "comment": "Seconds to dump a bucket or a truck bed."
+    },
+    "truckLoadTransferRadiusM": {
+      "value": 6,
+      "min": 3,
+      "max": 10,
+      "unit": "m",
+      "comment": "A loader dumping within this distance of a haul truck's bed loads the truck instead of the ground."
+    },
+    "spreadLaneWidthM": {
+      "value": 3.5,
+      "min": 3.0,
+      "max": 4.0,
+      "unit": "m",
+      "comment": "Lane width used to convert kg per lane-km to kg/m2."
+    },
+    "wearHoursToFailureAtFullLoad": {
+      "value": 6000,
+      "min": 3000,
+      "max": 10000,
+      "unit": "h",
+      "comment": "Hours of full-load work that take a subsystem from new to failure at wear rate 1.0 (cat rebuild interval 6,000-8,000 h)."
+    },
+    "wearIdleFraction": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Wear at idle as a fraction of full-load wear."
+    },
+    "trackWearPerSlipHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.2,
+      "unit": "wear/h",
+      "comment": "Extra track wear per hour of full slip."
+    },
+    "attachmentWearPerWorkHour": {
+      "value": 0.00035,
+      "min": 0.0001,
+      "max": 0.001,
+      "unit": "wear/h",
+      "comment": "Attachment wear per hour of work (blade edges, tiller teeth)."
+    },
+    "failureRateByWear": {
+      "xs": [
+        0,
+        0.3,
+        0.5,
+        0.7,
+        0.85,
+        1.0
+      ],
+      "ys": [
+        0.15,
+        0.5,
+        1.0,
+        2.5,
+        6,
+        20
+      ],
+      "comment": "Multiplier on 1/MTBF failure rate by subsystem wear."
+    },
+    "repairCostFracByWear": {
+      "xs": [
+        0,
+        0.5,
+        1.0
+      ],
+      "ys": [
+        0.02,
+        0.05,
+        0.12
+      ],
+      "comment": "Repair cost as a fraction of purchase price by wear at failure."
+    },
+    "repairHoursBase": {
+      "value": 6,
+      "min": 2,
+      "max": 24,
+      "unit": "h",
+      "comment": "Base workshop hours for an unscheduled repair."
+    },
+    "enginePowerLossAtFullWear": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Power lost at wear 1.0 (linear)."
+    },
+    "burnIncreaseAtFullWear": {
+      "value": 0.3,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Fuel burn increase at wear 1.0."
+    },
+    "hydraulicResponseLossAtFullWear": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Implement speed lost at hydraulic wear 1.0."
+    },
+    "trackGripLossAtFullWear": {
+      "value": 0.4,
+      "min": 0.1,
+      "max": 0.7,
+      "unit": "frac",
+      "comment": "Traction lost at track/tyre wear 1.0."
+    },
+    "coldStartBelowC": {
+      "value": -15,
+      "min": -25,
+      "max": -5,
+      "unit": "C",
+      "comment": "Below this ambient temperature unsheltered machines cold-start."
+    },
+    "coldStartFailProbByTier": {
+      "xs": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "ys": [
+        0.5,
+        0.25,
+        0.08,
+        0.03,
+        0.01
+      ],
+      "comment": "Probability a cold start fails outright, by tier."
+    },
+    "coldStartDelayS": {
+      "value": 25,
+      "min": 5,
+      "max": 60,
+      "unit": "s",
+      "comment": "Cranking time added on a cold start."
+    },
+    "warmupMinutes": {
+      "value": 8,
+      "min": 3,
+      "max": 20,
+      "unit": "min",
+      "comment": "Minutes until hydraulics reach full performance from cold."
+    },
+    "unshelteredWarmupMultiplier": {
+      "value": 1.6,
+      "min": 1.0,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Warm-up time multiplier for machines left outside."
+    },
+    "shelteredTempBonusC": {
+      "value": 12,
+      "min": 5,
+      "max": 20,
+      "unit": "C",
+      "comment": "How much warmer a garaged machine starts than ambient."
+    },
+    "idleRpm": {
+      "value": 800,
+      "min": 600,
+      "max": 1000,
+      "unit": "rpm",
+      "comment": "Idle."
+    },
+    "ratedRpm": {
+      "value": 2100,
+      "min": 1800,
+      "max": 2400,
+      "unit": "rpm",
+      "comment": "Rated engine speed."
+    },
+    "fuelReserveWarningFrac": {
+      "value": 0.12,
+      "min": 0.05,
+      "max": 0.25,
+      "unit": "frac",
+      "comment": "Low-fuel warning and AI return-to-depot threshold."
+    },
+    "playerReachM": {
+      "value": 8,
+      "min": 3,
+      "max": 15,
+      "unit": "m",
+      "comment": "Distance within which Enter takes the nearest machine."
+    },
+    "aiWaypointReachM": {
+      "value": 3.0,
+      "min": 1.5,
+      "max": 6.0,
+      "unit": "m",
+      "comment": "Waypoint acceptance radius."
+    },
+    "aiLaneOverlapFrac": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Tiller lane overlap fraction when grooming."
+    },
+    "aiStuckSeconds": {
+      "value": 5,
+      "min": 2,
+      "max": 12,
+      "unit": "s",
+      "comment": "Seconds at near-zero speed under throttle before reversing."
+    },
+    "aiReverseSeconds": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "s",
+      "comment": "Reverse time when stuck."
+    },
+    "aiLookaheadM": {
+      "value": 6,
+      "min": 3,
+      "max": 12,
+      "unit": "m",
+      "comment": "Pure-pursuit lookahead."
+    },
+    "aiSlopeMarginDeg": {
+      "value": 3,
+      "min": 0,
+      "max": 8,
+      "unit": "deg",
+      "comment": "Operators refuse slopes steeper than their rating minus this margin."
+    },
+    "routeSnapRadiusM": {
+      "value": 60,
+      "min": 20,
+      "max": 150,
+      "unit": "m",
+      "comment": "Max distance to snap a route endpoint to the road/piste graph."
+    },
+    "routeStraightMaxM": {
+      "value": 80,
+      "min": 20,
+      "max": 200,
+      "unit": "m",
+      "comment": "Below this distance vehicles drive straight instead of routing."
+    }
+  },
+  "fuel": {
+    "dieselPricePerL": {
+      "value": 1.25,
+      "min": 1.0,
+      "max": 1.6,
+      "unit": "USD/L",
+      "comment": "Diesel delivered in bulk, brief 1.00-1.60 with seasonal volatility (fleet system varies it)."
+    },
+    "gasolinePricePerL": {
+      "value": 1.45,
+      "min": 1.1,
+      "max": 1.9,
+      "unit": "USD/L",
+      "comment": "Gasoline for snowmobiles and walk-behind machines."
+    },
+    "electricityPricePerKwh": {
+      "value": 0.14,
+      "min": 0.08,
+      "max": 0.3,
+      "unit": "USD/kWh",
+      "comment": "Resort electricity tariff."
+    },
+    "depotRefuelLPerMin": {
+      "value": 120,
+      "min": 60,
+      "max": 250,
+      "unit": "L/min",
+      "comment": "Pump rate at the depot."
+    },
+    "serviceTruckRefuelLPerMin": {
+      "value": 60,
+      "min": 30,
+      "max": 120,
+      "unit": "L/min",
+      "comment": "Field refuel rate from the service truck."
+    }
   }
 }
