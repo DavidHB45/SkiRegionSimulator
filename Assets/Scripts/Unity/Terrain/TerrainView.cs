@@ -71,7 +71,22 @@ namespace AlpineSim.Unity.Terrain
         {
             _material = m;
             _material.SetFloat("_MapSize", _boot.Sim.Terrain.SizeM);
-            foreach (var c in _chunks) c.Renderer.sharedMaterial = m;
+            ApplyMaterials();
+        }
+
+        private Material _overlay;
+
+        /// <summary>Draw a second, transparent material over the terrain (debug overlay); null removes it.</summary>
+        public void SetOverlay(Material overlay)
+        {
+            _overlay = overlay;
+            ApplyMaterials();
+        }
+
+        private void ApplyMaterials()
+        {
+            var mats = _overlay != null ? new[] { _material, _overlay } : new[] { _material };
+            foreach (var c in _chunks) c.Renderer.sharedMaterials = mats;
         }
 
         private void SetLod(Chunk c, int lod)

@@ -1,0 +1,20 @@
+// Snow map upload (M1): writes converted cell records straight into the snow and surface maps.
+// Each record is one texel: _Coords packs x | (y << 16); _Snow and _Surf carry the texel values.
+#pragma kernel CSMain
+
+StructuredBuffer<uint> _Coords;
+StructuredBuffer<float4> _Snow;
+StructuredBuffer<float4> _Surf;
+RWTexture2D<float4> _SnowMap;
+RWTexture2D<float4> _SurfaceMap;
+uint _Count;
+
+[numthreads(64, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _Count) return;
+    uint packed = _Coords[id.x];
+    uint2 xy = uint2(packed & 0xFFFFu, packed >> 16);
+    _SnowMap[xy] = _Snow[id.x];
+    _SurfaceMap[xy] = _Surf[id.x];
+}
