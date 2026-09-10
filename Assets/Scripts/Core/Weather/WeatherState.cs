@@ -54,23 +54,38 @@ namespace AlpineSim.Core.Weather
 
     public static class WetBulb
     {
+        /// <summary>Psychrometric constant for a ventilated wet bulb (per degC, times pressure in hPa). WMO Guide No. 8, 1 hPa/degC basis.</summary>
+        private const double PsychrometricA = 0.000662;
+
+        /// <summary>Saturation vapour pressure over water in hPa (Magnus form, WMO 2008 coefficients).</summary>
+        public static float SaturationVapourPressureHpa(float tempC)
+            => (float)(6.112 * System.Math.Exp(17.62 * tempC / (243.12 + tempC)));
+
+        /// <summary>ICAO standard-atmosphere pressure at an elevation (hPa): 1013.25 at sea level, about 856 at 1400 m.</summary>
+        public static float PressureAtElevationHpa(float elevationM)
+            => (float)(1013.25 * System.Math.Pow(1.0 - 2.25577e-5 * elevationM, 5.25588));
+
         /// <summary>
-        /// Wet-bulb temperature (°C) from dry-bulb temperature and relative humidity, Stull (2011).
-        /// Valid roughly -20..50 °C, 5..99 % RH; clamped inputs. Snowmaking gates on this value.
+        /// Wet-bulb temperature by solving the psychrometric equation es(Tw) - A * P * (T - Tw) = e for Tw
+        /// (bisection, monotonic). Valid over the full alpine range, unlike the Stull regression which
+        /// drifts above the dry-bulb below about -20 C.
         /// </summary>
-        public static float FromTempAndHumidity(float tempC, float rhPct)
+        public static float FromTempAndHumidity(float tempC, float rhPct, float pressureHpa = 1013.25f)
         {
-            float t = System.Math.Max(-40f, System.Math.Min(50f, tempC));
+            float t = System.Math.Max(-45f, System.Math.Min(50f, tempC));
             float rh = System.Math.Max(1f, System.Math.Min(100f, rhPct));
-            double tw = t * System.Math.Atan(0.151977 * System.Math.Sqrt(rh + 8.313659))
-                        + System.Math.Atan(t + rh) - System.Math.Atan(rh - 1.676331)
-                        + 0.00391838 * System.Math.Pow(rh, 1.5) * System.Math.Atan(0.023101 * rh)
-                        - 4.686035;
-            return (float)tw;
+            double e = rh / 100.0 * SaturationVapourPressureHpa(t);
+            double lo = t - 45.0, hi = t;
+            for (int i = 0; i < 40; i++)
+            {
+                double mid = (lo + hi) * 0.5;
+                double f = SaturationVapourPressureHpa((float)mid) - PsychrometricA * pressureHpa * (t - mid) - e;
+                if (f > 0.0) hi = mid; else lo = mid;
+            }
+            return (float)((lo + hi) * 0.5);
         }
 
-        /// <summary>Air temperature adjusted for elevation with a lapse rate (°C per 100 m).</summary>
-        public static float TempAtElevation(float baseTempC, float baseElevationM, float elevationM, float lapsePer100m)
+    public static float TempAtElevation(float baseTempC, float baseElevationM, float elevationM, float lapsePer100m)
             => baseTempC - (elevationM - baseElevationM) * 0.01f * lapsePer100m;
     }
 }

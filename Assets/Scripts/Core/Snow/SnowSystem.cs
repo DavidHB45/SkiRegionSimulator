@@ -243,7 +243,7 @@ namespace AlpineSim.Core.Snow
             }
             float solar = MathF.Max(0f, MathF.Sin((h - 6f) / 12f * MathUtil.Pi));
             s.SolarFrac = solar * (1f - 0.8f * s.CloudFrac);
-            s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct);
+            s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct, WetBulb.PressureAtElevationHpa(ctx.Terrain.SampleHeight(ctx.Sim.Scenario.BaseArea.Pos)));
         }
     }
 }

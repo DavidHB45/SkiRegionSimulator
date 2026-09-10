@@ -156,8 +156,9 @@ namespace AlpineSim.Core.Snowmaking
         public float WetBulbAt(SimContext ctx, Vec2 pos)
         {
             var w = ctx.World.Weather.Current;
-            float t = WetBulb.TempAtElevation(w.TempC, _baseElevation, ctx.Terrain.SampleHeight(pos), ctx.World.Weather.LapseRateCPer100m);
-            return WetBulb.FromTempAndHumidity(t, w.HumidityPct);
+            float elev = ctx.Terrain.SampleHeight(pos);
+            float t = WetBulb.TempAtElevation(w.TempC, _baseElevation, elev, ctx.World.Weather.LapseRateCPer100m);
+            return WetBulb.FromTempAndHumidity(t, w.HumidityPct, WetBulb.PressureAtElevationHpa(elev));
         }
 
         public float PotentialOutputM3PerHour(SimContext ctx, SnowGunState gun)

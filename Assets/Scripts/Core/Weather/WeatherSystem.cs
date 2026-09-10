@@ -19,12 +19,14 @@ namespace AlpineSim.Core.Weather
 
         public const int ForecastHours = 120;
         private float _baseElevation;
+        private float _basePressureHpa = 1013.25f;
 
         public void Initialize(SimContext ctx, bool newGame)
         {
             var w = ctx.World.Weather;
             var climate = ctx.Data.Climate;
             _baseElevation = ctx.Terrain.SampleHeight(ctx.Sim.Scenario.BaseArea.Pos);
+            _basePressureHpa = WetBulb.PressureAtElevationHpa(_baseElevation);
             w.LapseRateCPer100m = climate.LapseRateCPer100m > 0f ? climate.LapseRateCPer100m : 0.65f;
             if (newGame || w.Timeline.Count == 0)
             {
@@ -133,7 +135,7 @@ namespace AlpineSim.Core.Weather
                 s.Lightning = precipHour && rng.Chance(lightningP);
                 float solar = MathF.Max(0f, MathF.Sin((h - 6f) / 12f * MathUtil.Pi));
                 s.SolarFrac = solar * (1f - 0.85f * s.CloudFrac);
-                s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct);
+                s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct, _basePressureHpa);
                 w.Timeline.Add(s);
             }
             w.LastGeneratedDay = day;
@@ -156,7 +158,7 @@ namespace AlpineSim.Core.Weather
             var s = w.Current.Clone();
             s.TempC = WetBulb.TempAtElevation(w.Current.TempC, _baseElevation, elevationM, w.LapseRateCPer100m);
             s.WindKmh = w.Current.WindKmh * (1f + ctx.Tuning.F("weather.windExposurePer100m") * MathF.Max(0f, elevationM - _baseElevation) / 100f);
-            s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct);
+            s.WetBulbC = WetBulb.FromTempAndHumidity(s.TempC, s.HumidityPct, WetBulb.PressureAtElevationHpa(elevationM));
             return s;
         }
 
@@ -186,7 +188,7 @@ namespace AlpineSim.Core.Weather
                 f.PrecipMmPerHour *= pScale;
                 f.SnowfallCmPerHour *= pScale;
                 if (days > 2f && rng.Chance(MathUtil.Clamp01(c.ForecastPrecipErrorPerDay * (days - 2f)))) { f.SnowfallCmPerHour = f.SnowfallCmPerHour > 0 ? 0f : a.SnowfallCmPerHour * 0.5f; }
-                f.WetBulbC = WetBulb.FromTempAndHumidity(f.TempC, f.HumidityPct);
+                f.WetBulbC = WetBulb.FromTempAndHumidity(f.TempC, f.HumidityPct, _basePressureHpa);
                 w.Forecast.Add(f);
             }
             ctx.Events.Publish(new ForecastIssuedEvent { AbsoluteHour = now });
