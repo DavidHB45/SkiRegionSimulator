@@ -208,7 +208,7 @@ namespace AlpineSim.Core.Vehicles
                 }
                 m.LoadKg += gained;
                 if (m.LoadKg > 0f) m.LoadDensity = loadDensity;
-                v.PlowedM2Today += _cells.Count * cellArea;
+                v.PlowedM2Today += width * moved;
                 // windrow spill: a fraction per metre plus everything over capacity
                 float capacity = MathF.Max(200f, att.Effects.PushCapacityKg);
                 float spill = m.LoadKg * MathUtil.Clamp01(t.F("vehicles.bladeSpillFracPerM") * moved);
@@ -286,7 +286,7 @@ namespace AlpineSim.Core.Vehicles
                 float depthFactor = loose > depthRating ? MathUtil.Clamp01(depthRating / loose) : 1f;
                 SnowOps.Till(grid, id, target, eff * depthFactor * speedPenalty, comp, finish * speedPenalty * depthFactor, dir, tick, t);
             }
-            float area = _cells.Count * grid.CellAreaM2;
+            float area = width * moved; // geometric swath, independent of cell quantisation and tick rate
             v.TilledM2Today += area;
             v.TilledM2Total += area;
         }

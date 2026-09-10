@@ -602,15 +602,15 @@
         700
       ],
       "ys": [
-        0.32,
-        0.45,
+        0.35,
         0.55,
-        0.62,
-        0.55,
-        0.38,
-        0.25
+        0.72,
+        0.85,
+        0.75,
+        0.5,
+        0.3
       ],
-      "comment": "Track/ground friction coefficient by snow density: soft snow is weak, groomed pack grips best, ice is slick."
+      "comment": "Track/tyre traction coefficient by surface density. Grouser tracks on packed snow (450-550 kg/m3) reach 0.8-0.9, enough for a 30-degree unassisted climb with a tiller down; powder and ice both fall away."
     },
     "tireTractionFactor": {
       "value": 0.7,
@@ -640,6 +640,13 @@
       "unit": "m",
       "comment": "Cap on sinkage."
     },
+    "sinkageTractionLoss": {
+      "value": 0.45,
+      "min": 0,
+      "max": 0.9,
+      "unit": "fraction",
+      "comment": "Fraction of traction lost when the tracks sink to sinkageMaxM in loose snow (grousers churn instead of gripping). Packed snow has no sinkage and keeps the full density coefficient."
+    },
     "rollingResistanceBase": {
       "value": 0.05,
       "min": 0.02,
@@ -660,6 +667,13 @@
       "max": 0.9,
       "unit": "frac",
       "comment": "Hydrostatic/powershift drivetrain efficiency engine to track."
+    },
+    "maxTractiveEffortG": {
+      "value": 0.75,
+      "min": 0.3,
+      "max": 1.2,
+      "unit": "g",
+      "comment": "Drive force cap as a fraction of weight before the traction limit applies. Hydrostatic snowcats deliver about 0.7-0.8 g of tractive effort at stall; the density traction curve then decides how much of it the snow can take."
     },
     "brakeDecelMs2": {
       "value": 4.0,

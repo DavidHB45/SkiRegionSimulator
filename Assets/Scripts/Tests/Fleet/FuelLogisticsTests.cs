@@ -32,7 +32,8 @@ namespace AlpineSim.Tests.Fleet
             cat = Find(sim, "groomer_mid");
             var op = OperatorWith(sim, OperatorLicense.Groomer);
             Assert.IsTrue(fs.AssignOperator(ctx, op.Id, cat.Id, out string reason), reason);
-            cat.Fuel = 2.5f; // litres: enough to start and drive a few hundred metres
+            sim.World.Fleet.Fuel.DieselL = 0f; // the depot is dry, so the reserve run home cannot save it
+            cat.Fuel = 0.6f; // litres: enough to start and drive a couple of hundred metres
             for (int i = 0; i < 40 && !cat.EngineOn; i++) vs.StartEngine(ctx, cat.Id, out _);
             Assert.IsTrue(cat.EngineOn);
             vs.AssignGroom(ctx, cat.Id, "t1");

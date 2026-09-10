@@ -1,0 +1,7584 @@
+{
+  "Comment": "Machine classes: 58 records in 10 categories and 5 tiers. Every number is a real-world class figure (mass, power, burn, price band); names are original. Adding a machine is a record plus a mesh recipe (Visual); category-specific numbers live in Specs and Curves.",
+  "vehicles": [
+    {
+      "Id": "groomer_nordic",
+      "DisplayName": "Nordic Trail Cat",
+      "Category": "Groomer",
+      "Tier": 1,
+      "ChassisType": "Tracked",
+      "MassKg": 5200,
+      "EnginePowerKw": 105,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 320
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 495
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 582
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 542
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 478
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 349
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 180,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.7,
+        "Transit": 5.8,
+        "Working": 11.6,
+        "HighLoad": 14.7
+      },
+      "TrackWidthM": 0.9,
+      "TireSpec": null,
+      "GroundPressureKpa": 3.8,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 24,
+      "TopSpeedKmh": 22,
+      "WorkingSpeedKmh": {
+        "Min": 8,
+        "Max": 14
+      },
+      "TurningRadiusM": 4.5,
+      "HydraulicFlowLpm": 120,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1300,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_std_3_5"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 2200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "track_setter_nordic"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 90000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 1890,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 16.1,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 1080,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 5.0,
+        "BodyW": 2.6,
+        "BodyH": 1.3,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.91
+      },
+      "Curves": {},
+      "Comment": "Small tracked groomer for cross-country trails: narrow gauge, light footprint, track-setter on the rear. 105 kW class."
+    },
+    {
+      "Id": "groomer_light",
+      "DisplayName": "Light Trail Groomer",
+      "Category": "Groomer",
+      "Tier": 1,
+      "ChassisType": "Tracked",
+      "MassKg": 7200,
+      "EnginePowerKw": 150,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 458
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 707
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 832
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 774
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 682
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 499
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 220,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.4,
+        "Transit": 8.2,
+        "Working": 16.5,
+        "HighLoad": 21.0
+      },
+      "TrackWidthM": 1.0,
+      "TireSpec": null,
+      "GroundPressureKpa": 4.4,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 24,
+      "TopSpeedKmh": 21,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 12
+      },
+      "TurningRadiusM": 4.5,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1300,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_std_3_5"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 2200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_4_3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 165000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 3465,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 27.3,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 1980,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 5.8,
+        "BodyW": 3.6,
+        "BodyH": 1.4,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.91
+      },
+      "Curves": {},
+      "Comment": "Entry-level 150 kW piste machine, 3.5 m blade and 4.0 m tiller class. Slow on steep faces; fine for village hills."
+    },
+    {
+      "Id": "groomer_mid",
+      "DisplayName": "Mid-Size Groomer",
+      "Category": "Groomer",
+      "Tier": 2,
+      "ChassisType": "Tracked",
+      "MassKg": 10500,
+      "EnginePowerKw": 260,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 793
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1226
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1442
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1341
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1183
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 865
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 300,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.2,
+        "Transit": 14.3,
+        "Working": 28.6,
+        "HighLoad": 36.4
+      },
+      "TrackWidthM": 1.2,
+      "TireSpec": null,
+      "GroundPressureKpa": 5.2,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 24,
+      "TopSpeedKmh": 22,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 13
+      },
+      "TurningRadiusM": 4.5,
+      "HydraulicFlowLpm": 210,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1300,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_4_3"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 2200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_4_3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 330000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 6930,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 52.6,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 3960,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 6.4,
+        "BodyW": 4.3,
+        "BodyH": 1.5,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.97
+      },
+      "Curves": {},
+      "Comment": "The workhorse of the fleet: 260 kW, 12-way 4.3 m blade, 4.3 m tiller, 5-6 kPa ground pressure. Grooms a 40 m run in four lanes."
+    },
+    {
+      "Id": "groomer_park",
+      "DisplayName": "Park Cat",
+      "Category": "Groomer",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 11200,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 320,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 1.2,
+      "TireSpec": null,
+      "GroundPressureKpa": 5.6,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 22,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 12
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 240,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "park_blade"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_park_4_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 395000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 8295,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 62.4,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 4740,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 6.4,
+        "BodyW": 4.3,
+        "BodyH": 1.5,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#8e44ad",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.03
+      },
+      "Curves": {},
+      "Comment": "Terrain-park shaper with a 12-way park blade and a pipe-capable tiller; extra hydraulic flow for fine blade work."
+    },
+    {
+      "Id": "groomer_heavy",
+      "DisplayName": "Heavy Groomer",
+      "Category": "Groomer",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 12500,
+      "EnginePowerKw": 390,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1190
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1839
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2164
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2012
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1774
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1298
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 380,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 6.2,
+        "Transit": 21.4,
+        "Working": 42.9,
+        "HighLoad": 54.6
+      },
+      "TrackWidthM": 1.3,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.0,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 23,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 14
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 250,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 480000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 10080,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 77.1,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 5760,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.0,
+        "BodyW": 4.6,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.03
+      },
+      "Curves": {},
+      "Comment": "390 kW class with the 6.0 m tiller: half the lanes of the mid-size cat on a wide run. Burns 40 L/h at work."
+    },
+    {
+      "Id": "groomer_mid_winch",
+      "DisplayName": "Mid-Size Winch Cat",
+      "Category": "Groomer",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 11400,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 320,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 1.2,
+      "TireSpec": null,
+      "GroundPressureKpa": 5.6,
+      "MaxGradeDeg": 45,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 22,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 12
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 240,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_4_3"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_4_3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        },
+        {
+          "Position": "Roof",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "winch_4_5t"
+        }
+      ],
+      "PurchasePrice": 445000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 9345,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 68.4,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 5340,
+      "OperatorLicense": "WinchCat",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 6.4,
+        "BodyW": 4.3,
+        "BodyH": 1.7,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.03
+      },
+      "Curves": {},
+      "Comment": "Mid-size chassis with a 4.5 t roof winch and 1,000 m rope: steep faces without spinning tracks. Needs a winch-cat licence."
+    },
+    {
+      "Id": "groomer_heavy_winch",
+      "DisplayName": "Heavy Winch Cat",
+      "Category": "Groomer",
+      "Tier": 4,
+      "ChassisType": "Tracked",
+      "MassKg": 13400,
+      "EnginePowerKw": 390,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1190
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1839
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2164
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2012
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1774
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1298
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 380,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 6.2,
+        "Transit": 21.4,
+        "Working": 42.9,
+        "HighLoad": 54.6
+      },
+      "TrackWidthM": 1.3,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.2,
+      "MaxGradeDeg": 45,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 23,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 13
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 260,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        },
+        {
+          "Position": "Roof",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "winch_4_5t"
+        }
+      ],
+      "PurchasePrice": 590000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 12390,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 90.3,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 7080,
+      "OperatorLicense": "WinchCat",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.0,
+        "BodyW": 4.6,
+        "BodyH": 1.8,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.09
+      },
+      "Curves": {},
+      "Comment": "Heavy chassis, 6.0 m tiller and a 4.5 t winch: the machine for black runs and the north face."
+    },
+    {
+      "Id": "groomer_flagship",
+      "DisplayName": "Flagship Groomer",
+      "Category": "Groomer",
+      "Tier": 4,
+      "ChassisType": "Tracked",
+      "MassKg": 14000,
+      "EnginePowerKw": 420,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1281
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1980
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2330
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2167
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1911
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1398
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 6.7,
+        "Transit": 23.1,
+        "Working": 46.2,
+        "HighLoad": 58.8
+      },
+      "TrackWidthM": 1.35,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.4,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 23,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 15
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 270,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 560000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 11760,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 88.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 6720,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.4,
+        "BodyW": 4.8,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#a93226",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.09
+      },
+      "Curves": {},
+      "Comment": "420 kW flagship with 6.0 m tiller and 5.0 m 12-way blade; highest work rate without a winch."
+    },
+    {
+      "Id": "groomer_hybrid",
+      "DisplayName": "Diesel-Electric Groomer",
+      "Category": "Groomer",
+      "Tier": 4,
+      "ChassisType": "Tracked",
+      "MassKg": 14200,
+      "EnginePowerKw": 400,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1220
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1886
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2219
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2064
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1820
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1331
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 380,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.0,
+        "Transit": 16.0,
+        "Working": 32.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 1.35,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.5,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 23,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 15
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 270,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 640000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 13440,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 96.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 7680,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.4,
+        "BodyW": 4.8,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#1e8449",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.09
+      },
+      "Curves": {},
+      "Comment": "Diesel-electric drive: the engine runs at its sweet spot and burns about 20 % less; electric track motors give fine slow-speed control."
+    },
+    {
+      "Id": "groomer_flagship_winch",
+      "DisplayName": "Flagship Winch Cat",
+      "Category": "Groomer",
+      "Tier": 5,
+      "ChassisType": "Tracked",
+      "MassKg": 14800,
+      "EnginePowerKw": 420,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1281
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1980
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2330
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2167
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1911
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1398
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 6.7,
+        "Transit": 23.1,
+        "Working": 46.2,
+        "HighLoad": 58.8
+      },
+      "TrackWidthM": 1.35,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.6,
+      "MaxGradeDeg": 45,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 23,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 14
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 280,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 40000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        },
+        {
+          "Position": "Roof",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "winch_5t"
+        }
+      ],
+      "PurchasePrice": 690000,
+      "UsedMarketMultiplier": 0.6,
+      "LeaseMonthly": 14490,
+      "ResaleCurve": [
+        1.0,
+        0.78,
+        0.64,
+        0.52,
+        0.43,
+        0.36,
+        0.3
+      ],
+      "HourlyOpCost": 103.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 800,
+      "InsuranceAnnual": 8280,
+      "OperatorLicense": "WinchCat",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.4,
+        "BodyW": 4.8,
+        "BodyH": 1.8,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#a93226",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.15
+      },
+      "Curves": {},
+      "Comment": "Flagship chassis with a 5 t winch and 1,200 m rope; the steepest terrain in the resort is groomable."
+    },
+    {
+      "Id": "groomer_electric",
+      "DisplayName": "Battery-Electric Groomer",
+      "Category": "Groomer",
+      "Tier": 5,
+      "ChassisType": "Tracked",
+      "MassKg": 15500,
+      "EnginePowerKw": 400,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1220
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1886
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2219
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2064
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1820
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1331
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Electric",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 400,
+      "BurnLPerHour": {
+        "Idle": 6.0,
+        "Transit": 70.0,
+        "Working": 120.0,
+        "HighLoad": 160.0
+      },
+      "TrackWidthM": 1.35,
+      "TireSpec": null,
+      "GroundPressureKpa": 6.9,
+      "MaxGradeDeg": 38,
+      "MaxSideSlopeDeg": 28,
+      "TopSpeedKmh": 22,
+      "WorkingSpeedKmh": {
+        "Min": 6,
+        "Max": 14
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 270,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 40000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blade_12way_5_0"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 3200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "tiller_6_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 1500,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 820000,
+      "UsedMarketMultiplier": 0.6,
+      "LeaseMonthly": 17220,
+      "ResaleCurve": [
+        1.0,
+        0.78,
+        0.64,
+        0.52,
+        0.43,
+        0.36,
+        0.3
+      ],
+      "HourlyOpCost": 118.4,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 800,
+      "InsuranceAnnual": 9840,
+      "OperatorLicense": "Groomer",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.1,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.15,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Groom",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 7.4,
+        "BodyW": 4.8,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.3,
+        "CabH": 1.4,
+        "CabOffset": 1.2,
+        "TrackH": 0.95,
+        "WheelRadiusM": 0.5,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#2471a3",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.15
+      },
+      "Curves": {},
+      "Comment": "Battery-electric cat with a 400 kWh pack: 3-4 hours of grooming per charge, silent, recharged at the garage. Heavy from the pack."
+    },
+    {
+      "Id": "blower_walkbehind",
+      "DisplayName": "Walk-Behind Blower",
+      "Category": "Blower",
+      "Tier": 1,
+      "ChassisType": "WalkBehind",
+      "MassKg": 160,
+      "EnginePowerKw": 10,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 31
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 47
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 55
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 52
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 45
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 33
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 8,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.2,
+        "Transit": 0.6,
+        "Working": 1.1,
+        "HighLoad": 1.4
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 60,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 12,
+      "TopSpeedKmh": 5,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 4
+      },
+      "TurningRadiusM": 1.5,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 6000,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 4200,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 88,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 1.0,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 50,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.4
+      },
+      "Roles": [
+        "Blow"
+      ],
+      "Visual": {
+        "Silhouette": "walkbehind",
+        "BodyL": 1.6,
+        "BodyW": 0.9,
+        "BodyH": 1.0,
+        "CabL": 0.4,
+        "CabW": 0.6,
+        "CabH": 0.5,
+        "CabOffset": -0.4,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.25,
+        "Axles": 1,
+        "BoomLengthM": 0,
+        "ColorHex": "#d35400",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "blowerCapacityTph": 35,
+        "throwDistanceM": 12,
+        "intakeWidthM": 0.8,
+        "workRate": 0.8
+      },
+      "Curves": {},
+      "Comment": "Two-stage walk-behind for lift ramps and lodge decks: 10 kW gasoline, 35 t/h, 12 m throw."
+    },
+    {
+      "Id": "blower_compact",
+      "DisplayName": "Compact Self-Propelled Blower",
+      "Category": "Blower",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 3400,
+      "EnginePowerKw": 60,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 183
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 283
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 333
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 310
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 273
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 200
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 90,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.0,
+        "Transit": 3.3,
+        "Working": 6.6,
+        "HighLoad": 8.4
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "31x15.5-15",
+        "WidthM": 0.4,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 180.0,
+      "MaxGradeDeg": 18,
+      "MaxSideSlopeDeg": 12,
+      "TopSpeedKmh": 25,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4,
+      "HydraulicFlowLpm": 120,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 96000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 2016,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 14.5,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 1152,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.4
+      },
+      "Roles": [
+        "Blow",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "blower",
+        "BodyL": 6.5,
+        "BodyW": 2.6,
+        "BodyH": 1.6,
+        "CabL": 1.8,
+        "CabW": 2.2,
+        "CabH": 1.4,
+        "CabOffset": 1.6,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#d35400",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "blowerCapacityTph": 400,
+        "throwDistanceM": 20,
+        "intakeWidthM": 1.6,
+        "workRate": 0.9
+      },
+      "Curves": {},
+      "Comment": "Compact articulated blower for lots and cat tracks: 60 kW, 400 t/h, 20 m throw."
+    },
+    {
+      "Id": "blower_mid",
+      "DisplayName": "Truck-Mounted Blower",
+      "Category": "Blower",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 11000,
+      "EnginePowerKw": 200,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 943
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1110
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1032
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 910
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 666
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 300,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.2,
+        "Transit": 11.0,
+        "Working": 22.0,
+        "HighLoad": 28.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "385/65R22.5",
+        "WidthM": 0.39,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 180.0,
+      "MaxGradeDeg": 18,
+      "MaxSideSlopeDeg": 12,
+      "TopSpeedKmh": 50,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 10
+      },
+      "TurningRadiusM": 6,
+      "HydraulicFlowLpm": 120,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 285000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 5985,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 44.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 3420,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.4
+      },
+      "Roles": [
+        "Blow",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "blower",
+        "BodyL": 8.0,
+        "BodyW": 2.6,
+        "BodyH": 1.8,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 2.4,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#d35400",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "blowerCapacityTph": 1200,
+        "throwDistanceM": 30,
+        "intakeWidthM": 2.4,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "Two-stage blower on a 4x4 truck chassis: 200 kW to the drum, 1,200 t/h, clears a 2.4 m swath of the access road at 5 km/h."
+    },
+    {
+      "Id": "blower_industrial",
+      "DisplayName": "Industrial Rotary Blower",
+      "Category": "Blower",
+      "Tier": 4,
+      "ChassisType": "Wheeled",
+      "MassKg": 18000,
+      "EnginePowerKw": 500,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1526
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 2358
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2774
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2580
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 2274
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1664
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 600,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 8.0,
+        "Transit": 27.5,
+        "Working": 55.0,
+        "HighLoad": 70.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "445/65R22.5",
+        "WidthM": 0.45,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 180.0,
+      "MaxGradeDeg": 18,
+      "MaxSideSlopeDeg": 12,
+      "TopSpeedKmh": 45,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 6,
+      "HydraulicFlowLpm": 120,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 620000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 13020,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 99.4,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 7440,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.4
+      },
+      "Roles": [
+        "Blow",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "blower",
+        "BodyL": 9.5,
+        "BodyW": 3.0,
+        "BodyH": 2.0,
+        "CabL": 2.2,
+        "CabW": 2.6,
+        "CabH": 1.7,
+        "CabOffset": 3.0,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.6,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#d35400",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "blowerCapacityTph": 3500,
+        "throwDistanceM": 40,
+        "intakeWidthM": 2.8,
+        "workRate": 1.1
+      },
+      "Curves": {},
+      "Comment": "Dedicated rotary blower with a 500 kW impeller engine: 3,500 t/h, 40 m throw. Opens the road after the big storm in one pass."
+    },
+    {
+      "Id": "blower_airport",
+      "DisplayName": "Airport-Class Blower",
+      "Category": "Blower",
+      "Tier": 5,
+      "ChassisType": "Wheeled",
+      "MassKg": 24000,
+      "EnginePowerKw": 750,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 2288
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 3537
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 4161
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 3869
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 3412
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 2496
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 800,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 12.0,
+        "Transit": 41.2,
+        "Working": 82.5,
+        "HighLoad": 105.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "445/65R22.5",
+        "WidthM": 0.45,
+        "Count": 6,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 180.0,
+      "MaxGradeDeg": 18,
+      "MaxSideSlopeDeg": 12,
+      "TopSpeedKmh": 45,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 15
+      },
+      "TurningRadiusM": 6,
+      "HydraulicFlowLpm": 120,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 40000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 920000,
+      "UsedMarketMultiplier": 0.6,
+      "LeaseMonthly": 19320,
+      "ResaleCurve": [
+        1.0,
+        0.78,
+        0.64,
+        0.52,
+        0.43,
+        0.36,
+        0.3
+      ],
+      "HourlyOpCost": 147.9,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 800,
+      "InsuranceAnnual": 11040,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.4
+      },
+      "Roles": [
+        "Blow",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "blower",
+        "BodyL": 11.0,
+        "BodyW": 3.2,
+        "BodyH": 2.2,
+        "CabL": 2.4,
+        "CabW": 2.8,
+        "CabH": 1.8,
+        "CabOffset": 3.6,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.6,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#d35400",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "blowerCapacityTph": 5000,
+        "throwDistanceM": 45,
+        "intakeWidthM": 3.2,
+        "workRate": 1.2
+      },
+      "Curves": {},
+      "Comment": "Airport-class 750 kW blower: 5,000 t/h, 45 m throw. Overkill for a village hill; a destination resort with a valley road needs it."
+    },
+    {
+      "Id": "gun_lance_mobile",
+      "DisplayName": "Mobile Lance Gun",
+      "Category": "Snowmaking",
+      "Tier": 1,
+      "ChassisType": "Towed",
+      "MassKg": 260,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 15,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 5500,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 116,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 0.512,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 900,
+      "InsuranceAnnual": 66,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 3.5,
+        "ColorHex": "#f0b27a",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 0.6,
+        "gunReachM": 30,
+        "coneHalfAngleDeg": 18,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0,
+        "airM3PerMin": 6
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            26,
+            24,
+            20,
+            15,
+            9,
+            5,
+            2,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "Air/water lance on a wheeled sled, 6 m mast. Cheap and simple; needs compressor air (about 6 m3/min) and sits idle above -2 C."
+    },
+    {
+      "Id": "gun_fan_mobile",
+      "DisplayName": "Mobile Fan Gun",
+      "Category": "Snowmaking",
+      "Tier": 1,
+      "ChassisType": "Towed",
+      "MassKg": 780,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 15,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 24000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 504,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 0.86,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 900,
+      "InsuranceAnnual": 288,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 3.5,
+        "ColorHex": "#f4d03f",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 18,
+        "gunReachM": 45,
+        "coneHalfAngleDeg": 25,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            58,
+            54,
+            44,
+            34,
+            20,
+            11,
+            5,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "Wheeled fan gun with an 18 kW fan and onboard compressor; 45 m throw. The gun most resorts buy first."
+    },
+    {
+      "Id": "gun_lance_tower",
+      "DisplayName": "Tower Lance",
+      "Category": "Snowmaking",
+      "Tier": 2,
+      "ChassisType": "Stationary",
+      "MassKg": 420,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 9500,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 200,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 0.516,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 1200,
+      "InsuranceAnnual": 114,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 6.0,
+        "ColorHex": "#f0b27a",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 0.8,
+        "gunReachM": 35,
+        "coneHalfAngleDeg": 18,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0,
+        "airM3PerMin": 9
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            32,
+            30,
+            25,
+            18,
+            11,
+            6,
+            2.5,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "10 m fixed lance on a hydrant pad: taller fall gives better snow at marginal temperatures; lowest energy per m3."
+    },
+    {
+      "Id": "gun_fan_tower",
+      "DisplayName": "Tower Fan Gun",
+      "Category": "Snowmaking",
+      "Tier": 2,
+      "ChassisType": "Stationary",
+      "MassKg": 1100,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 38000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 798,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 0.94,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 1200,
+      "InsuranceAnnual": 456,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 6.0,
+        "ColorHex": "#f4d03f",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 22,
+        "gunReachM": 55,
+        "coneHalfAngleDeg": 25,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            66,
+            62,
+            52,
+            40,
+            24,
+            13,
+            6,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "Fan gun on a 4 m tower with a fixed hydrant: always where it is needed, out of the way of the groomers."
+    },
+    {
+      "Id": "gun_fan_auto",
+      "DisplayName": "Automated Fan Gun",
+      "Category": "Snowmaking",
+      "Tier": 3,
+      "ChassisType": "Towed",
+      "MassKg": 900,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 15,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 36000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 756,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 0.9,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 1500,
+      "InsuranceAnnual": 432,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 3.5,
+        "ColorHex": "#f4d03f",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 20,
+        "gunReachM": 50,
+        "coneHalfAngleDeg": 25,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            64,
+            60,
+            50,
+            38,
+            23,
+            13,
+            6,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "Fan gun with weather station and automatic nozzle staging: starts itself the minute the wet-bulb allows and stops before it makes slush."
+    },
+    {
+      "Id": "gun_fan_high",
+      "DisplayName": "High-Output Fan Gun",
+      "Category": "Snowmaking",
+      "Tier": 4,
+      "ChassisType": "Towed",
+      "MassKg": 1250,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 15,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 48000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 1008,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 1.1400000000000001,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 1800,
+      "InsuranceAnnual": 576,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "gun",
+        "BodyL": 2.2,
+        "BodyW": 1.4,
+        "BodyH": 1.2,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 1,
+        "BoomLengthM": 3.5,
+        "ColorHex": "#f4d03f",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 32,
+        "gunReachM": 60,
+        "coneHalfAngleDeg": 28,
+        "snowDensityKgM3": 420,
+        "workRate": 1.0
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            92,
+            86,
+            72,
+            55,
+            34,
+            18,
+            8,
+            0,
+            0
+          ],
+          "Comment": "m3 of snow per hour by wet-bulb C (marginal production begins at about -2.5 C; nothing above -2 C)"
+        }
+      },
+      "Comment": "32 kW high-output fan gun: 90 m3/h at -8 C wet-bulb, 60 m throw. Drinks 110 L/min of water."
+    },
+    {
+      "Id": "snow_factory",
+      "DisplayName": "Snow Factory",
+      "Category": "Snowmaking",
+      "Tier": 5,
+      "ChassisType": "Stationary",
+      "MassKg": 14000,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 40,
+      "MaxGradeDeg": 15,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 520000,
+      "UsedMarketMultiplier": 0.6,
+      "LeaseMonthly": 10920,
+      "ResaleCurve": [
+        1.0,
+        0.78,
+        0.64,
+        0.52,
+        0.43,
+        0.36,
+        0.3
+      ],
+      "HourlyOpCost": 8.5,
+      "ServiceIntervalHours": 1500,
+      "MtbfHours": 2500,
+      "InsuranceAnnual": 6240,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.2,
+        "Hydraulics": 0.6,
+        "Drivetrain": 0.2,
+        "TracksOrTires": 0.3,
+        "Attachment": 1.5
+      },
+      "Roles": [
+        "MakeSnow"
+      ],
+      "Visual": {
+        "Silhouette": "station",
+        "BodyL": 9.0,
+        "BodyW": 3.0,
+        "BodyH": 3.0,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.3,
+        "WheelRadiusM": 0.35,
+        "Axles": 0,
+        "BoomLengthM": 6.0,
+        "ColorHex": "#f4d03f",
+        "AccentHex": "#566573"
+      },
+      "Specs": {
+        "gunPowerKw": 400,
+        "gunReachM": 15,
+        "coneHalfAngleDeg": 90,
+        "snowDensityKgM3": 500,
+        "workRate": 1.0,
+        "waterLpm": 60
+      },
+      "Curves": {
+        "gunOutputByWetBulb": {
+          "Xs": [
+            -16,
+            -12,
+            -8,
+            -6,
+            -4,
+            -3,
+            -2.5,
+            -2,
+            0
+          ],
+          "Ys": [
+            9,
+            9,
+            9,
+            9,
+            9,
+            9,
+            9,
+            9,
+            9
+          ],
+          "Comment": "temperature-independent plate-freezer output"
+        }
+      },
+      "Comment": "Plate-freezer snow factory: 9 m3/h of dense snow at any temperature from 400 kW of refrigeration. For the beginner area in a warm December."
+    },
+    {
+      "Id": "tractor_compact",
+      "DisplayName": "Compact Tractor",
+      "Category": "Tractor",
+      "Tier": 1,
+      "ChassisType": "Wheeled",
+      "MassKg": 1900,
+      "EnginePowerKw": 40,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 122
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 189
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 222
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 206
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 182
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 133
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 50,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.6,
+        "Transit": 2.2,
+        "Working": 4.4,
+        "HighLoad": 5.6
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "380/70R24",
+        "WidthM": 0.38,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 14,
+      "TopSpeedKmh": 30,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 45,
+      "Pto": true,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 450,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "plow_straight_pickup"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 700,
+          "RequiresHydraulics": true,
+          "RequiresPto": true,
+          "DefaultAttachmentId": "spreader_hopper_4m3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 38000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 798,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 6.6,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 456,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Tow",
+        "Transport",
+        "Blow"
+      ],
+      "Visual": {
+        "Silhouette": "tractor",
+        "BodyL": 3.6,
+        "BodyW": 1.7,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.5,
+        "CabOffset": -0.3,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#27ae60",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.8,
+        "workRate": 0.78
+      },
+      "Curves": {},
+      "Comment": "40 kW compact tractor with a front plow and rear spreader: sidewalks, the lodge lot, the T-bar ramp."
+    },
+    {
+      "Id": "tractor_utility",
+      "DisplayName": "Utility Tractor",
+      "Category": "Tractor",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 4800,
+      "EnginePowerKw": 90,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 275
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 424
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 499
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 464
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 409
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 300
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 160,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.4,
+        "Transit": 5.0,
+        "Working": 9.9,
+        "HighLoad": 12.6
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "540/65R38",
+        "WidthM": 0.54,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 14,
+      "TopSpeedKmh": 40,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 90,
+      "Pto": true,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 900,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "plow_straight_pickup"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 1600,
+          "RequiresHydraulics": true,
+          "RequiresPto": true,
+          "DefaultAttachmentId": "spreader_hopper_4m3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 82000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 1722,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 14.3,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 984,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Tow",
+        "Transport",
+        "Blow"
+      ],
+      "Visual": {
+        "Silhouette": "tractor",
+        "BodyL": 4.5,
+        "BodyW": 2.3,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.5,
+        "CabOffset": -0.3,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.75,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#27ae60",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.8,
+        "workRate": 0.86
+      },
+      "Curves": {},
+      "Comment": "90 kW utility tractor: the lot plow, the salt spreader and the trailer tug rolled into one."
+    },
+    {
+      "Id": "tractor_tool_carrier",
+      "DisplayName": "Hydrostatic Tool Carrier",
+      "Category": "Tractor",
+      "Tier": 3,
+      "ChassisType": "Artic",
+      "MassKg": 5600,
+      "EnginePowerKw": 110,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 336
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 519
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 568
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 500
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 366
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 150,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.8,
+        "Transit": 6.0,
+        "Working": 12.1,
+        "HighLoad": 15.4
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "440/80R28",
+        "WidthM": 0.44,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 14,
+      "TopSpeedKmh": 40,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 6.5,
+      "HydraulicFlowLpm": 160,
+      "Pto": true,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 900,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "blower_head_pto"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 1600,
+          "RequiresHydraulics": true,
+          "RequiresPto": true,
+          "DefaultAttachmentId": "spreader_hopper_4m3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 148000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 3108,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 23.3,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 1776,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Blow",
+        "Load",
+        "Tow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "tractor",
+        "BodyL": 4.6,
+        "BodyW": 2.2,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.5,
+        "CabOffset": -0.3,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.75,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#27ae60",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 0.94
+      },
+      "Curves": {},
+      "Comment": "Hydrostatic multi-tool carrier with a high-flow front hydraulic circuit: blower head, broom, plow or bucket on the front, spreader behind. Turns in its own length."
+    },
+    {
+      "Id": "tractor_heavy",
+      "DisplayName": "Heavy Tractor",
+      "Category": "Tractor",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 8400,
+      "EnginePowerKw": 180,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 549
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 849
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 999
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 929
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 819
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 599
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.9,
+        "Transit": 9.9,
+        "Working": 19.8,
+        "HighLoad": 25.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "650/65R42",
+        "WidthM": 0.65,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 14,
+      "TopSpeedKmh": 50,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 5.5,
+      "HydraulicFlowLpm": 150,
+      "Pto": true,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1400,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "box_pusher_loader"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 2400,
+          "RequiresHydraulics": true,
+          "RequiresPto": true,
+          "DefaultAttachmentId": "blower_head_pto"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 165000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 3465,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 28.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 1980,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Tow",
+        "Transport",
+        "Blow"
+      ],
+      "Visual": {
+        "Silhouette": "tractor",
+        "BodyL": 5.2,
+        "BodyW": 2.6,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.5,
+        "CabOffset": -0.3,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.95,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#27ae60",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 0.94
+      },
+      "Curves": {},
+      "Comment": "180 kW row-crop tractor: hauls the lowboy up the access road, runs a PTO blower, pushes a box plow."
+    },
+    {
+      "Id": "tractor_articulated",
+      "DisplayName": "Articulated Tractor",
+      "Category": "Tractor",
+      "Tier": 4,
+      "ChassisType": "Artic",
+      "MassKg": 16000,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 700,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "710/70R42",
+        "WidthM": 0.71,
+        "Count": 4,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 14,
+      "TopSpeedKmh": 40,
+      "WorkingSpeedKmh": {
+        "Min": 3,
+        "Max": 12
+      },
+      "TurningRadiusM": 6.5,
+      "HydraulicFlowLpm": 200,
+      "Pto": true,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "box_pusher_loader"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": true,
+          "RequiresPto": true,
+          "DefaultAttachmentId": ""
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 320000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 6720,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 53.4,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 3840,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Tow",
+        "Transport",
+        "Haul"
+      ],
+      "Visual": {
+        "Silhouette": "tractor",
+        "BodyL": 6.8,
+        "BodyW": 3.0,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.5,
+        "CabOffset": -0.3,
+        "TrackH": 0.9,
+        "WheelRadiusM": 1.05,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#27ae60",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 1.02
+      },
+      "Curves": {},
+      "Comment": "300 kW articulated four-wheel-drive: tows the heaviest loads through unplowed snow, pushes the biggest box plow. Too big for the village."
+    },
+    {
+      "Id": "loader_skidsteer",
+      "DisplayName": "Skid-Steer Loader",
+      "Category": "Loader",
+      "Tier": 1,
+      "ChassisType": "Wheeled",
+      "MassKg": 3200,
+      "EnginePowerKw": 50,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 153
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 236
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 277
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 258
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 227
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 166
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 90,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.8,
+        "Transit": 2.8,
+        "Working": 5.5,
+        "HighLoad": 7.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "12-16.5",
+        "WidthM": 0.3,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 200,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 15,
+      "TopSpeedKmh": 18,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4.0,
+      "HydraulicFlowLpm": 100,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0.5,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 900,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "snow_bucket_2_5"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 48000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 1008,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 8.3,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 576,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Load",
+        "Plow",
+        "Haul",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "loader",
+        "BodyL": 3.4,
+        "BodyW": 1.8,
+        "BodyH": 1.3,
+        "CabL": 1.4,
+        "CabW": 1.6,
+        "CabH": 1.4,
+        "CabOffset": -0.4,
+        "TrackH": 0.8,
+        "WheelRadiusM": 0.4,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#f39c12",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.35,
+        "workRate": 0.72
+      },
+      "Curves": {},
+      "Comment": "Skid-steer with a snow bucket: lift ramps, lodge decks, loading the spreader. Spins in place."
+    },
+    {
+      "Id": "loader_compact",
+      "DisplayName": "Compact Wheel Loader",
+      "Category": "Loader",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 5600,
+      "EnginePowerKw": 55,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 168
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 259
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 305
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 284
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 250
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 183
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 110,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.9,
+        "Transit": 3.0,
+        "Working": 6.0,
+        "HighLoad": 7.7
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "15.5/60-18",
+        "WidthM": 0.4,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 200,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 15,
+      "TopSpeedKmh": 30,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4.0,
+      "HydraulicFlowLpm": 100,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 1.0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1400,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "snow_bucket_2_5"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 92000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 1932,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 13.8,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 1104,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Load",
+        "Plow",
+        "Haul",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "loader",
+        "BodyL": 5.0,
+        "BodyW": 1.9,
+        "BodyH": 1.4,
+        "CabL": 1.4,
+        "CabW": 1.6,
+        "CabH": 1.4,
+        "CabOffset": -0.4,
+        "TrackH": 0.8,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#f39c12",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.5,
+        "workRate": 0.84
+      },
+      "Curves": {},
+      "Comment": "Articulated compact loader, 1.0 m3 bucket: moves snow around the base, mounts a box pusher for the lot."
+    },
+    {
+      "Id": "loader_mid",
+      "DisplayName": "Mid-Size Wheel Loader",
+      "Category": "Loader",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 12500,
+      "EnginePowerKw": 130,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 397
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 613
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 721
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 671
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 591
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 433
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 240,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.1,
+        "Transit": 7.2,
+        "Working": 14.3,
+        "HighLoad": 18.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "20.5R25",
+        "WidthM": 0.52,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 200,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 15,
+      "TopSpeedKmh": 38,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4.0,
+      "HydraulicFlowLpm": 100,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 2.5,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 3500,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "snow_bucket_2_5"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 215000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 4515,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 32.3,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2580,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Load",
+        "Plow",
+        "Haul",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "loader",
+        "BodyL": 7.0,
+        "BodyW": 2.6,
+        "BodyH": 1.8,
+        "CabL": 1.4,
+        "CabW": 1.6,
+        "CabH": 1.4,
+        "CabOffset": -0.4,
+        "TrackH": 0.8,
+        "WheelRadiusM": 0.8,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#f39c12",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.95,
+        "workRate": 0.96
+      },
+      "Curves": {},
+      "Comment": "130 kW wheel loader with a 2.5 m3 snow bucket: loads dump trucks at the snow dump, hangs carriers with the forks."
+    },
+    {
+      "Id": "telehandler",
+      "DisplayName": "Telescopic Handler",
+      "Category": "Loader",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 9800,
+      "EnginePowerKw": 75,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 229
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 354
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 416
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 387
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 341
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 250
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 150,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.2,
+        "Transit": 4.1,
+        "Working": 8.2,
+        "HighLoad": 10.5
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "460/70R24",
+        "WidthM": 0.46,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 200,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 15,
+      "TopSpeedKmh": 30,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4.0,
+      "HydraulicFlowLpm": 100,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0.8,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "forks"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 135000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 2835,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 19.9,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 1620,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Lift",
+        "Load",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "telehandler",
+        "BodyL": 6.0,
+        "BodyW": 2.4,
+        "BodyH": 1.6,
+        "CabL": 1.4,
+        "CabW": 1.6,
+        "CabH": 1.4,
+        "CabOffset": -0.4,
+        "TrackH": 0.8,
+        "WheelRadiusM": 0.7,
+        "Axles": 2,
+        "BoomLengthM": 6.0,
+        "ColorHex": "#f39c12",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "craneClass": 1,
+        "liftCapacityT": 4,
+        "reachM": 17,
+        "workRate": 0.9
+      },
+      "Curves": {},
+      "Comment": "Telehandler with 17 m reach: sets small towers, hangs carriers, lifts gun towers onto pads. Counts as a light crane."
+    },
+    {
+      "Id": "loader_large",
+      "DisplayName": "Large Wheel Loader",
+      "Category": "Loader",
+      "Tier": 4,
+      "ChassisType": "Wheeled",
+      "MassKg": 22000,
+      "EnginePowerKw": 200,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 943
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1110
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1032
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 910
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 666
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 360,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.2,
+        "Transit": 11.0,
+        "Working": 22.0,
+        "HighLoad": 28.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "23.5R25",
+        "WidthM": 0.6,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 200,
+      "MaxGradeDeg": 20,
+      "MaxSideSlopeDeg": 15,
+      "TopSpeedKmh": 38,
+      "WorkingSpeedKmh": {
+        "Min": 2,
+        "Max": 8
+      },
+      "TurningRadiusM": 4.0,
+      "HydraulicFlowLpm": 100,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 4.0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "light_bucket_4_0"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 2000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 380000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 7980,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 55.6,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 4560,
+      "OperatorLicense": "Heavy",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Load",
+        "Plow",
+        "Haul",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "loader",
+        "BodyL": 8.4,
+        "BodyW": 3.0,
+        "BodyH": 2.0,
+        "CabL": 1.4,
+        "CabW": 1.6,
+        "CabH": 1.4,
+        "CabOffset": -0.4,
+        "TrackH": 0.8,
+        "WheelRadiusM": 0.95,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#f39c12",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4000000000000004,
+        "workRate": 1.08
+      },
+      "Curves": {},
+      "Comment": "200 kW loader with a 4 m3 light-material bucket: clears the lot in a fraction of the passes, feeds the snow factory, loads concrete aggregate."
+    },
+    {
+      "Id": "pickup_plow",
+      "DisplayName": "Plow Pickup",
+      "Category": "Truck",
+      "Tier": 1,
+      "ChassisType": "Wheeled",
+      "MassKg": 3300,
+      "EnginePowerKw": 220,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 671
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1037
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1220
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1135
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1001
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 732
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 130,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.5,
+        "Transit": 12.1,
+        "Working": 24.2,
+        "HighLoad": 30.8
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "LT275/70R18",
+        "WidthM": 0.28,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 110,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 6.5,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 450,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "plow_straight_pickup"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 62000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 1302,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 18.4,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 744,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Transport",
+        "Patrol"
+      ],
+      "Visual": {
+        "Silhouette": "pickup",
+        "BodyL": 5.9,
+        "BodyW": 2.0,
+        "BodyH": 1.2,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 2.242,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.42,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#2e86c1",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 2.4,
+        "workRate": 0.7
+      },
+      "Curves": {},
+      "Comment": "Three-quarter-ton 4x4 pickup with a straight plow: the access road at 5 am, the parts run to town at noon."
+    },
+    {
+      "Id": "service_truck",
+      "DisplayName": "Service Truck",
+      "Category": "Truck",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 7400,
+      "EnginePowerKw": 200,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 943
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1110
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1032
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 910
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 666
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 200,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.2,
+        "Transit": 11.0,
+        "Working": 22.0,
+        "HighLoad": 28.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "11R22.5",
+        "WidthM": 0.28,
+        "Count": 6,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 95,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 8.0,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 1500,
+      "BucketM3": 0,
+      "TankL": 2000,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 165000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 3465,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 29.8,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 1980,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Service",
+        "Refuel",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "truck",
+        "BodyL": 7.2,
+        "BodyW": 2.4,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 2.736,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#e67e22",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "fuelTankL": 2000,
+        "partsSlots": 6,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "4x4 service truck with a 2,000 L diesel tank, compressor, crane and a parts locker: the night shift's lifeline when a cat runs dry on the hill."
+    },
+    {
+      "Id": "dump_truck_light",
+      "DisplayName": "Light Dump Truck",
+      "Category": "Truck",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 7800,
+      "EnginePowerKw": 150,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 458
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 707
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 832
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 774
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 682
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 499
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 200,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.4,
+        "Transit": 8.2,
+        "Working": 16.5,
+        "HighLoad": 21.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "11R22.5",
+        "WidthM": 0.28,
+        "Count": 6,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 8.0,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 6000,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 900,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "vplow_truck"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 95000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 1995,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 18.9,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 1140,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Haul",
+        "Transport",
+        "Plow"
+      ],
+      "Visual": {
+        "Silhouette": "truck",
+        "BodyL": 7.0,
+        "BodyW": 2.4,
+        "BodyH": 1.5,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 2.66,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#2e86c1",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.0,
+        "workRate": 0.8
+      },
+      "Curves": {},
+      "Comment": "Single-axle 6 t dumper: hauls snow off the lots, aggregate to the batch plant, salt from the depot."
+    },
+    {
+      "Id": "dump_truck_heavy",
+      "DisplayName": "Tandem Dump Truck",
+      "Category": "Truck",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 14500,
+      "EnginePowerKw": 330,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1007
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1556
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1831
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1703
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1501
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1098
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 5.3,
+        "Transit": 18.1,
+        "Working": 36.3,
+        "HighLoad": 46.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 10,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 95,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 8.0,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 16000,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "vplow_truck"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 210000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 4410,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 41.7,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2520,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Haul",
+        "Transport",
+        "Plow"
+      ],
+      "Visual": {
+        "Silhouette": "truck",
+        "BodyL": 8.6,
+        "BodyW": 2.5,
+        "BodyH": 1.6,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.268,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#2e86c1",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.2,
+        "workRate": 0.9
+      },
+      "Curves": {},
+      "Comment": "Tandem-axle 16 t dumper: the snow-haul workhorse and the concrete aggregate hauler for tower footings."
+    },
+    {
+      "Id": "fuel_tanker",
+      "DisplayName": "Fuel Tanker",
+      "Category": "Truck",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 12000,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 350,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 6,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 8.0,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 10000,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 240000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 5040,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 43.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2880,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Refuel",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "tanker",
+        "BodyL": 9.0,
+        "BodyW": 2.5,
+        "BodyH": 1.8,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.42,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#7f8c8d",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "fuelTankL": 10000,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "10,000 L diesel bowser on a 6x4 chassis: fills the depot cube in one trip and can top up a whole fleet in the field."
+    },
+    {
+      "Id": "concrete_mixer",
+      "DisplayName": "Concrete Mixer Truck",
+      "Category": "Truck",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 13000,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 350,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 6,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 85,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 8.0,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 19000,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 230000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 4830,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 42.6,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2760,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Haul",
+        "Construct",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "mixer",
+        "BodyL": 9.0,
+        "BodyW": 2.5,
+        "BodyH": 1.8,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.42,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#95a5a6",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "mixerM3": 8,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "8 m3 transit mixer: tower footings need concrete on site within 90 minutes of batching, so the road must be open."
+    },
+    {
+      "Id": "lowboy_tractor",
+      "DisplayName": "Lowboy Tractor Unit",
+      "Category": "Truck",
+      "Tier": 4,
+      "ChassisType": "Wheeled",
+      "MassKg": 9500,
+      "EnginePowerKw": 400,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1220
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1886
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 2219
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 2064
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1820
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1331
+        }
+      ],
+      "Transmission": "Manual",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 600,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 6.4,
+        "Transit": 22.0,
+        "Working": 44.0,
+        "HighLoad": 56.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 14,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 300,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 5,
+        "Max": 25
+      },
+      "TurningRadiusM": 12,
+      "HydraulicFlowLpm": 60,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 2,
+      "CargoCapacityKg": 40000,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 6000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 260000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 5460,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 51.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 3120,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Transport",
+        "Haul"
+      ],
+      "Visual": {
+        "Silhouette": "lowboy",
+        "BodyL": 16.0,
+        "BodyW": 2.6,
+        "BodyH": 1.4,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 6.08,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.5,
+        "Axles": 4,
+        "BoomLengthM": 0,
+        "ColorHex": "#34495e",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "6x4 tractor with a 40 t lowboy trailer: moves groomers between resorts, brings the crawler crane and the tower sections up the road."
+    },
+    {
+      "Id": "plow_truck_single",
+      "DisplayName": "Single-Axle Plow Truck",
+      "Category": "RoadMaint",
+      "Tier": 2,
+      "ChassisType": "Wheeled",
+      "MassKg": 11000,
+      "EnginePowerKw": 200,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 943
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1110
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1032
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 910
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 666
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 250,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.2,
+        "Transit": 11.0,
+        "Working": 22.0,
+        "HighLoad": 28.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 4,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 320,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 8,
+        "Max": 35
+      },
+      "TurningRadiusM": 9.0,
+      "HydraulicFlowLpm": 90,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1200,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "vplow_truck"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "spreader_hopper_4m3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 175000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 3675,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 31.0,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 400,
+      "InsuranceAnnual": 2100,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "truck",
+        "BodyL": 8.5,
+        "BodyW": 2.5,
+        "BodyH": 1.7,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.23,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.52,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#e67e22",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 0.9,
+        "spreaderHopperM3": 4
+      },
+      "Curves": {},
+      "Comment": "Single-axle plow truck with a 3.4 m V-plow and a 4 m3 salt hopper: the access road and both lots before the guests arrive."
+    },
+    {
+      "Id": "plow_truck_tandem",
+      "DisplayName": "Tandem Plow Truck with Wing",
+      "Category": "RoadMaint",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 17500,
+      "EnginePowerKw": 330,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 1007
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1556
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1831
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1703
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1501
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 1098
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 380,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 5.3,
+        "Transit": 18.1,
+        "Working": 36.3,
+        "HighLoad": 46.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 6,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 320,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 8,
+        "Max": 35
+      },
+      "TurningRadiusM": 9.0,
+      "HydraulicFlowLpm": 90,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Front",
+          "MaxMassKg": 1800,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "plow_wings"
+        },
+        {
+          "Position": "Rear",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "spreader_hopper_4m3"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 290000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 6090,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 51.3,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 3480,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Spread",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "truck",
+        "BodyL": 8.5,
+        "BodyW": 2.5,
+        "BodyH": 1.7,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.23,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.52,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#e67e22",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 5.5,
+        "workRate": 1.0,
+        "spreaderHopperM3": 7
+      },
+      "Curves": {},
+      "Comment": "Tandem plow truck with front plow and side wing (5.5 m cleared per pass) and a 7 m3 hopper: the valley road in one run each way."
+    },
+    {
+      "Id": "brine_truck",
+      "DisplayName": "Brine Applicator Truck",
+      "Category": "RoadMaint",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 12000,
+      "EnginePowerKw": 200,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 943
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1110
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1032
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 910
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 666
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 250,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 3.2,
+        "Transit": 11.0,
+        "Working": 22.0,
+        "HighLoad": 28.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "315/80R22.5",
+        "WidthM": 0.32,
+        "Count": 4,
+        "Chains": true,
+        "Duals": true
+      },
+      "GroundPressureKpa": 320,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 90,
+      "WorkingSpeedKmh": {
+        "Min": 8,
+        "Max": 35
+      },
+      "TurningRadiusM": 9.0,
+      "HydraulicFlowLpm": 90,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 8000,
+      "AttachmentSlots": [
+        {
+          "Position": "Rear",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "brine_tank_5000"
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 190000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 3990,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 32.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2280,
+      "OperatorLicense": "Cdl",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Spread",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "tanker",
+        "BodyL": 8.5,
+        "BodyW": 2.5,
+        "BodyH": 1.7,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.23,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.52,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#e67e22",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 1.0,
+        "brineTankL": 8000
+      },
+      "Curves": {},
+      "Comment": "8,000 L brine truck: anti-icing before the storm uses a third of the salt of spreading after it, and the lots stay black."
+    },
+    {
+      "Id": "grader",
+      "DisplayName": "Motor Grader",
+      "Category": "RoadMaint",
+      "Tier": 4,
+      "ChassisType": "Wheeled",
+      "MassKg": 15500,
+      "EnginePowerKw": 180,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 549
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 849
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 999
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 929
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 819
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 599
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 380,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.9,
+        "Transit": 9.9,
+        "Working": 19.8,
+        "HighLoad": 25.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "17.5R25",
+        "WidthM": 0.45,
+        "Count": 6,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 320,
+      "MaxGradeDeg": 16,
+      "MaxSideSlopeDeg": 10,
+      "TopSpeedKmh": 40,
+      "WorkingSpeedKmh": {
+        "Min": 8,
+        "Max": 35
+      },
+      "TurningRadiusM": 9.0,
+      "HydraulicFlowLpm": 90,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Rear",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": true,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        },
+        {
+          "Position": "Tow",
+          "MaxMassKg": 4000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "hitch"
+        }
+      ],
+      "PurchasePrice": 335000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 7035,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 49.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 4020,
+      "OperatorLicense": "Heavy",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.0,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Plow",
+        "Construct",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "grader",
+        "BodyL": 9.0,
+        "BodyW": 2.6,
+        "BodyH": 1.5,
+        "CabL": 2.0,
+        "CabW": 2.4,
+        "CabH": 1.6,
+        "CabOffset": 3.42,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.52,
+        "Axles": 3,
+        "BoomLengthM": 0,
+        "ColorHex": "#e67e22",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 4.3,
+        "workRate": 1.1
+      },
+      "Curves": {},
+      "Comment": "Motor grader with a 4.3 m moldboard: cuts packed snow and ice off the road, grades run corridors in the summer, shapes the lot berms."
+    },
+    {
+      "Id": "utv_wheeled",
+      "DisplayName": "Side-by-Side UTV",
+      "Category": "Light",
+      "Tier": 1,
+      "ChassisType": "Wheeled",
+      "MassKg": 720,
+      "EnginePowerKw": 30,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 92
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 141
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 166
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 155
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 136
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 100
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 38,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.5,
+        "Transit": 1.6,
+        "Working": 3.3,
+        "HighLoad": 4.2
+      },
+      "TrackWidthM": 0,
+      "TireSpec": {
+        "Size": "27x9-14",
+        "WidthM": 0.23,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 90,
+      "MaxGradeDeg": 22,
+      "MaxSideSlopeDeg": 20,
+      "TopSpeedKmh": 60,
+      "WorkingSpeedKmh": {
+        "Min": 10,
+        "Max": 40
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 6000,
+      "Seats": 2,
+      "CargoCapacityKg": 350,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 400,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 19000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 4.2,
+      "ServiceIntervalHours": 150,
+      "MtbfHours": 250,
+      "InsuranceAnnual": 228,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.2,
+        "Hydraulics": 0.8,
+        "Drivetrain": 1.1,
+        "TracksOrTires": 1.3,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Transport",
+        "Patrol"
+      ],
+      "Visual": {
+        "Silhouette": "utv",
+        "BodyL": 3.0,
+        "BodyW": 1.5,
+        "BodyH": 1.1,
+        "CabL": 0.8,
+        "CabW": 0.9,
+        "CabH": 0.9,
+        "CabOffset": 0.2,
+        "TrackH": 0.35,
+        "WheelRadiusM": 0.35,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.5
+      },
+      "Curves": {},
+      "Comment": "Two-seat 4x4 utility vehicle with a cargo bed: mechanics, patrollers and parts around the base on plowed ground."
+    },
+    {
+      "Id": "snowmobile_utility",
+      "DisplayName": "Utility Snowmobile",
+      "Category": "Light",
+      "Tier": 1,
+      "ChassisType": "Tracked",
+      "MassKg": 330,
+      "EnginePowerKw": 60,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 183
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 283
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 333
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 310
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 273
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 200
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 45,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.0,
+        "Transit": 3.3,
+        "Working": 6.6,
+        "HighLoad": 8.4
+      },
+      "TrackWidthM": 0.5,
+      "TireSpec": null,
+      "GroundPressureKpa": 20,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 20,
+      "TopSpeedKmh": 95,
+      "WorkingSpeedKmh": {
+        "Min": 10,
+        "Max": 40
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 6000,
+      "Seats": 2,
+      "CargoCapacityKg": 150,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 400,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "sled_hitch"
+        }
+      ],
+      "PurchasePrice": 14000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 5.4,
+      "ServiceIntervalHours": 150,
+      "MtbfHours": 250,
+      "InsuranceAnnual": 168,
+      "OperatorLicense": "Sled",
+      "WearRates": {
+        "Engine": 1.2,
+        "Hydraulics": 0.8,
+        "Drivetrain": 1.1,
+        "TracksOrTires": 1.3,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Transport",
+        "Patrol",
+        "Tow"
+      ],
+      "Visual": {
+        "Silhouette": "snowmobile",
+        "BodyL": 3.0,
+        "BodyW": 1.2,
+        "BodyH": 0.9,
+        "CabL": 0.8,
+        "CabW": 0.9,
+        "CabH": 0.9,
+        "CabOffset": 0.2,
+        "TrackH": 0.35,
+        "WheelRadiusM": 0.35,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.5
+      },
+      "Curves": {},
+      "Comment": "Wide-track utility sled with a hitch: tows the fuel sled, moves a mechanic to a dead cat, drags the trail roller."
+    },
+    {
+      "Id": "snowmobile_patrol",
+      "DisplayName": "Patrol Snowmobile",
+      "Category": "Light",
+      "Tier": 2,
+      "ChassisType": "Tracked",
+      "MassKg": 300,
+      "EnginePowerKw": 95,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 290
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 448
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 527
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 490
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 432
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 316
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 42,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.5,
+        "Transit": 5.2,
+        "Working": 10.4,
+        "HighLoad": 13.3
+      },
+      "TrackWidthM": 0.5,
+      "TireSpec": null,
+      "GroundPressureKpa": 20,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 20,
+      "TopSpeedKmh": 130,
+      "WorkingSpeedKmh": {
+        "Min": 10,
+        "Max": 40
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 400,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "sled_hitch"
+        }
+      ],
+      "PurchasePrice": 17500,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 6.800000000000001,
+      "ServiceIntervalHours": 150,
+      "MtbfHours": 300,
+      "InsuranceAnnual": 210,
+      "OperatorLicense": "Sled",
+      "WearRates": {
+        "Engine": 1.2,
+        "Hydraulics": 0.8,
+        "Drivetrain": 1.1,
+        "TracksOrTires": 1.3,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Patrol",
+        "Transport",
+        "Rescue"
+      ],
+      "Visual": {
+        "Silhouette": "snowmobile",
+        "BodyL": 3.0,
+        "BodyW": 1.2,
+        "BodyH": 0.9,
+        "CabL": 0.8,
+        "CabW": 0.9,
+        "CabH": 0.9,
+        "CabOffset": 0.2,
+        "TrackH": 0.35,
+        "WheelRadiusM": 0.35,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.5
+      },
+      "Curves": {},
+      "Comment": "Fast patrol sled: first on scene, sweeps the runs at close, carries the avalanche kit."
+    },
+    {
+      "Id": "utv_tracked",
+      "DisplayName": "Tracked UTV",
+      "Category": "Light",
+      "Tier": 2,
+      "ChassisType": "Tracked",
+      "MassKg": 1050,
+      "EnginePowerKw": 45,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 137
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 212
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 250
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 232
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 205
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 150
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 40,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.7,
+        "Transit": 2.5,
+        "Working": 5.0,
+        "HighLoad": 6.3
+      },
+      "TrackWidthM": 0.32,
+      "TireSpec": null,
+      "GroundPressureKpa": 20,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 20,
+      "TopSpeedKmh": 45,
+      "WorkingSpeedKmh": {
+        "Min": 10,
+        "Max": 40
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 12000,
+      "Seats": 2,
+      "CargoCapacityKg": 300,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 400,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "sled_hitch"
+        }
+      ],
+      "PurchasePrice": 34000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 4.8,
+      "ServiceIntervalHours": 150,
+      "MtbfHours": 300,
+      "InsuranceAnnual": 408,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.2,
+        "Hydraulics": 0.8,
+        "Drivetrain": 1.1,
+        "TracksOrTires": 1.3,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Transport",
+        "Patrol",
+        "Tow"
+      ],
+      "Visual": {
+        "Silhouette": "utv",
+        "BodyL": 3.2,
+        "BodyW": 1.6,
+        "BodyH": 1.2,
+        "CabL": 0.8,
+        "CabW": 0.9,
+        "CabH": 0.9,
+        "CabOffset": 0.2,
+        "TrackH": 0.35,
+        "WheelRadiusM": 0.35,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.5
+      },
+      "Curves": {},
+      "Comment": "Side-by-side on four track kits: goes where the wheeled one bogs, carries two people and 300 kg of parts up the cat track."
+    },
+    {
+      "Id": "snowmobile_rescue",
+      "DisplayName": "Rescue Snowmobile",
+      "Category": "Light",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 360,
+      "EnginePowerKw": 110,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 336
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 519
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 568
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 500
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 366
+        }
+      ],
+      "Transmission": "Cvt",
+      "FuelType": "Gasoline",
+      "FuelCapacityL": 45,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.8,
+        "Transit": 6.0,
+        "Working": 12.1,
+        "HighLoad": 15.4
+      },
+      "TrackWidthM": 0.5,
+      "TireSpec": null,
+      "GroundPressureKpa": 20,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 20,
+      "TopSpeedKmh": 120,
+      "WorkingSpeedKmh": {
+        "Min": 10,
+        "Max": 40
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 20000,
+      "Seats": 2,
+      "CargoCapacityKg": 120,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 400,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": "sled_hitch"
+        }
+      ],
+      "PurchasePrice": 24000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 7.4,
+      "ServiceIntervalHours": 150,
+      "MtbfHours": 350,
+      "InsuranceAnnual": 288,
+      "OperatorLicense": "Sled",
+      "WearRates": {
+        "Engine": 1.2,
+        "Hydraulics": 0.8,
+        "Drivetrain": 1.1,
+        "TracksOrTires": 1.3,
+        "Attachment": 1.0
+      },
+      "Roles": [
+        "Rescue",
+        "Patrol",
+        "Transport",
+        "Tow"
+      ],
+      "Visual": {
+        "Silhouette": "snowmobile",
+        "BodyL": 3.0,
+        "BodyW": 1.2,
+        "BodyH": 0.9,
+        "CabL": 0.8,
+        "CabW": 0.9,
+        "CabH": 0.9,
+        "CabOffset": 0.2,
+        "TrackH": 0.35,
+        "WheelRadiusM": 0.35,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#c0392b",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.5
+      },
+      "Curves": {},
+      "Comment": "Rescue sled with the toboggan hitch and heated grips: evacuation of an injured guest or a stranded operator in a whiteout."
+    },
+    {
+      "Id": "excavator_mini",
+      "DisplayName": "Mini Excavator",
+      "Category": "Construction",
+      "Tier": 1,
+      "ChassisType": "Tracked",
+      "MassKg": 2100,
+      "EnginePowerKw": 20,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 61
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 94
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 111
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 103
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 91
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 67
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 40,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0.3,
+        "Transit": 1.1,
+        "Working": 2.2,
+        "HighLoad": 2.8
+      },
+      "TrackWidthM": 0.25,
+      "TireSpec": null,
+      "GroundPressureKpa": 30,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 18,
+      "TopSpeedKmh": 5,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 6000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0.08,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 42000,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 882,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 6.0,
+      "ServiceIntervalHours": 250,
+      "MtbfHours": 320,
+      "InsuranceAnnual": 504,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Construct",
+        "Load"
+      ],
+      "Visual": {
+        "Silhouette": "excavator",
+        "BodyL": 3.6,
+        "BodyW": 1.5,
+        "BodyH": 1.4,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 2.5,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "workRate": 0.72
+      },
+      "Curves": {},
+      "Comment": "2 t mini excavator: hydrant trenches, gun pads, the T-bar footings. Rides up on the light dump truck."
+    },
+    {
+      "Id": "excavator_mid",
+      "DisplayName": "Crawler Excavator",
+      "Category": "Construction",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 21000,
+      "EnginePowerKw": 120,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 366
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 566
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 666
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 619
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 546
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 399
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 350,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.9,
+        "Transit": 6.6,
+        "Working": 13.2,
+        "HighLoad": 16.8
+      },
+      "TrackWidthM": 0.6,
+      "TireSpec": null,
+      "GroundPressureKpa": 45,
+      "MaxGradeDeg": 30,
+      "MaxSideSlopeDeg": 18,
+      "TopSpeedKmh": 5,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 1.0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 235000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 4935,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 34.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 2820,
+      "OperatorLicense": "Heavy",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Construct",
+        "Load",
+        "Lift"
+      ],
+      "Visual": {
+        "Silhouette": "excavator",
+        "BodyL": 6.4,
+        "BodyW": 2.9,
+        "BodyH": 1.8,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 6.0,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "craneClass": 1,
+        "liftCapacityT": 3,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "20 t crawler excavator: tower footings in one shift each, corridor clearing with the grapple, lifts a 3 t tower section in a pinch."
+    },
+    {
+      "Id": "dozer",
+      "DisplayName": "Crawler Dozer",
+      "Category": "Construction",
+      "Tier": 3,
+      "ChassisType": "Tracked",
+      "MassKg": 16500,
+      "EnginePowerKw": 150,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 458
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 707
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 832
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 774
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 682
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 499
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 320,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.4,
+        "Transit": 8.2,
+        "Working": 16.5,
+        "HighLoad": 21.0
+      },
+      "TrackWidthM": 0.56,
+      "TireSpec": null,
+      "GroundPressureKpa": 45,
+      "MaxGradeDeg": 35,
+      "MaxSideSlopeDeg": 18,
+      "TopSpeedKmh": 10,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 260000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 5460,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 38.7,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 3120,
+      "OperatorLicense": "Heavy",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Construct",
+        "Plow",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "groomer",
+        "BodyL": 5.8,
+        "BodyW": 3.2,
+        "BodyH": 1.6,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 0,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "plowWidthM": 3.4,
+        "workRate": 1.1
+      },
+      "Curves": {},
+      "Comment": "Crawler dozer: run grading in autumn, snow farming at the base in winter. Pushes what a groomer's blade cannot."
+    },
+    {
+      "Id": "crane_truck",
+      "DisplayName": "All-Terrain Crane Truck",
+      "Category": "Construction",
+      "Tier": 3,
+      "ChassisType": "Wheeled",
+      "MassKg": 36000,
+      "EnginePowerKw": 300,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 915
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1415
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1664
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1548
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1365
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 999
+        }
+      ],
+      "Transmission": "Powershift",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.8,
+        "Transit": 16.5,
+        "Working": 33.0,
+        "HighLoad": 42.0
+      },
+      "TrackWidthM": 0.6,
+      "TireSpec": {
+        "Size": "385/95R25",
+        "WidthM": 0.39,
+        "Count": 8,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 250,
+      "MaxGradeDeg": 12,
+      "MaxSideSlopeDeg": 8,
+      "TopSpeedKmh": 70,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 10,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 20000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 640000,
+      "UsedMarketMultiplier": 0.54,
+      "LeaseMonthly": 13440,
+      "ResaleCurve": [
+        1.0,
+        0.74,
+        0.58,
+        0.46,
+        0.37,
+        0.3,
+        0.25
+      ],
+      "HourlyOpCost": 91.8,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 520,
+      "InsuranceAnnual": 7680,
+      "OperatorLicense": "Crane",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Lift",
+        "Construct",
+        "Transport"
+      ],
+      "Visual": {
+        "Silhouette": "crane",
+        "BodyL": 10.5,
+        "BodyW": 2.75,
+        "BodyH": 1.8,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 4,
+        "BoomLengthM": 12.0,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "craneClass": 2,
+        "liftCapacityT": 40,
+        "reachM": 36,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "40 t all-terrain crane: sets chair and gondola towers within reach of the cat track. Needs a firm, near-level pad."
+    },
+    {
+      "Id": "crawler_crane",
+      "DisplayName": "Crawler Crane",
+      "Category": "Construction",
+      "Tier": 4,
+      "ChassisType": "Tracked",
+      "MassKg": 80000,
+      "EnginePowerKw": 250,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 763
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 1179
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 1387
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 1290
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 1137
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 832
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 600,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 4.0,
+        "Transit": 13.8,
+        "Working": 27.5,
+        "HighLoad": 35.0
+      },
+      "TrackWidthM": 1.0,
+      "TireSpec": null,
+      "GroundPressureKpa": 90,
+      "MaxGradeDeg": 8,
+      "MaxSideSlopeDeg": 18,
+      "TopSpeedKmh": 2,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 8,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 1150000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 24150,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 150.5,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 13800,
+      "OperatorLicense": "Crane",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Lift",
+        "Construct"
+      ],
+      "Visual": {
+        "Silhouette": "crane",
+        "BodyL": 9.0,
+        "BodyW": 6.0,
+        "BodyH": 2.2,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 30.0,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "craneClass": 3,
+        "liftCapacityT": 100,
+        "reachM": 48,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "100 t lattice-boom crawler crane: gondola and 3S tower work where the terrain allows tracks. Arrives on three lowboys."
+    },
+    {
+      "Id": "spider_excavator",
+      "DisplayName": "Walking Excavator",
+      "Category": "Construction",
+      "Tier": 4,
+      "ChassisType": "Wheeled",
+      "MassKg": 11500,
+      "EnginePowerKw": 110,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 336
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 519
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 610
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 568
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 500
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 366
+        }
+      ],
+      "Transmission": "Hydrostatic",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 260,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.8,
+        "Transit": 6.0,
+        "Working": 12.1,
+        "HighLoad": 15.4
+      },
+      "TrackWidthM": 0.6,
+      "TireSpec": {
+        "Size": "15.5/55R18",
+        "WidthM": 0.4,
+        "Count": 4,
+        "Chains": true,
+        "Duals": false
+      },
+      "GroundPressureKpa": 120,
+      "MaxGradeDeg": 45,
+      "MaxSideSlopeDeg": 8,
+      "TopSpeedKmh": 10,
+      "WorkingSpeedKmh": {
+        "Min": 1,
+        "Max": 5
+      },
+      "TurningRadiusM": 3.0,
+      "HydraulicFlowLpm": 150,
+      "Pto": false,
+      "CabHeated": true,
+      "LightingLumens": 30000,
+      "Seats": 1,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0.5,
+      "TankL": 0,
+      "AttachmentSlots": [
+        {
+          "Position": "Tow",
+          "MaxMassKg": 3000,
+          "RequiresHydraulics": false,
+          "RequiresPto": false,
+          "DefaultAttachmentId": ""
+        }
+      ],
+      "PurchasePrice": 420000,
+      "UsedMarketMultiplier": 0.57,
+      "LeaseMonthly": 8820,
+      "ResaleCurve": [
+        1.0,
+        0.76,
+        0.61,
+        0.49,
+        0.4,
+        0.33,
+        0.27
+      ],
+      "HourlyOpCost": 55.9,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 650,
+      "InsuranceAnnual": 5040,
+      "OperatorLicense": "Heavy",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.3,
+        "Drivetrain": 1.0,
+        "TracksOrTires": 1.1,
+        "Attachment": 1.2
+      },
+      "Roles": [
+        "Construct",
+        "Load"
+      ],
+      "Visual": {
+        "Silhouette": "excavator",
+        "BodyL": 5.8,
+        "BodyW": 2.6,
+        "BodyH": 1.7,
+        "CabL": 1.6,
+        "CabW": 1.8,
+        "CabH": 1.6,
+        "CabOffset": -0.5,
+        "TrackH": 0.9,
+        "WheelRadiusM": 0.55,
+        "Axles": 2,
+        "BoomLengthM": 6.5,
+        "ColorHex": "#f1c40f",
+        "AccentHex": "#1c2833"
+      },
+      "Specs": {
+        "craneClass": 1,
+        "liftCapacityT": 2,
+        "workRate": 0.9
+      },
+      "Curves": {},
+      "Comment": "Walking (spider) excavator: legs and wheels articulate individually, so it digs footings on 45-degree faces the crawler cannot reach."
+    },
+    {
+      "Id": "fuel_cube",
+      "DisplayName": "Fuel Cube Tank",
+      "Category": "Stationary",
+      "Tier": 1,
+      "ChassisType": "Stationary",
+      "MassKg": 900,
+      "EnginePowerKw": 0,
+      "TorqueCurve": [],
+      "Transmission": "None",
+      "FuelType": "None",
+      "FuelCapacityL": 0,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 0,
+        "Transit": 0,
+        "Working": 0,
+        "HighLoad": 0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 0,
+      "MaxGradeDeg": 0,
+      "MaxSideSlopeDeg": 0,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 6500,
+      "UsedMarketMultiplier": 0.48,
+      "LeaseMonthly": 0,
+      "ResaleCurve": [
+        1.0,
+        0.7,
+        0.52,
+        0.4,
+        0.31,
+        0.25,
+        0.2
+      ],
+      "HourlyOpCost": 0.2,
+      "ServiceIntervalHours": 2000,
+      "MtbfHours": 8000,
+      "InsuranceAnnual": 78,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 0.1,
+        "Hydraulics": 0.3,
+        "Drivetrain": 0.1,
+        "TracksOrTires": 0.1,
+        "Attachment": 0.5
+      },
+      "Roles": [
+        "Store"
+      ],
+      "Visual": {
+        "Silhouette": "station",
+        "BodyL": 3.0,
+        "BodyW": 2.0,
+        "BodyH": 2.0,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.1,
+        "WheelRadiusM": 0.1,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#7f8c8d",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "fuelStorageL": 3000
+      },
+      "Curves": {},
+      "Comment": "3,000 L double-walled diesel cube: extra depot storage with a dispensing pump. Delivered full."
+    },
+    {
+      "Id": "pump_skid",
+      "DisplayName": "Diesel Pump Skid",
+      "Category": "Stationary",
+      "Tier": 2,
+      "ChassisType": "Stationary",
+      "MassKg": 3200,
+      "EnginePowerKw": 120,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 366
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 566
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 666
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 619
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 546
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 399
+        }
+      ],
+      "Transmission": "None",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 1.9,
+        "Transit": 6.6,
+        "Working": 13.2,
+        "HighLoad": 16.8
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 0,
+      "MaxGradeDeg": 0,
+      "MaxSideSlopeDeg": 0,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 68000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 1428,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 14.2,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 1500,
+      "InsuranceAnnual": 816,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 1.0,
+        "Drivetrain": 0.3,
+        "TracksOrTires": 0.1,
+        "Attachment": 0.5
+      },
+      "Roles": [
+        "Pump"
+      ],
+      "Visual": {
+        "Silhouette": "station",
+        "BodyL": 3.5,
+        "BodyW": 1.8,
+        "BodyH": 1.8,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.2,
+        "WheelRadiusM": 0.2,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#2980b9",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "pumpLps": 30,
+        "pumpHeadM": 200,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "Trailer-mounted 120 kW diesel pump: 30 L/s at 200 m head. Bridges a snowmaking line until the pump house is upgraded."
+    },
+    {
+      "Id": "compressor_skid",
+      "DisplayName": "Diesel Compressor Skid",
+      "Category": "Stationary",
+      "Tier": 2,
+      "ChassisType": "Stationary",
+      "MassKg": 2900,
+      "EnginePowerKw": 150,
+      "TorqueCurve": [
+        {
+          "Rpm": 800,
+          "TorqueNm": 458
+        },
+        {
+          "Rpm": 1100,
+          "TorqueNm": 707
+        },
+        {
+          "Rpm": 1500,
+          "TorqueNm": 832
+        },
+        {
+          "Rpm": 1800,
+          "TorqueNm": 774
+        },
+        {
+          "Rpm": 2100,
+          "TorqueNm": 682
+        },
+        {
+          "Rpm": 2350,
+          "TorqueNm": 499
+        }
+      ],
+      "Transmission": "None",
+      "FuelType": "Diesel",
+      "FuelCapacityL": 400,
+      "BatteryKwh": 0,
+      "BurnLPerHour": {
+        "Idle": 2.4,
+        "Transit": 8.2,
+        "Working": 16.5,
+        "HighLoad": 21.0
+      },
+      "TrackWidthM": 0,
+      "TireSpec": null,
+      "GroundPressureKpa": 0,
+      "MaxGradeDeg": 0,
+      "MaxSideSlopeDeg": 0,
+      "TopSpeedKmh": 0,
+      "WorkingSpeedKmh": {
+        "Min": 0,
+        "Max": 0
+      },
+      "TurningRadiusM": 0,
+      "HydraulicFlowLpm": 0,
+      "Pto": false,
+      "CabHeated": false,
+      "LightingLumens": 0,
+      "Seats": 0,
+      "CargoCapacityKg": 0,
+      "BucketM3": 0,
+      "TankL": 0,
+      "AttachmentSlots": [],
+      "PurchasePrice": 62000,
+      "UsedMarketMultiplier": 0.51,
+      "LeaseMonthly": 1302,
+      "ResaleCurve": [
+        1.0,
+        0.72,
+        0.55,
+        0.43,
+        0.34,
+        0.27,
+        0.22
+      ],
+      "HourlyOpCost": 14.9,
+      "ServiceIntervalHours": 500,
+      "MtbfHours": 1500,
+      "InsuranceAnnual": 744,
+      "OperatorLicense": "Basic",
+      "WearRates": {
+        "Engine": 1.0,
+        "Hydraulics": 0.8,
+        "Drivetrain": 0.3,
+        "TracksOrTires": 0.1,
+        "Attachment": 0.5
+      },
+      "Roles": [
+        "Compress"
+      ],
+      "Visual": {
+        "Silhouette": "station",
+        "BodyL": 3.5,
+        "BodyW": 1.8,
+        "BodyH": 1.8,
+        "CabL": 0,
+        "CabW": 0,
+        "CabH": 0,
+        "CabOffset": 0,
+        "TrackH": 0.2,
+        "WheelRadiusM": 0.2,
+        "Axles": 0,
+        "BoomLengthM": 0,
+        "ColorHex": "#2980b9",
+        "AccentHex": "#2c3e50"
+      },
+      "Specs": {
+        "airM3PerMin": 20,
+        "workRate": 1.0
+      },
+      "Curves": {},
+      "Comment": "Trailer-mounted 150 kW compressor: 20 m3/min at 8 bar for a bank of lance guns."
+    }
+  ]
+}

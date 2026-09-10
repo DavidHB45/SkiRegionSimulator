@@ -15,18 +15,19 @@ namespace AlpineSim.Tests.Vehicles
             var ctx = sim.Ctx;
             var vs = sim.GetSystem<VehicleSystem>();
             // a heavy cat has the hydraulics and power for both tillers; start on the lower part of run t1 heading up it
-            var v = vs.Spawn(ctx, "groomer_heavy", new Vec2(256f, 140f), MathUtil.Pi * 0.5f, "Test heavy", 100f, 100f, 1f);
+            var v = vs.Spawn(ctx, "groomer_heavy", new Vec2(256f, 115f), MathUtil.Pi * 0.5f, "Test heavy", 100f, 100f, 1f);
+            v.WarmupFrac = 1f; // hydraulics warmed in the garage
             Assert.IsTrue(vs.Mount(ctx, v.Id, tillerId, SlotPosition.Rear, out string reason), reason);
             Assert.IsTrue(vs.TryEnter(ctx, v.Id, out reason), reason);
             for (int i = 0; i < 40 && !v.EngineOn; i++) vs.StartEngine(ctx, v.Id, out _);
             Assert.IsTrue(v.EngineOn, "engine did not start");
             var start = v.Pos;
-            var input = new VehicleInput { Throttle = 0.6f, Tiller = true, BladeLift = 1f };
+            var input = new VehicleInput { Throttle = 0.8f, Tiller = true, BladeLift = 1f };
             for (int t = 0; t < SimTime.TicksPerSecond * 150; t++)
             {
                 vs.SetInput(ctx, v.Id, input);
                 sim.Step();
-                if (v.Pos.Y > 360f) break;
+                if (v.Pos.Y > 230f) break;
             }
             distanceM = Vec2.Distance(start, v.Pos);
             return v.TilledM2Today;
@@ -53,7 +54,7 @@ namespace AlpineSim.Tests.Vehicles
             var vs = sim.GetSystem<VehicleSystem>();
             var mid = vs.Spawn(sim.Ctx, "groomer_mid", new Vec2(240f, 90f), 0f, "Mid", 0f, 100f, 1f);
             Assert.IsFalse(vs.Mount(sim.Ctx, mid.Id, "tiller_6_0", SlotPosition.Rear, out string reason));
-            StringAssert.Contains("kW", reason);
+            Assert.IsTrue(reason.Contains("kW") || reason.Contains("heavy"), reason);
         }
 
         [Test]

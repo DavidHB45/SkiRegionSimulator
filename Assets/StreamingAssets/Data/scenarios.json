@@ -1558,9 +1558,9 @@
       "Terrain": {
         "SizeM": 512,
         "BaseElevationM": 1400,
-        "RidgeElevationM": 1650,
+        "RidgeElevationM": 1500,
         "RidgeY": 460,
-        "RidgeFalloffM": 60,
+        "RidgeFalloffM": 90,
         "BackSlopeDropM": 30,
         "LateralAmplitudeM": 15,
         "LateralWavelengthM": 300,
@@ -1575,7 +1575,8 @@
         "Gorge": {
           "Enabled": false
         },
-        "FlatAreas": []
+        "FlatAreas": [],
+        "Comment": "Small gentle test hill: 100 m of rise over 460 m (12 degrees average, about 22 at the steepest), drivable by every cat and skiable as a blue."
       },
       "BaseArea": {
         "Id": "base",

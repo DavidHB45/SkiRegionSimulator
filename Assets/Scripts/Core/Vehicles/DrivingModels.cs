@@ -67,14 +67,15 @@ namespace AlpineSim.Core.Vehicles
             // power-limited drive force toward target
             float eff = t.F("vehicles.driveEfficiency");
             float pAvail = MathF.Max(0f, dc.PowerAvailW - dc.ImplementPowerW) * eff;
-            float fTractionMax = dc.TractionCoeff * tractionScale * normal * MathUtil.Clamp01(1f - ratio * 0.35f);
+            float sinkFrac = v.Sinkage / MathF.Max(0.01f, t.F("vehicles.sinkageMaxM"));
+            float fTractionMax = dc.TractionCoeff * tractionScale * normal * MathUtil.Clamp01(1f - sinkFrac * t.F("vehicles.sinkageTractionLoss"));
             float fDrive = 0f;
             if (MathF.Abs(throttle) > 0.01f)
             {
                 float dir = target > speed ? 1f : -1f;
                 float fPower = pAvail / MathF.Max(0.6f, MathF.Abs(speed));
                 // hydrostatic: full force at low speed, limited by power at speed
-                fDrive = dir * MathF.Min(fPower, m * 3.5f);
+                fDrive = dir * MathF.Min(fPower, m * g * t.F("vehicles.maxTractiveEffortG"));
                 // do not overshoot the target speed
                 float needed = (target - speed) / dt * m;
                 if (MathF.Abs(needed) < MathF.Abs(fDrive)) fDrive = needed;
