@@ -69,12 +69,53 @@ namespace AlpineSim.Core.Tasks
             // evening job board: one groom job per open, groomable piste that needs it
             if (ctx.Time.IsHourStart && ctx.Time.HourOfDay == ctx.Tuning.I("simulation.resortCloseHour") && ctx.Tuning.I("tasks.autoGroomJobs") != 0)
                 PostEveningGroomJobs(ctx);
+            // the night foreman: idle machines with a free operator take open jobs by priority
+            if (ctx.Time.IsMinuteStart && ctx.Tuning.I("tasks.autoDispatch") != 0) AutoDispatch(ctx);
             // prune finished tasks older than a day
             if (ctx.Time.IsHourStart)
             {
                 long cutoff = ctx.Time.Tick - SimTime.TicksPerDay;
                 board.Tasks.RemoveAll(t => (t.Status == TaskStatus.Done || t.Status == TaskStatus.Cancelled) && t.CompletedTick >= 0 && t.CompletedTick < cutoff);
             }
+        }
+
+        private readonly List<WorkTask> _openTmp = new List<WorkTask>();
+
+        /// <summary>
+        /// Foreman dispatch: every open job, highest priority first, goes to an idle AI machine that can do it.
+        /// A machine without a driver gets a free, rested operator who holds the licence (the fleet system
+        /// supplies that); the player's own machine and machines already on a job are left alone.
+        /// </summary>
+        public int AutoDispatch(SimContext ctx)
+        {
+            var board = ctx.World.TaskBoard;
+            var vs = ctx.System<VehicleSystem>();
+            ctx.TryGetSystem<Fleet.FleetSystem>(out var fleet);
+            _openTmp.Clear();
+            for (int i = 0; i < board.Tasks.Count; i++) if (board.Tasks[i].Status == TaskStatus.Open && board.Tasks[i].AssignedVehicleId < 0) _openTmp.Add(board.Tasks[i]);
+            if (_openTmp.Count == 0) return 0;
+            _openTmp.Sort((a, b) => { int c = b.Priority.CompareTo(a.Priority); return c != 0 ? c : a.Id.CompareTo(b.Id); });
+            int dispatched = 0;
+            var vehicles = ctx.World.Vehicles.List;
+            foreach (var task in _openTmp)
+            {
+                VehicleState pick = null;
+                float bestDist = float.MaxValue;
+                for (int i = 0; i < vehicles.Count; i++)
+                {
+                    var v = vehicles[i];
+                    if (v.PlayerControlled || v.TaskId >= 0 || v.Ai.Mode != AiMode.Idle || !v.IsUsable || v.PlacedGunId >= 0) continue;
+                    var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+                    if (def == null || def.IsStationary || def.ChassisType == ChassisType.Towed) continue;
+                    if (v.OperatorId < 0 && (fleet == null || !fleet.StaffMachine(ctx, v, task.RequiredLicense))) continue;
+                    if (!CanVehicleDo(ctx, task, v, out _)) continue;
+                    float d = Vec2.Distance(v.Pos, task.Site);
+                    if (d < bestDist) { bestDist = d; pick = v; }
+                }
+                if (pick == null) continue;
+                if (Assign(ctx, task.Id, pick.Id, out _)) dispatched++;
+            }
+            return dispatched;
         }
 
         /// <summary>Fraction of a piste's cells groomed since a tick (0..1). Cell lists are rebuilt on load by the piste builder.</summary>

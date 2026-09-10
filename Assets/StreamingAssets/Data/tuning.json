@@ -1360,12 +1360,26 @@
       "unit": "0-1",
       "comment": "Satisfaction a cohort arrives with."
     },
+    "satNeutral": {
+      "value": 0.6,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "Score of an unremarkable experience (a lap on decent snow, a short queue). Every term in the satisfaction model is a delta from here."
+    },
+    "satBlend": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "How far satisfaction moves toward each new experience score (exponential moving average). 0.3 means the last five or six experiences dominate the mood."
+    },
     "satPqiWeight": {
-      "value": 0.55,
+      "value": 1.2,
       "min": 0.2,
       "max": 1.0,
       "unit": "x",
-      "comment": "Satisfaction delta per lap per unit of (PQI/100 - neutral)."
+      "comment": "Snow quality is the pillar: a lap on PQI 46 snow scores 0.19 below neutral, a lap on PQI 80 corduroy 0.22 above. Survey basis: surface quality is the top-cited driver of return visits."
     },
     "satPqiNeutral": {
       "value": 0.62,
@@ -1775,6 +1789,13 @@
       "max": 100,
       "unit": "PQI",
       "comment": "Pistes at or above this PQI at close are skipped for the night (a run skied lightly on a cold day keeps its corduroy)."
+    },
+    "autoDispatch": {
+      "value": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "bool",
+      "comment": "Night foreman: idle machines with a free licensed operator take open jobs by priority without the player. 0 = the player dispatches every job from the board."
     }
   }
 }

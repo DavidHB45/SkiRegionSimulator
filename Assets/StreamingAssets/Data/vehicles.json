@@ -773,7 +773,7 @@
         },
         {
           "Position": "Roof",
-          "MaxMassKg": 1500,
+          "MaxMassKg": 1800,
           "RequiresHydraulics": true,
           "RequiresPto": false,
           "DefaultAttachmentId": "winch_4_5t"
@@ -917,7 +917,7 @@
         },
         {
           "Position": "Roof",
-          "MaxMassKg": 1500,
+          "MaxMassKg": 1800,
           "RequiresHydraulics": true,
           "RequiresPto": false,
           "DefaultAttachmentId": "winch_4_5t"
@@ -1335,7 +1335,7 @@
         },
         {
           "Position": "Roof",
-          "MaxMassKg": 1500,
+          "MaxMassKg": 1800,
           "RequiresHydraulics": true,
           "RequiresPto": false,
           "DefaultAttachmentId": "winch_5t"
@@ -3052,7 +3052,7 @@
           "MaxMassKg": 700,
           "RequiresHydraulics": true,
           "RequiresPto": true,
-          "DefaultAttachmentId": "spreader_hopper_4m3"
+          "DefaultAttachmentId": ""
         },
         {
           "Position": "Tow",
@@ -3114,7 +3114,7 @@
         "workRate": 0.78
       },
       "Curves": {},
-      "Comment": "40 kW compact tractor with a front plow and rear spreader: sidewalks, the lodge lot, the T-bar ramp."
+      "Comment": "40 kW compact tractor with a front plow: sidewalks, the lodge lot, the T-bar ramp. Too light for the 4 m3 hopper."
     },
     {
       "Id": "tractor_utility",

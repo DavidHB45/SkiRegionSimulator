@@ -12,6 +12,11 @@ namespace AlpineSim.Tests.Economy
     [TestFixture]
     public sealed class ActFourTrapTests
     {
+        /// <summary>
+        /// Silberhorn with the quad as the given type. The detachable is an upgrade the resort has to pay
+        /// for, so its run borrows the capex difference over the default loan term; grooming is whatever the
+        /// night foreman gets out of the scenario's two cats in both runs.
+        /// </summary>
         private static Simulation Run(string quadType, int seed)
         {
             var data = TestEnv.FreshData();
@@ -19,6 +24,18 @@ namespace AlpineSim.Tests.Economy
             var scen = data.GetScenario("default");
             foreach (var l in scen.Lifts) if (l.Id == "quad") l.TypeId = quadType;
             var sim = Simulation.CreateNew(data, seed, "default");
+            sim.World.Economy.Act = 4; // the Act IV decision: both runs at Act IV demand and credit
+            if (quadType != "fixed_quad")
+            {
+                var quad = sim.World.Lifts.Lifts.Find(l => l.TypeId == quadType);
+                var baseline = Core.Lifts.LiftSystem.Capex(sim.Ctx, data.RequireLiftType("fixed_quad"), quad.LengthM, quad.Towers.Count, quad.Carriers, quad.Options);
+                double upgrade = quad.CapexTotal - baseline;
+                Assert.Greater(upgrade, 0, "a detachable must cost more than a fixed grip");
+                var eco = sim.GetSystem<EconomySystem>();
+                var loan = eco.TakeLoan(sim.Ctx, upgrade, data.Economy.LoanTermDaysDefault, "detachable upgrade", out string reason);
+                Assert.IsNotNull(loan, reason);
+                sim.World.Economy.Cash -= upgrade; // the money went to the lift builder
+            }
             sim.StepDays(30);
             return sim;
         }

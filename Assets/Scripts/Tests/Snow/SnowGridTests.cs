@@ -145,7 +145,9 @@ namespace AlpineSim.Tests.Snow
         [Test]
         public void HourlyPqiIsPublishedAndTickIsCheap()
         {
-            var sim = NewSim();
+            var data = TestEnv.FreshData();
+            data.Tuning.Override("tasks.autoDispatch", 0f); // idle resort: the foreman would send the cat out to plow
+            var sim = Simulation.CreateNew(data, 11, "test_small");
             int published = 0;
             sim.Events.Subscribe<PqiPublishedEvent>(e => published++);
             var sw = System.Diagnostics.Stopwatch.StartNew();

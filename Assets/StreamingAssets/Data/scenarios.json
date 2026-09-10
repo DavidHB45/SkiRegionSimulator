@@ -806,7 +806,7 @@
       },
       "ReservoirInitialM3": 45000,
       "ReservoirCapacityM3": 60000,
-      "StartTicketPrice": 68,
+      "StartTicketPrice": 55,
       "StartReputation": 50,
       "ClimateId": "alpine"
     },
@@ -1542,7 +1542,7 @@
       },
       "ReservoirInitialM3": 45000,
       "ReservoirCapacityM3": 60000,
-      "StartTicketPrice": 45,
+      "StartTicketPrice": 38,
       "StartReputation": 42,
       "ClimateId": "alpine"
     },

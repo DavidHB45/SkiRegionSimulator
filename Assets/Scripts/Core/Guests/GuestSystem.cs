@@ -33,6 +33,8 @@ namespace AlpineSim.Core.Guests
 
         public void Initialize(SimContext ctx, bool newGame)
         {
+            _satNeutral = ctx.Tuning.F("guests.satNeutral");
+            _satBlend = ctx.Tuning.F("guests.satBlend");
             var g = ctx.World.Guests;
             if (g == null) ctx.World.Guests = g = new GuestPopulationState();
             if (newGame)
@@ -490,10 +492,17 @@ namespace AlpineSim.Core.Guests
             }
         }
 
-        private static void Experience(GuestAgent a, GuestArchetypeDef arch, float delta)
+        private float _satNeutral = 0.6f, _satBlend = 0.3f;
+
+        /// <summary>
+        /// One experience (a ride, a run, lunch, the ticket window) scores neutral + delta; satisfaction is the
+        /// moving average of those scores, so a steady 7-minute queue settles at a steady level instead of
+        /// grinding satisfaction to zero over a day of laps.
+        /// </summary>
+        private void Experience(GuestAgent a, GuestArchetypeDef arch, float delta)
         {
-            float target = MathUtil.Clamp01(a.Satisfaction + delta);
-            a.Satisfaction = MathUtil.Clamp01(a.Satisfaction + (target - a.Satisfaction) * 0.5f);
+            float score = MathUtil.Clamp01(_satNeutral + delta);
+            a.Satisfaction = MathUtil.Clamp01(a.Satisfaction + (score - a.Satisfaction) * _satBlend);
         }
 
         private void Leave(SimContext ctx, GuestAgent a, string why)

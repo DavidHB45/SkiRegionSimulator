@@ -215,6 +215,25 @@ namespace AlpineSim.Core.Fleet
             return true;
         }
 
+        /// <summary>Puts a free, rested operator who holds the machine's licence (and the job's) on the machine; false when nobody qualifies.</summary>
+        public bool StaffMachine(SimContext ctx, VehicleState v, OperatorLicense jobLicence)
+        {
+            var f = ctx.World.Fleet;
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+            if (def == null) return false;
+            OperatorState best = null;
+            foreach (var op in f.Operators)
+            {
+                if (op.IsPlayer || op.AssignedVehicleId >= 0 || op.TrainingLicensePending >= 0) continue;
+                if (op.HoursToday >= ctx.Data.Operators.ShiftHours) continue;
+                if (!OperatorLicensedFor(ctx, op, def)) continue;
+                if (jobLicence != OperatorLicense.Basic && !op.Has(jobLicence)) continue;
+                if (best == null || op.Competence > best.Competence) best = op;
+            }
+            if (best == null) return false;
+            return AssignOperator(ctx, best.Id, v.Id, out _);
+        }
+
         public void UnassignOperator(SimContext ctx, int operatorId)
         {
             var f = ctx.World.Fleet;

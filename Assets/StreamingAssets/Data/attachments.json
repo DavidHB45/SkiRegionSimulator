@@ -535,7 +535,7 @@
         "Rear"
       ],
       "MassKg": 1800,
-      "HydraulicFlowLpm": 180,
+      "HydraulicFlowLpm": 150,
       "RequiresPto": false,
       "WorkingWidthM": 4.3,
       "Effects": {
@@ -573,7 +573,7 @@
       "ForCategories": [
         "Groomer"
       ],
-      "MinHostPowerKw": 180,
+      "MinHostPowerKw": 140,
       "Visual": {
         "Silhouette": "trailer",
         "BodyL": 4.3,
@@ -590,7 +590,7 @@
         "ColorHex": "#7f8c8d",
         "AccentHex": "#2c3e50"
       },
-      "Comment": "4.3 m power tiller with finisher comb: re-lays the surface at 430 kg/m3 and prints the corduroy. Four lanes on a 40 m run."
+      "Comment": "4.3 m power tiller with finisher comb: re-lays the surface at 430 kg/m3 and prints the corduroy. Four lanes on a 40 m run; a 150 kW cat pulls it slowly."
     },
     {
       "Id": "tiller_6_0",
