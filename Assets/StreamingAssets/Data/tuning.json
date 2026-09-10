@@ -1461,6 +1461,13 @@
       "max": 4000,
       "unit": "h",
       "comment": "Nozzle set life before output drops 30%."
+    },
+    "wetBulbMaxC": {
+      "value": -2.5,
+      "min": -6,
+      "max": 0,
+      "unit": "degC wet-bulb",
+      "comment": "Marginal snowmaking threshold shown to the player: fan guns start producing usable snow at about -2.5 C wet-bulb (real practice quotes -2 to -3 C). Each gun's own output curve decides actual production."
     }
   },
   "construction": {
@@ -1731,6 +1738,22 @@
       "max": 1.0,
       "unit": "x",
       "comment": "Daily random-walk scale on the depot's price volatility."
+    }
+  },
+  "tasks": {
+    "autoGroomJobs": {
+      "value": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "bool",
+      "comment": "Post one grooming job per open piste at resort close. Resorts run a nightly groom plan; 1 = on, 0 = player posts jobs manually."
+    },
+    "groomJobPqiBelow": {
+      "value": 92,
+      "min": 0,
+      "max": 100,
+      "unit": "PQI",
+      "comment": "Pistes at or above this PQI at close are skipped for the night (a run skied lightly on a cold day keeps its corduroy)."
     }
   }
 }
