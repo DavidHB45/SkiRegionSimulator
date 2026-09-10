@@ -130,7 +130,16 @@ namespace AlpineSim.Core.Lifts
             int count = System.Math.Max(1, (int)MathF.Round(length / spacing) - 1);
             float step = length / (count + 1);
             maxGradeDeg = 0f;
-            for (float s = 0f; s <= length; s += 10f) maxGradeDeg = MathF.Max(maxGradeDeg, MathF.Abs(terrain.GradeAlongDeg(bottom.X + dir.X * s, bottom.Y + dir.Y * s, dir)));
+            if (type.IsSurface)
+            {
+                // surface lifts tow skiers on the ground: the grade that matters is the ground grade, smoothed over a 30 m window
+                for (float s = 0f; s <= length; s += 10f)
+                {
+                    float g = 0f; int n = 0;
+                    for (float o = -15f; o <= 15f; o += 5f) { float u = MathUtil.Clamp(s + o, 0f, length); g += terrain.GradeAlongDeg(bottom.X + dir.X * u, bottom.Y + dir.Y * u, dir); n++; }
+                    maxGradeDeg = MathF.Max(maxGradeDeg, MathF.Abs(g / n));
+                }
+            }
             float last = 0f;
             maxSpanM = 0f;
             for (int i = 1; i <= count; i++)
@@ -150,6 +159,19 @@ namespace AlpineSim.Core.Lifts
             }
             maxSpanM = MathF.Max(maxSpanM, length - last);
             if (towers.Count == 0) maxSpanM = length;
+            if (!type.IsSurface)
+            {
+                // aerial lifts: the rope grade between consecutive supports (terminals and towers)
+                Vec2 prev = bottom; float prevH = terrain.SampleHeight(bottom);
+                for (int i = 0; i <= towers.Count; i++)
+                {
+                    Vec2 next = i < towers.Count ? towers[i] : top;
+                    float h = terrain.SampleHeight(next);
+                    float d = Vec2.Distance(prev, next);
+                    if (d > 1f) maxGradeDeg = MathF.Max(maxGradeDeg, MathF.Abs(MathF.Atan((h - prevH) / d) * MathUtil.Rad2Deg));
+                    prev = next; prevH = h;
+                }
+            }
             return towers;
         }
 
@@ -170,10 +192,12 @@ namespace AlpineSim.Core.Lifts
             return true;
         }
 
-        public void SetOpen(SimContext ctx, int id, bool open)
+        /// <summary>Player or automatic open/close. A lift the player closed stays closed until reopened; the resort's hours open and close the rest.</summary>
+        public void SetOpen(SimContext ctx, int id, bool open, bool byPlayer = true)
         {
             var l = Get(ctx, id);
             if (l == null || !l.IsBuilt) return;
+            if (byPlayer) l.PlayerClosed = !open;
             if (open && l.Status == LiftStatus.Closed) SetStatus(ctx, l, LiftStatus.Open, "opened");
             else if (!open && (l.Status == LiftStatus.Open || l.Status == LiftStatus.WindHold || l.Status == LiftStatus.ColdHold || l.Status == LiftStatus.LightningHold))
             {
@@ -292,12 +316,17 @@ namespace AlpineSim.Core.Lifts
             bool minute = time.IsMinuteStart;
             bool hour = time.IsHourStart;
             ctx.TryGetSystem<EconomySystem>(out var eco);
+            // resort hours: lifts open when the resort opens and close after the last ride, unless the player closed them
+            bool opening = hour && time.HourOfDay == t.I("simulation.resortOpenHour");
+            bool closing = hour && time.HourOfDay == t.I("simulation.resortCloseHour");
             for (int i = 0; i < lifts.Count; i++)
             {
                 var l = lifts[i];
                 var type = l.Type ?? (l.Type = ctx.Data.LiftType(l.TypeId));
                 if (type == null || !l.IsBuilt) continue;
                 if (!_arrivals.ContainsKey(l.Id)) _arrivals[l.Id] = new List<RiderCohort>();
+                if (opening && l.Status == LiftStatus.Closed && !l.PlayerClosed) SetOpen(ctx, l.Id, true, false);
+                if (closing && !l.NightLighting && (l.Status == LiftStatus.Open || l.Status == LiftStatus.WindHold || l.Status == LiftStatus.ColdHold || l.Status == LiftStatus.LightningHold)) SetOpen(ctx, l.Id, false, false);
 
                 // breakdown / inspection timers
                 if (l.Status == LiftStatus.Breakdown || l.Status == LiftStatus.Inspection)

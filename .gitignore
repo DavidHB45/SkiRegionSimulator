@@ -52,3 +52,4 @@ Thumbs.db
 
 # agent worktrees
 .claude/worktrees/
+!/sim/UnityStubs/UnityStubs.csproj

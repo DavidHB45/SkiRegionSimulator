@@ -74,6 +74,8 @@ namespace AlpineSim.Core.Lifts
         public int MidStation = -1;
         public bool NightLighting;
         public bool PrebuiltByScenario;
+        /// <summary>Closed by the player (stays closed through the resort's opening hour).</summary>
+        public bool PlayerClosed;
 
         [JsonIgnore] public LiftTypeDef Type;
 

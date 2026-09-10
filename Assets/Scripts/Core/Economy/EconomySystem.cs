@@ -211,7 +211,7 @@ namespace AlpineSim.Core.Economy
             var rep = new DailyReport { Day = closedDay, CashStart = e.CashAtDayStart, CashEnd = e.Cash };
             foreach (var en in e.Ledger)
             {
-                if (en.Day != closedDay) continue;
+                if (en.Tick <= e.LastCloseTick) continue;
                 rep.Entries++;
                 if (en.Amount >= 0) rep.Revenue += en.Amount; else rep.Costs -= en.Amount;
                 string k = en.Category.ToString();
@@ -222,6 +222,7 @@ namespace AlpineSim.Core.Economy
             rep.AvgPqi = ctx.World.Pistes != null ? ctx.World.Pistes.ResortPqi : 0f;
             rep.Reputation = ctx.World.Guests != null ? ctx.World.Guests.Reputation : 50f;
             e.Daily.Add(rep);
+            e.LastCloseTick = ctx.Time.Tick;
             e.DaysInBusiness++;
             e.TodayRevenue = 0; e.TodayCosts = 0;
             e.CashAtDayStart = e.Cash;

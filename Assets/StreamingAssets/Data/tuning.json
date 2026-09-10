@@ -1311,6 +1311,13 @@
       "unit": "0-1",
       "comment": "Fatigue per run for an 8-lap-a-day guest."
     },
+    "referenceLapVerticalM": {
+      "value": 300,
+      "min": 100,
+      "max": 800,
+      "unit": "m",
+      "comment": "Vertical drop of the lap that fatiguePerLap refers to. A typical mid-mountain run is 250-350 m vertical; an 8-lap day on such runs is about 2,400 m skied."
+    },
     "comfortColdStartC": {
       "value": -8,
       "min": -15,

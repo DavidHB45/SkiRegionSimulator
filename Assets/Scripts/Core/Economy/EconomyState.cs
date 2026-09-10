@@ -85,6 +85,8 @@ namespace AlpineSim.Core.Economy
         public double FleetBookValue;
         /// <summary>Ledger entries are trimmed to this many days of history (older days survive in Daily reports).</summary>
         public int LedgerRetentionDays = 45;
+        /// <summary>Tick of the last daily close; the next report covers every entry posted after it.</summary>
+        public long LastCloseTick = -1;
     }
 
     public struct LedgerPostedEvent { public LedgerEntry Entry; public double CashAfter; }

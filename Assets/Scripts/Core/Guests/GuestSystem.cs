@@ -470,7 +470,9 @@ namespace AlpineSim.Core.Guests
             bool inWindow = arch == null || (piste.Difficulty >= arch.MinDifficulty && piste.Difficulty <= arch.MaxDifficulty);
             float terrainTerm = (arch != null ? arch.TerrainWeight : 1f) * t.F("guests.satTerrainWeight") * (inWindow ? (1f - MathF.Abs((int)piste.Difficulty - (int)(arch != null ? arch.PreferredDifficulty : PisteDifficulty.Blue)) * 0.35f) - 0.5f : -0.8f);
             Experience(a, arch, pqiTerm + terrainTerm);
-            a.Fatigue += t.F("guests.fatiguePerLap") / MathF.Max(0.3f, arch != null ? arch.LapsPerDayTarget / 8f : 1f);
+            // legs tire by vertical skied, not by lap count: a bunny-hill lap costs a fraction of a summit run
+            float lapVertical = MathF.Max(20f, piste.VerticalM) / t.F("guests.referenceLapVerticalM");
+            a.Fatigue += t.F("guests.fatiguePerLap") * lapVertical / MathF.Max(0.3f, arch != null ? arch.LapsPerDayTarget / 8f : 1f);
             // bottom node: base or a lift bottom
             a.Pos = piste.Points[piste.Points.Count - 1];
             var node = ctx.World.Pistes.Node(piste.BottomNodeId);

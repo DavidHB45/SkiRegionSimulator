@@ -1,0 +1,23 @@
+<Project>
+  <!--
+    Compile-only stand-ins for the subset of the UnityEngine / UnityEditor / Input System API that
+    AlpineSim.Unity uses. They let `dotnet build sim/AlpineSim.Unity.CompileCheck.csproj` catch type
+    and signature errors in the Unity layer without an editor. Signatures mirror the real API; bodies
+    are empty. NEVER ship or reference this assembly from Unity.
+  -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/</BaseOutputPath>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>UnityStubs</AssemblyName>
+    <NoWarn>CS0067;CS0169;CS0414;CS0649;CS0108;CS1591;CS0659;CS0661;CS0660</NoWarn>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

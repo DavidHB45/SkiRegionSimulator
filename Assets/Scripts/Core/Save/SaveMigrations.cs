@@ -18,6 +18,7 @@ namespace AlpineSim.Core.Save
         private static readonly Dictionary<int, Action<JsonNode>> Steps = new Dictionary<int, Action<JsonNode>>
         {
             { 1, MigrateV1ToV2 },
+            { 2, MigrateV2ToV3 },
         };
 
         /// <summary>Returns the migrated document (mutated in place) and the resulting version.</summary>
@@ -41,6 +42,10 @@ namespace AlpineSim.Core.Save
         }
 
         // v1 -> v2: RngState array -> Rng object; add Log; default ScenarioId.
+        /// <summary>v3: LiftState.PlayerClosed and EconomyState.LastCloseTick were added. Absent members keep their defaults
+        /// (false / -1), which is the correct pre-v3 behaviour, so the step only stamps the version.</summary>
+        private static void MigrateV2ToV3(JsonNode root) { }
+
         private static void MigrateV1ToV2(JsonNode root)
         {
             var world = root["world"];
