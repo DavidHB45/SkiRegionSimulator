@@ -18,6 +18,7 @@ namespace AlpineSim.Core.Vehicles
         private readonly List<Vec2> _verts = new List<Vec2>();
         private readonly List<List<int>> _adj = new List<List<int>>();
         private readonly List<List<float>> _cost = new List<List<float>>();
+        private readonly List<List<float>> _grade = new List<List<float>>();
         private int _builtForVersion = -1;
 
         public int VertexCount => _verts.Count;
@@ -35,20 +36,20 @@ namespace AlpineSim.Core.Vehicles
         public void Build(PisteNetwork net, Vec2 basePos, float linkRadiusM, Terrain.TerrainData terrain = null, float maxGradeDeg = 24f, float longLinkRadiusM = 0f, float steepFactor = 20f)
         {
             _terrain = terrain; _maxGradeDeg = maxGradeDeg; _steepFactor = steepFactor;
-            _verts.Clear(); _adj.Clear(); _cost.Clear();
+            _verts.Clear(); _adj.Clear(); _cost.Clear(); _grade.Clear();
             void AddPolyline(List<Vec2> pts, float costFactor)
             {
                 int first = _verts.Count;
-                for (int i = 0; i < pts.Count; i++) { _verts.Add(pts[i]); _adj.Add(new List<int>()); _cost.Add(new List<float>()); }
+                for (int i = 0; i < pts.Count; i++) { _verts.Add(pts[i]); _adj.Add(new List<int>()); _cost.Add(new List<float>()); _grade.Add(new List<float>()); }
                 for (int i = 0; i < pts.Count - 1; i++) Link(first + i, first + i + 1, costFactor);
             }
             foreach (var z in net.Zones)
             {
                 if (z.Kind == ZoneKind.Road || z.Kind == ZoneKind.CatTrack) AddPolyline(z.Points, 1f);
-                else if (z.Points.Count > 0) { _verts.Add(z.Points[0]); _adj.Add(new List<int>()); _cost.Add(new List<float>()); }
+                else if (z.Points.Count > 0) { _verts.Add(z.Points[0]); _adj.Add(new List<int>()); _cost.Add(new List<float>()); _grade.Add(new List<float>()); }
             }
             foreach (var p in net.Pistes) AddPolyline(p.Points, 1.3f);
-            _verts.Add(basePos); _adj.Add(new List<int>()); _cost.Add(new List<float>());
+            _verts.Add(basePos); _adj.Add(new List<int>()); _cost.Add(new List<float>()); _grade.Add(new List<float>());
             // proximity links, then longer cross-country links where the ground allows
             float r2 = linkRadiusM * linkRadiusM;
             float l2 = longLinkRadiusM * longLinkRadiusM;
@@ -59,6 +60,39 @@ namespace AlpineSim.Core.Vehicles
                     if (d2 <= r2) Link(i, j, 1f);
                     else if (d2 <= l2 && terrain != null && Passable(_verts[i], _verts[j])) Link(i, j, 1.2f);
                 }
+        }
+
+        private int NearestReachable(Vec2 p, float radius, float maxGradeDeg)
+        {
+            // score = distance stretched by the climb on the straight leg: a vertex twice as far but downhill beats one
+            // up a 26-degree pitch, which a machine standing in fresh snow may not be able to start on at all
+            int best = -1; float bs = float.MaxValue;
+            float r2 = radius * radius * 4f;
+            for (int i = 0; i < _verts.Count; i++)
+            {
+                float d2 = Vec2.SqrDistance(_verts[i], p);
+                if (d2 > r2) continue;
+                float score = MathF.Sqrt(d2);
+                if (_terrain != null && maxGradeDeg < 89f)
+                {
+                    float climb = SignedGradeAlong(p, _verts[i]);
+                    if (climb > maxGradeDeg) continue;
+                    if (climb > 0f) score *= 1f + climb / 8f;
+                }
+                if (score < bs) { bs = score; best = i; }
+            }
+            return best >= 0 ? best : Nearest(p, radius);
+        }
+
+        /// <summary>Steepest climb (positive) along a straight leg from a to b, sampled every 5 m.</summary>
+        private float SignedGradeAlong(Vec2 a, Vec2 b)
+        {
+            float len = Vec2.Distance(a, b);
+            if (len < 1f) return 0f;
+            Vec2 dir = (b - a) / len;
+            float worst = -90f;
+            for (float s = 0f; s <= len; s += 5f) worst = MathF.Max(worst, _terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 6f));
+            return worst;
         }
 
         /// <summary>Steepest grade along a straight segment, sampled every 10 m (0 without terrain).</summary>
@@ -87,8 +121,8 @@ namespace AlpineSim.Core.Vehicles
             float grade = MaxGradeAlong(_verts[a], _verts[b]);
             float gradeFactor = grade > _maxGradeDeg ? _steepFactor : 1f + 0.5f * grade / MathF.Max(1f, _maxGradeDeg);
             float d = Vec2.Distance(_verts[a], _verts[b]) * factor * gradeFactor;
-            if (!_adj[a].Contains(b)) { _adj[a].Add(b); _cost[a].Add(d); }
-            if (!_adj[b].Contains(a)) { _adj[b].Add(a); _cost[b].Add(d); }
+            if (!_adj[a].Contains(b)) { _adj[a].Add(b); _cost[a].Add(d); _grade[a].Add(grade); }
+            if (!_adj[b].Contains(a)) { _adj[b].Add(a); _cost[b].Add(d); _grade[b].Add(grade); }
         }
 
         private int Nearest(Vec2 p, float maxDist)
@@ -103,11 +137,17 @@ namespace AlpineSim.Core.Vehicles
         }
 
         /// <summary>Route from a to b along the graph (includes a and b). Falls back to a straight line.</summary>
-        public List<Vec2> Find(Vec2 from, Vec2 to, float snapRadius, float straightMax)
+        /// <summary>
+        /// Shortest route over the graph between the snapped ends. Edges steeper than maxGradeDeg are not taken: a
+        /// pickup rated for 16 degrees must not be sent up a cross-country link the graph allows a snowcat.
+        /// </summary>
+        public List<Vec2> Find(Vec2 from, Vec2 to, float snapRadius, float straightMax, float maxGradeDeg = 90f)
         {
             var route = new List<Vec2>();
             if (Vec2.Distance(from, to) <= straightMax || _verts.Count == 0) { route.Add(from); route.Add(to); return route; }
-            int s = Nearest(from, snapRadius), t = Nearest(to, snapRadius);
+            // snap each end to the nearest vertex the machine can actually reach in a straight leg: the geometrically
+            // nearest one may sit up a pitch it cannot climb (a cat parked under a run vertex went up it to go home)
+            int s = NearestReachable(from, snapRadius, maxGradeDeg), t = NearestReachable(to, snapRadius, maxGradeDeg);
             if (s < 0 || t < 0) { route.Add(from); route.Add(to); return route; }
             int n = _verts.Count;
             var dist = new float[n]; var prev = new int[n]; var done = new bool[n];
@@ -119,10 +159,11 @@ namespace AlpineSim.Core.Vehicles
                 for (int i = 0; i < n; i++) if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
                 if (u < 0 || u == t) break;
                 done[u] = true;
-                var adj = _adj[u]; var cost = _cost[u];
+                var adj = _adj[u]; var cost = _cost[u]; var grades = _grade[u];
                 for (int k = 0; k < adj.Count; k++)
                 {
                     int v = adj[k];
+                    if (grades[k] > maxGradeDeg) continue;
                     float nd = dist[u] + cost[k];
                     if (nd < dist[v]) { dist[v] = nd; prev[v] = u; }
                 }

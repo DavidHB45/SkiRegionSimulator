@@ -63,6 +63,8 @@ namespace AlpineSim.Core.Pistes
         public float RadiusM = 40f;
         /// <summary>0..100: cleared/plowed quality for roads and lots (100 = bare, salted, dry).</summary>
         public float ClearanceScore = 100f;
+        /// <summary>Clearance from snow depth alone (no ice penalty): what a plow can fix, and what triggers a plow job.</summary>
+        public float SnowScore = 100f;
         public string Comment = "";
         [JsonIgnore] public List<int> Cells = new List<int>();
         public Vec2 Center => Points.Count > 0 ? Points[0] : Vec2.Zero;

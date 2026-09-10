@@ -1032,6 +1032,13 @@
       "unit": "s",
       "comment": "Reverse time when stuck."
     },
+    "aiTransitMaxKmh": {
+      "value": 40,
+      "min": 15,
+      "max": 80,
+      "unit": "km/h",
+      "comment": "Fastest an AI operator drives between jobs on resort roads and tracks; 40 km/h is the posted limit on most resort access roads and well under what a pickup could do."
+    },
     "aiGiveUpAfterStucks": {
       "value": 3,
       "min": 1,
@@ -1045,6 +1052,13 @@
       "max": 7200,
       "unit": "s",
       "comment": "How long an AI operator who found the depot dry keeps working on what is in the tank before trying the depot again. Half an hour: a fuel delivery or a service truck is the fix, not queueing at an empty pump."
+    },
+    "aiGroomBladeFloat": {
+      "value": 0.28,
+      "min": 0.1,
+      "max": 0.35,
+      "unit": "pose",
+      "comment": "Blade pose (0 down, 1 raised) an AI groomer holds on its downhill lanes: 0.28 shaves about a fifth of the blade's rated cut, 50-70 mm, which knocks the tops off moguls without stripping the pack."
     },
     "aiLookaheadM": {
       "value": 6,
@@ -1103,6 +1117,13 @@
       "max": 1.6,
       "unit": "USD/L",
       "comment": "Diesel delivered in bulk, brief 1.00-1.60 with seasonal volatility (fleet system varies it)."
+    },
+    "autoOrderBelowFrac": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.8,
+      "unit": "fraction",
+      "comment": "The fuel office reorders diesel to fill the depot when stock plus deliveries on the way fall under this fraction of capacity; a day's lead time at 20,000 L means a third is about a week of two cats and a truck."
     },
     "gasolinePricePerL": {
       "value": 1.45,
@@ -1824,6 +1845,13 @@
       "max": 100,
       "unit": "PQI",
       "comment": "Pistes at or above this PQI at close are skipped for the night (a run skied lightly on a cold day keeps its corduroy)."
+    },
+    "blockRetryMinutes": {
+      "value": 90,
+      "min": 15,
+      "max": 720,
+      "unit": "min",
+      "comment": "How long an auto-generated job stays blocked after a machine gave it back before the foreman offers it again."
     },
     "autoDispatch": {
       "value": 1,

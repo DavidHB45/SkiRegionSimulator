@@ -129,7 +129,7 @@ namespace AlpineSim.Tests.Fleet
             var op = OperatorWith(sim, OperatorLicense.Groomer);
             Assert.IsTrue(fs.AssignOperator(ctx, op.Id, cat.Id, out string reason), reason);
             float reserve = sim.Data.Tuning.F("vehicles.fuelReserveWarningFrac");
-            cat.Fuel = def.FuelCapacityL * reserve * 1.3f;
+            cat.Fuel = def.FuelCapacityL * reserve * 1.05f; // a few minutes of work above the reserve: the short test run is done in twenty
             for (int i = 0; i < 40 && !cat.EngineOn; i++) vs.StartEngine(ctx, cat.Id, out _);
             vs.AssignGroom(ctx, cat.Id, "t1");
             bool wentForFuel = false;

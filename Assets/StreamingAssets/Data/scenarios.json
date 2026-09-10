@@ -20,7 +20,7 @@
         "BackSlopeDropM": 120,
         "LateralAmplitudeM": 60,
         "LateralWavelengthM": 700,
-        "NoiseAmplitudeM": 35,
+        "NoiseAmplitudeM": 18,
         "NoiseFrequency": 0.0035,
         "NoiseOctaves": 5,
         "NoiseGain": 0.5,
@@ -28,6 +28,12 @@
         "RuggednessWithElevation": 1.2,
         "SeedOffset": 0,
         "NoBuildSlopeDeg": 42,
+        "CorridorBankDeg": 26,
+        "PisteEarthworkM": 8,
+        "TrackEarthworkM": 8,
+        "RoadEarthworkM": 12,
+        "BaseAreaTiltFrac": 0.35,
+        "LotBankDeg": 12,
         "Gorge": {
           "Enabled": true,
           "Y": 1150,
@@ -398,12 +404,8 @@
               "Y": 260
             },
             {
-              "X": 930,
-              "Y": 215
-            },
-            {
-              "X": 900,
-              "Y": 200
+              "X": 958,
+              "Y": 235
             }
           ],
           "WidthM": 7,
@@ -425,8 +427,8 @@
               "Y": 230
             },
             {
-              "X": 1180,
-              "Y": 210
+              "X": 1130,
+              "Y": 222
             }
           ],
           "WidthM": 7,
@@ -847,7 +849,7 @@
         "BackSlopeDropM": 120,
         "LateralAmplitudeM": 60,
         "LateralWavelengthM": 700,
-        "NoiseAmplitudeM": 35,
+        "NoiseAmplitudeM": 18,
         "NoiseFrequency": 0.0035,
         "NoiseOctaves": 5,
         "NoiseGain": 0.5,
@@ -855,6 +857,12 @@
         "RuggednessWithElevation": 1.2,
         "SeedOffset": 0,
         "NoBuildSlopeDeg": 42,
+        "CorridorBankDeg": 26,
+        "PisteEarthworkM": 8,
+        "TrackEarthworkM": 8,
+        "RoadEarthworkM": 12,
+        "BaseAreaTiltFrac": 0.35,
+        "LotBankDeg": 12,
         "Gorge": {
           "Enabled": true,
           "Y": 1150,
@@ -1225,12 +1233,8 @@
               "Y": 260
             },
             {
-              "X": 930,
-              "Y": 215
-            },
-            {
-              "X": 900,
-              "Y": 200
+              "X": 958,
+              "Y": 235
             }
           ],
           "WidthM": 7,
@@ -1252,8 +1256,8 @@
               "Y": 230
             },
             {
-              "X": 1180,
-              "Y": 210
+              "X": 1130,
+              "Y": 222
             }
           ],
           "WidthM": 7,
@@ -1610,6 +1614,12 @@
         "RuggednessWithElevation": 0.5,
         "SeedOffset": 7,
         "NoBuildSlopeDeg": 42,
+        "CorridorBankDeg": 26,
+        "PisteEarthworkM": 8,
+        "TrackEarthworkM": 8,
+        "RoadEarthworkM": 12,
+        "BaseAreaTiltFrac": 0.35,
+        "LotBankDeg": 12,
         "Gorge": {
           "Enabled": false
         },

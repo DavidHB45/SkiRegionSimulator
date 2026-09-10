@@ -32,6 +32,8 @@ namespace AlpineSim.Core.Tasks
         public int AssignedVehicleId = -1;
         public int AssignedOperatorId = -1;
         public string BlockReason = "";
+        /// <summary>Tick the task was last blocked at; auto-generated jobs reopen after tasks.blockRetryMinutes.</summary>
+        public long BlockedTick = -1;
         public long CreatedTick;
         public long DeadlineTick = -1;
         public long CompletedTick = -1;

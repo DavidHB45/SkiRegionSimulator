@@ -348,7 +348,7 @@ namespace AlpineSim.Core.Vehicles
         {
             var v = Get(ctx, id); if (v == null) return;
             v.Ai = new VehicleAiState { Mode = AiMode.GoToSite, TaskId = taskId, Phase = "to site", DeliverTo = site };
-            v.Ai.Route = FindRoute(ctx, v.Pos, site);
+            v.Ai.Route = FindRoute(ctx, v, site);
             v.Ai.RouteIndex = 0;
             v.TaskId = taskId;
         }
@@ -357,7 +357,7 @@ namespace AlpineSim.Core.Vehicles
         {
             var v = Get(ctx, id); if (v == null) return;
             v.Ai.Mode = AiMode.ReturnToBase;
-            v.Ai.Route = FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+            v.Ai.Route = FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
             v.Ai.RouteIndex = 0;
             v.Ai.Phase = "returning";
         }
@@ -419,17 +419,27 @@ namespace AlpineSim.Core.Vehicles
             ctx.Sim.Log(v.Name + " finished grooming " + piste.Name + ".");
         }
 
+        /// <summary>Puts the machine's task back on the board as open (another machine, or this one later, can take it).</summary>
+        internal void ReleaseJob(SimContext ctx, VehicleState v)
+        {
+            if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts)) ts.Unassign(ctx, v.TaskId);
+            v.TaskId = -1;
+        }
+
         /// <summary>An AI operator gave a job back (slope above rating): the job goes back on the board, blocked with the reason, and the machine parks.</summary>
         internal void OnAiRefused(SimContext ctx, VehicleState v, string reason)
         {
+            string job = "";
             if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts))
             {
                 int id = v.TaskId;
+                var task = ts.Get(ctx, id);
+                if (task != null) job = " on '" + task.Title + "'";
                 ts.Unassign(ctx, id);
                 ts.Block(ctx, id, v.Name + ": " + reason);
             }
-            ctx.Sim.Log(v.Name + " gave up: " + reason + ".", LogLevel.Warning);
-            v.Ai.Route = FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+            ctx.Sim.Log(v.Name + " gave up" + job + " at " + MathF.Round(v.Pos.X) + "," + MathF.Round(v.Pos.Y) + ": " + reason + ".", LogLevel.Warning);
+            v.Ai.Route = FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
             v.Ai.RouteIndex = 0;
             v.Ai.Mode = AiMode.ReturnToBase;
         }
@@ -502,6 +512,16 @@ namespace AlpineSim.Core.Vehicles
             RebuildRoutes(ctx);
             var t = ctx.Tuning;
             return _routes.Find(from, to, t.F("vehicles.routeSnapRadiusM"), t.F("vehicles.routeStraightMaxM"));
+        }
+
+        /// <summary>A route this machine can drive: graph edges above its gradeability (plus the AI's margin) are left out.</summary>
+        public List<Vec2> FindRoute(SimContext ctx, VehicleState v, Vec2 to)
+        {
+            RebuildRoutes(ctx);
+            var t = ctx.Tuning;
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+            float limit = (def != null ? def.MaxGradeDeg : 90f) + t.F("vehicles.aiSlopeMarginDeg");
+            return _routes.Find(v.Pos, to, t.F("vehicles.routeSnapRadiusM"), t.F("vehicles.routeStraightMaxM"), limit);
         }
 
         public VehicleState Nearest(SimContext ctx, Vec2 pos, float radiusM)

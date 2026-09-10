@@ -167,10 +167,81 @@ signed sum. A sum could not distinguish a poor day from a long one; the moving a
 the last few laps dominate what a guest tells the reputation model on leaving. PQI carries the
 largest weight (`guests.satPqiWeight`) because snow quality is the thing the player controls.
 
-## D-028 A dry depot does not park the machine
+## D-028 Corridors follow the ground within an earthwork budget
+Grading a run to its class limit had been cutting forty-metre trenches into a hillside steeper
+than the class, with cliffs for banks. Each corridor now carries an earthwork budget
+(`PisteEarthworkM` 8, `TrackEarthworkM` 8, `RoadEarthworkM` 12 in the scenario's terrain block):
+the profile is clamped to the grade limit and then back to within the budget of the natural
+ground, alternately, so it is smoothed as far as that much cut and fill allows and then follows
+the mountain. Polylines are resampled to 20 m before grading so the profile can follow the ground
+between authored vertices; the inside of a bend blends the two cross-sections instead of
+choosing one (which had left a step along the bisector); and every bank, on corridors and on the
+base pad alike, is bounded at `CorridorBankDeg` (26°) so a machine can always drive off the edge.
+The base pad meets the hill as an engineered platform does, a cut face or fill bank at the bank
+angle rather than an 80 m smoothstep, and keeps a third of the valley floor's gradient so it is
+a village, not a billiard table. Scenario terrain noise was halved to match: a beginner run on a
+mountain with 35 m bumps every 300 m is a contradiction.
+
+## D-029 Tiller and blade effects are per traverse, not per tick
+A cell sits under the tiller for several ticks as the machine crosses it, and each tick had
+applied a full pass: at walking pace a cat work-hardened its own tracks into ice within seconds
+and lost traction on them, and a lowered blade stripped a run to the ground in two passes. Both
+now apply the fraction of a pass the machine actually covered that tick (`moved / cellSize`), so
+one traverse is one pass whatever the speed or tick rate. The AI floats the blade on its
+downhill lanes (`vehicles.aiGroomBladeFloat`) instead of dropping it, and holds its working
+speed by easing the throttle as it reaches it rather than capping the throttle, which had
+stalled the tiller on the first real pitch.
+
+## D-030 A groomer that cannot make a pitch skips the lane, not the run
+On a stuck give-up or a slope refusal mid-lane the AI marks the lane skipped and continues on
+the next lane from the height it reached, so the part of the run below the pitch still gets
+groomed and the part above waits for a winch cat (M7). Abandoning the whole run had left a
+Blue with one steep pitch ungroomed end to end. Stuck detection now looks for a machine that
+neither moves nor turns, so a wheeled machine that cannot turn on a bank is stuck while a tracked
+one pivoting in place is not; the slope refusal honours the machine's own gradeability as well
+as the operator's rating.
+
+## D-031 A dry depot does not park the machine
 An AI operator who reaches the depot on reserve and finds it dry carries on with the job on what
 is in the tank (`vehicles.aiDryDepotRetrySeconds` before it tries again) and eventually strands
 where it is, which raises the service call. Parking with the engine off would hide the problem:
 no service call, no fuel order, a job that silently never happens. After any depot stop the AI
 resumes the job it left (through the board when it holds a task, else from its own record), so a
 refuel run is a detour, not the end of the shift.
+
+## D-032 Plow jobs are posted on snow depth; the foreman prefers the right machine class
+A road's clearance score carries an ice penalty that only salt removes, so posting plow jobs
+against it had a pickup plowing the same clear road all day. Plow, clear-lot and blow-out jobs
+now trigger on the depth-only `SnowScore`; the salt job is the one that answers ice. The plowing
+AI angles the blade away from the zone's centreline and works lane strips from the centre
+outward so every windrow lands on ground still to be plowed, never back on a cleared strip. The
+night foreman gives a job to the nearest machine of the class built for it (groomers groom,
+trucks and light machines plow, blowers blow) and falls back to any capable machine only when
+none of those is free; before, the cat parked nearest the garage plowed the lots while the runs
+waited. A blocked auto job reopens after `tasks.blockRetryMinutes`, and a machine stuck on the
+way home hands its job back rather than holding it while parked.
+
+## D-033 The AI drives like an operator, not like a script
+Three things the thirty-day probes showed. A pickup arrived at a plow lane at 60 km/h, swung
+ten metres wide and plowed the meadow beside the road while the road stayed buried: the AI now
+brakes for the end of a route and for sharp corners from a braking-distance speed limit and never
+exceeds `vehicles.aiTransitMaxKmh` between jobs. A machine refused every pitch above its rating
+in both directions, so one parked on a slope could never leave: only climbs are refused, and a
+route search leaves out graph edges above the machine's own gradeability, so a pickup is never
+sent up a link the graph allows a snowcat. A pass with the blade down dumped its load at the lane
+end, on the road being cleared: the load now drops beyond the trailing end of an angled blade,
+plow lanes overrun the end of a road so the blade clears it before lifting, and lot roads end at
+the lot's rim instead of its centre so two zones never plow each other's windrows back and
+forth. The fuel office reorders diesel on its own (`fuel.autoOrderBelowFrac`): with the foreman
+working two machines every night, the depot ran dry in a fortnight and the fleet stood stranded.
+A route's ends snap to the graph vertex with the least climb on the straight leg, not the nearest
+one, so a cat parked under a run vertex no longer tries to go up it to go home; a machine that
+parks itself stuck is left alone by the foreman for an hour; a stranded machine hands its job
+back; and the foreman keeps specialists for the machines that need their licence (the only truck
+driver had been put in the pickup, leaving the service truck unstaffable). Lots get a long smooth
+apron rather than a clamped cone, road zones stop at the road's edge so a plow's own windrow is
+not counted against it, an angled blade discharges entirely off its trailing end, a blade's
+`CutDepthMm` is its effective moldboard height (the deepest snow taken in one pass), and the
+route follower tracks the path itself rather than the next waypoint so a plow that swung wide
+comes back onto its lane within a couple of lookaheads, entering the first lane from a lead-in
+point behind its start.

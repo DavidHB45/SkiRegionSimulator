@@ -15,6 +15,11 @@ namespace AlpineSim.Core.Pistes
     /// </summary>
     public static class PisteNetworkBuilder
     {
+        /// <summary>
+        /// How far past a road's edge its cells reach. Half a cell: the windrow a plow leaves just beyond the blade end
+        /// must fall outside the zone, or the road's own clearance score counts the snow it pushed off itself.
+        /// </summary>
+        public const float RoadMarginM = 0.25f;
         public const float CorridorMarginM = 4f;
 
         public static void BuildFromScenario(SimContext ctx)
@@ -112,7 +117,7 @@ namespace AlpineSim.Core.Pistes
             if (z.Kind == ZoneKind.Road || z.Kind == ZoneKind.CatTrack)
             {
                 for (int i = 0; i < z.Points.Count - 1; i++)
-                    StampCorridor(grid, z.Points[i], z.Points[i + 1], z.WidthM * 0.5f + 1f, (id, lateral) =>
+                    StampCorridor(grid, z.Points[i], z.Points[i + 1], z.WidthM * 0.5f + RoadMarginM, (id, lateral) =>
                     {
                         if (grid.Surface[id] == (byte)SurfaceType.Piste) return;
                         grid.Surface[id] = surface;
@@ -265,7 +270,7 @@ namespace AlpineSim.Core.Pistes
                 if (z.Kind == ZoneKind.Road || z.Kind == ZoneKind.CatTrack)
                 {
                     for (int i = 0; i < z.Points.Count - 1; i++)
-                        StampCorridor(grid, z.Points[i], z.Points[i + 1], z.WidthM * 0.5f + 1f, (id, lat) => { if (grid.Surface[id] == (byte)SurfaceType.Road) z.Cells.Add(id); });
+                        StampCorridor(grid, z.Points[i], z.Points[i + 1], z.WidthM * 0.5f + RoadMarginM, (id, lat) => { if (grid.Surface[id] == (byte)SurfaceType.Road) z.Cells.Add(id); });
                 }
                 else if (z.Points.Count > 0)
                 {

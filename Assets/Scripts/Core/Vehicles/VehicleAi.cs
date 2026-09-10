@@ -28,7 +28,7 @@ namespace AlpineSim.Core.Vehicles
             {
                 if (!vs.StartEngine(ctx, v.Id, out _)) { ai.WorkTimer += dt; return; }
             }
-            if (v.Stranded) { ai.Mode = AiMode.Stranded; return; }
+            if (v.Stranded) { if (ai.Mode != AiMode.Stranded) { ai.Mode = AiMode.Stranded; vs.ReleaseJob(ctx, v); } return; }
             var t = ctx.Tuning;
             input.Lights = true;
 
@@ -40,7 +40,7 @@ namespace AlpineSim.Core.Vehicles
                 ai.Phase = "low fuel: returning to depot";
                 ai.JobMode = ai.Mode;
                 var depot = ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.FuelLandmarkId).Pos;
-                ai.Route = vs.FindRoute(ctx, v.Pos, depot);
+                ai.Route = vs.FindRoute(ctx, v, depot);
                 ai.RouteIndex = 0;
                 ai.Mode = AiMode.Refuel;
             }
@@ -102,12 +102,28 @@ namespace AlpineSim.Core.Vehicles
             if (ai.Route == null || ai.RouteIndex >= ai.Route.Count) return true;
             float reach = t.F("vehicles.aiWaypointReachM");
             Vec2 target = ai.Route[ai.RouteIndex];
-            // pure pursuit: aim at a point lookahead metres along the route
+            // pure pursuit on the path: aim at the point lookahead metres ahead of the machine's projection onto the
+            // current leg, so a machine that is off the line steers back onto it within a couple of lookaheads
+            // (aiming at the waypoint itself let a plow wander thirteen metres off its lane for eighty metres)
             float look = t.F("vehicles.aiLookaheadM");
             Vec2 aim = target;
+            if (ai.RouteIndex >= 1)
+            {
+                Vec2 legA = ai.Route[ai.RouteIndex - 1], legAb = target - legA;
+                float legLen2 = legAb.SqrLength;
+                if (legLen2 > 1e-4f)
+                {
+                    float u = MathUtil.Clamp01(Vec2.Dot(v.Pos - legA, legAb) / legLen2);
+                    Vec2 foot = legA + legAb * u;
+                    float legLen = MathF.Sqrt(legLen2);
+                    float ahead = MathF.Min(legLen, u * legLen + look);
+                    aim = legA + legAb * (ahead / legLen);
+                }
+            }
             if (Vec2.Distance(v.Pos, target) < look && ai.RouteIndex + 1 < ai.Route.Count)
                 aim = Vec2.Lerp(target, ai.Route[ai.RouteIndex + 1], MathUtil.Clamp01((look - Vec2.Distance(v.Pos, target)) / MathF.Max(1f, Vec2.Distance(target, ai.Route[ai.RouteIndex + 1]))));
             Vec2 to = aim - v.Pos;
+            if (to.SqrLength < 1f) to = target - v.Pos;
             float dist = Vec2.Distance(v.Pos, target);
             bool last = ai.RouteIndex == ai.Route.Count - 1;
             if (dist < reach || (!last && PassedWaypoint(v, ai.Route, ai.RouteIndex)))
@@ -127,9 +143,23 @@ namespace AlpineSim.Core.Vehicles
                 input.Steer = err > 0f ? 0.5f : -0.5f;
                 return false;
             }
-            // stuck = trying to drive roughly straight at a waypoint and not moving (turning in place is not stuck)
-            bool tryingStraight = MathF.Abs(err) < 0.6f;
-            if (MathF.Abs(v.Speed) < 0.15f && v.EngineOn && tryingStraight) ai.WorkTimer += dt; else ai.WorkTimer = 0f;
+            // a speed the machine can still stop or turn from: braking distance to the end of the route or to a
+            // sharp corner, and never above the AI transit cap (a pickup arriving at a plow lane at 60 km/h swung
+            // ten metres wide and plowed the meadow beside the road)
+            float corner = 100f;
+            if (last) corner = 1.5f;
+            else
+            {
+                Vec2 legA = (target - v.Pos).Normalized, legB = (ai.Route[ai.RouteIndex + 1] - target).Normalized;
+                float bend = MathF.Abs(MathUtil.DeltaAngle(legA.Angle, legB.Angle));
+                if (bend > 0.5f) corner = MathUtil.Lerp(8f, 2f, MathUtil.Clamp01((bend - 0.5f) / 2f));
+            }
+            float vmax = MathF.Min(t.F("vehicles.aiTransitMaxKmh") / 3.6f, MathF.Sqrt(2f * 2.5f * MathF.Max(0f, dist - 2f)) + corner);
+            bool braking = v.Speed > vmax;
+            // stuck = engine running, neither moving nor turning (a tracked machine pivoting in place is not stuck;
+            // a wheeled one that cannot turn on a bank is); a machine being held back by its own brake is not stuck either
+            bool moving = MathF.Abs(v.Speed) >= 0.15f || MathF.Abs(v.YawRate) >= 0.03f;
+            if (!moving && v.EngineOn && !braking) ai.WorkTimer += dt; else ai.WorkTimer = 0f;
             if (ai.WorkTimer > t.F("vehicles.aiStuckSeconds"))
             {
                 ai.WorkTimer = 0f;
@@ -139,7 +169,18 @@ namespace AlpineSim.Core.Vehicles
                     // the machine cannot make this pitch (traction, not nerve): same outcome as a refusal
                     ai.StuckCount = 0;
                     float g = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f));
-                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped += System.Math.Max(1, ai.LaneCount - ai.Lane); ai.Lane = ai.LaneCount - 1; return true; }
+                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped++; ai.LaneAbandoned = true; return true; }
+                    if (ai.Mode == AiMode.ReturnToBase || ai.Mode == AiMode.Refuel)
+                    {
+                        // stuck on the way home: park here with the engine off rather than loop between refusing and returning,
+                        // and hand any job back so the board does not carry a task nobody is working
+                        ai.Mode = AiMode.Idle; ai.Phase = "stuck on the way back"; ai.ParkedStuckTick = ctx.Time.Tick;
+                        ctx.Sim.Log(v.Name + " is stuck on the way back (" + MathF.Round(MathF.Abs(g)) + " deg pitch at " + MathF.Round(v.Pos.X) + "," + MathF.Round(v.Pos.Y) + ") and parked where it is.", LogLevel.Warning);
+                        var vsys = ctx.System<VehicleSystem>();
+                        vsys.ReleaseJob(ctx, v);
+                        vsys.OnAiIdle(ctx, v);
+                        return false;
+                    }
                     ai.Mode = AiMode.Idle; ai.Phase = "stuck";
                     ctx.System<VehicleSystem>().OnAiRefused(ctx, v, "cannot climb the " + MathF.Round(MathF.Abs(g)) + " deg pitch");
                     return false;
@@ -147,9 +188,12 @@ namespace AlpineSim.Core.Vehicles
                 ai.StuckTimer = -t.F("vehicles.aiReverseSeconds");
                 return false;
             }
-            // slope refusal: operators do not drive onto pitches above their rating
+            // slope refusal: operators do not drive onto pitches above their rating, nor above what the machine is rated for
             float grade = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f));
-            if (MathF.Abs(grade) > maxSlopeDeg + t.F("vehicles.aiSlopeMarginDeg") && ai.Mode != AiMode.Refuel)
+            float slopeLimit = MathF.Min(maxSlopeDeg, def.MaxGradeDeg);
+            // a machine heading for the depot or home takes the pitch it came over: refusing there means never arriving;
+            // and only a climb is refused: a driver already on a pitch can always let the machine down it
+            if (grade > slopeLimit + t.F("vehicles.aiSlopeMarginDeg") && ai.Mode != AiMode.Refuel && ai.Mode != AiMode.ReturnToBase)
             {
                 input.Throttle = 0f; input.Brake = 1f;
                 ai.Phase = "refusing slope " + MathF.Round(MathF.Abs(grade)) + " deg";
@@ -158,8 +202,9 @@ namespace AlpineSim.Core.Vehicles
                 if (ai.RefuseTimer > 8f)
                 {
                     ai.RefuseTimer = 0f;
-                    // a groomer skips the pitch it cannot take and carries on with the next lane; anyone else gives the job back
-                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped += System.Math.Max(1, ai.LaneCount - ai.Lane); ai.Lane = ai.LaneCount - 1; return true; }
+                    // a groomer leaves the pitch it cannot take and carries on with the next lane from this height (the part
+                    // of the run below the pitch still gets groomed; the part above waits for a winch cat); anyone else gives the job back
+                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped++; ai.LaneAbandoned = true; return true; }
                     ai.Mode = AiMode.Idle; ai.Phase = "refused slope";
                     ctx.System<VehicleSystem>().OnAiRefused(ctx, v, "slope " + MathF.Round(MathF.Abs(grade)) + " deg is above the operator's rating");
                 }
@@ -174,7 +219,28 @@ namespace AlpineSim.Core.Vehicles
             float endSlow = last ? MathUtil.Clamp(dist / 12f, 0.25f, 1f) : 1f;
             float throttle = MathF.Abs(err) > 2.4f ? 0.25f : 1f;
             input.Throttle = throttle * turnSlow * endSlow * MathUtil.Lerp(0.75f, 1f, competence);
+            if (braking) { input.Throttle = 0f; input.Brake = MathUtil.Clamp01((v.Speed - vmax) / 2f); }
             return false;
+        }
+
+        /// <summary>Lift command (-1 lower, 0 hold, +1 raise) that brings the mounted blade to the given pose.</summary>
+        private static float BladeToward(SimContext ctx, VehicleState v, float pose)
+        {
+            for (int i = 0; i < v.Mounted.Count; i++)
+            {
+                var a = ctx.Data.Attachment(v.Mounted[i].DefId);
+                if (a == null || a.Kind != AttachmentKind.Blade) continue;
+                float lift = v.Mounted[i].Lift;
+                return lift > pose + 0.02f ? -1f : (lift < pose - 0.02f ? 1f : 0f);
+            }
+            return 1f;
+        }
+
+        /// <summary>Throttle multiplier that lets a working machine pull with everything below its working speed and eases off above it.</summary>
+        private static float WorkSpeedFactor(VehicleState v, float workKmh)
+        {
+            float work = MathF.Max(0.5f, workKmh) / 3.6f;
+            return MathUtil.Clamp01(1.5f - MathF.Abs(v.Speed) / work);
         }
 
         private static bool PassedWaypoint(VehicleState v, List<Vec2> route, int idx)
@@ -201,10 +267,11 @@ namespace AlpineSim.Core.Vehicles
                 ai.LaneCount = System.Math.Max(1, (int)MathF.Ceiling(piste.WidthM / lane));
                 ai.Lane = 0;
                 ai.LanesSkipped = 0;
+                ai.LaneAbandoned = false;
                 ai.Uphill = true;
                 ai.Phase = "driving to " + piste.Name;
                 // route to the bottom of the run first
-                ai.Route = vs.FindRoute(ctx, v.Pos, piste.Points[piste.Points.Count - 1]);
+                ai.Route = vs.FindRoute(ctx, v, piste.Points[piste.Points.Count - 1]);
                 ai.RouteIndex = 0;
                 ai.Loaded = false; // Loaded = lane route active
             }
@@ -213,13 +280,14 @@ namespace AlpineSim.Core.Vehicles
                 if (FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt)) { BuildLaneRoute(ctx, v, piste); }
                 return;
             }
-            // on a lane: tiller down, blade up (blade down on the downhill lanes to shave moguls)
+            // on a lane: tiller down; blade up on the climb, floated shallow on the downhill lanes to shave moguls
+            // (fully down it would strip the run to the ground in two passes)
             input.Tiller = true;
-            input.BladeLift = ai.Uphill ? 1f : -1f;
+            input.BladeLift = ai.Uphill ? 1f : BladeToward(ctx, v, ctx.Tuning.F("vehicles.aiGroomBladeFloat"));
             bool done = FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt);
-            // grooming speed: working range scaled by competence
-            float work = def.WorkingSpeedKmh.Max / MathF.Max(1f, def.TopSpeedKmh);
-            input.Throttle = MathF.Min(input.Throttle, work * MathUtil.Lerp(0.8f, 1f, competence)) ;
+            // grooming speed: hold the working speed by easing the throttle as the machine reaches it, never by
+            // capping the throttle itself (a capped throttle stalls the tiller on the first real pitch)
+            input.Throttle *= WorkSpeedFactor(v, def.WorkingSpeedKmh.Max * MathUtil.Lerp(0.8f, 1f, competence));
             if (done)
             {
                 ai.Lane++;
@@ -231,16 +299,22 @@ namespace AlpineSim.Core.Vehicles
                     ai.LaneCount = 0;
                     ai.Loaded = false;
                     ai.Mode = AiMode.ReturnToBase;
-                    ai.Route = vs.FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+                    ai.Route = vs.FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
                     ai.RouteIndex = 0;
                     return;
                 }
                 ai.Uphill = !ai.Uphill;
-                BuildLaneRoute(ctx, v, piste);
+                BuildLaneRoute(ctx, v, piste, ai.LaneAbandoned);
+                ai.LaneAbandoned = false;
             }
         }
 
-        private void BuildLaneRoute(SimContext ctx, VehicleState v, PisteState piste)
+        /// <summary>
+        /// Lays out the current lane as a route along the run. With fromHere the route starts at the waypoint level
+        /// with the machine instead of the far end of the run, which is how a lane continues after the one beside it
+        /// was abandoned part-way up.
+        /// </summary>
+        private void BuildLaneRoute(SimContext ctx, VehicleState v, PisteState piste, bool fromHere = false)
         {
             var ai = v.Ai;
             float width = piste.WidthM;
@@ -261,6 +335,13 @@ namespace AlpineSim.Core.Vehicles
             if (ai.Uphill) for (int i = _tmp.Count - 1; i >= 0; i--) ai.Route.Add(_tmp[i]);
             else ai.Route.AddRange(_tmp);
             ai.RouteIndex = 0;
+            if (fromHere)
+            {
+                // continue from the waypoint nearest the machine, and never back toward the pitch it just left
+                float best = float.MaxValue; int bi = 0;
+                for (int i = 0; i < ai.Route.Count; i++) { float d = Vec2.SqrDistance(ai.Route[i], v.Pos); if (d < best) { best = d; bi = i; } }
+                ai.RouteIndex = System.Math.Min(ai.Route.Count - 1, bi + 1);
+            }
             ai.Loaded = true;
             ai.Phase = "grooming " + piste.Name + " lane " + (ai.Lane + 1) + "/" + ai.LaneCount + (ai.Uphill ? " up" : " down");
         }
@@ -280,7 +361,12 @@ namespace AlpineSim.Core.Vehicles
                 if (zone.Kind == ZoneKind.Road || zone.Kind == ZoneKind.CatTrack) ai.LaneCount = System.Math.Max(1, (int)MathF.Ceiling(zone.WidthM / laneW));
                 else ai.LaneCount = System.Math.Max(1, (int)MathF.Ceiling(zone.RadiusM * 2f / laneW));
                 ai.Lane = 0; ai.Uphill = true; ai.Loaded = false;
-                ai.Route = vs.FindRoute(ctx, v.Pos, ZoneStart(zone, ai.Lane, ai.LaneCount, true));
+                // approach the first lane from a lead-in point behind its start, so the machine enters it aligned
+                Vec2 start = ZoneStart(zone, ai.Lane, ai.LaneCount, true);
+                Vec2 next = zone.Kind == ZoneKind.Road || zone.Kind == ZoneKind.CatTrack ? (zone.Points.Count > 1 ? zone.Points[1] : start) : ZoneStart(zone, ai.Lane, ai.LaneCount, false);
+                Vec2 laneDir = (next - start).Normalized;
+                ai.Route = vs.FindRoute(ctx, v, start - laneDir * LaneLeadInM);
+                ai.Route.Add(start);
                 ai.RouteIndex = 0;
                 ai.Phase = "driving to " + zone.Id;
             }
@@ -289,11 +375,22 @@ namespace AlpineSim.Core.Vehicles
                 if (FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt)) BuildZoneLane(zone, v);
                 return;
             }
-            if (ai.Mode == AiMode.PlowZone) input.BladeLift = -1f;
-            else input.Implement = true;
-            if (ai.Mode == AiMode.BlowZone) input.BladeLift = -1f;
+            // the implement goes down only once the lane's first waypoint is behind the machine: the approach crosses the
+            // pile the previous pass left beyond the zone end, and a blade dropped there would drag it back in
+            bool past = ai.RouteIndex >= 1;
+            if (ai.Mode == AiMode.PlowZone)
+            {
+                input.BladeLift = past ? -1f : 1f;
+                // angle the blade so the windrow lands on the side away from the zone's centreline: with a straight blade
+                // half the spill fell back onto the other lane and a road could be plowed all day without ever clearing
+                Vec2 foot = zone.Kind == ZoneKind.Road || zone.Kind == ZoneKind.CatTrack ? NearestOnPolyline(zone.Points, v.Pos) : zone.Center;
+                float side = Vec2.Dot(v.Pos - foot, Vec2.FromAngle(v.Heading).Perp);
+                input.BladeAngle = side >= 0f ? -1f : 1f;
+            }
+            else input.Implement = past;
+            if (ai.Mode == AiMode.BlowZone) input.BladeLift = past ? -1f : 1f;
             bool done = FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt);
-            input.Throttle = MathF.Min(input.Throttle, MathF.Max(0.3f, def.WorkingSpeedKmh.Max / MathF.Max(1f, def.TopSpeedKmh)));
+            input.Throttle *= WorkSpeedFactor(v, def.WorkingSpeedKmh.Max);
             if (done)
             {
                 ai.Lane++;
@@ -303,13 +400,47 @@ namespace AlpineSim.Core.Vehicles
                     vs.OnZoneFinished(ctx, v, zone);
                     ai.LaneCount = 0; ai.Loaded = false;
                     ai.Mode = AiMode.ReturnToBase;
-                    ai.Route = vs.FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+                    ai.Route = vs.FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
                     ai.RouteIndex = 0;
                     return;
                 }
                 ai.Uphill = !ai.Uphill;
                 BuildZoneLane(zone, v);
             }
+        }
+
+        private static Vec2 NearestOnPolyline(List<Vec2> pts, Vec2 p)
+        {
+            if (pts == null || pts.Count == 0) return p;
+            Vec2 best = pts[0]; float bd = float.MaxValue;
+            for (int i = 0; i < pts.Count - 1; i++)
+            {
+                Vec2 a = pts[i], ab = pts[i + 1] - a;
+                float len2 = ab.SqrLength;
+                float u = len2 > 1e-6f ? MathUtil.Clamp01(Vec2.Dot(p - a, ab) / len2) : 0f;
+                Vec2 q = a + ab * u;
+                float d = Vec2.SqrDistance(p, q);
+                if (d < bd) { bd = d; best = q; }
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Lane strips are worked from the centre outward so every pass pushes its windrow onto a strip that is still to
+        /// be plowed, never back onto one already cleared.
+        /// </summary>
+        private static int CentreOutLane(int lane, int lanes)
+        {
+            int mid = lanes / 2;
+            if (lane == 0) return mid;
+            int k = 0, d = 1;
+            while (d <= lanes)
+            {
+                if (mid + d < lanes) { k++; if (k == lane) return mid + d; }
+                if (mid - d >= 0) { k++; if (k == lane) return mid - d; }
+                d++;
+            }
+            return System.Math.Min(lane, lanes - 1);
         }
 
         private static Vec2 ZoneStart(SurfaceZone zone, int lane, int lanes, bool forward)
@@ -321,10 +452,15 @@ namespace AlpineSim.Core.Vehicles
             }
             Vec2 c = zone.Center;
             float laneW = zone.RadiusM * 2f / lanes;
-            float x = -zone.RadiusM + (lane + 0.5f) * laneW;
+            float x = -zone.RadiusM + (CentreOutLane(lane, lanes) + 0.5f) * laneW;
             float half = MathF.Sqrt(MathF.Max(0f, zone.RadiusM * zone.RadiusM - x * x));
             return c + new Vec2(x, forward ? -half : half);
         }
+
+        /// <summary>Metres a plow lane runs on past the zone end so the blade clears the zone before it lifts.</summary>
+        private const float LaneOverrunM = 5f;
+        /// <summary>Metres behind a lane's start the approach ends, so the machine enters the lane already aligned.</summary>
+        private const float LaneLeadInM = 12f;
 
         private void BuildZoneLane(SurfaceZone zone, VehicleState v)
         {
@@ -333,7 +469,7 @@ namespace AlpineSim.Core.Vehicles
             if (zone.Kind == ZoneKind.Road || zone.Kind == ZoneKind.CatTrack)
             {
                 float laneW = zone.WidthM / ai.LaneCount;
-                float offset = -zone.WidthM * 0.5f + (ai.Lane + 0.5f) * laneW;
+                float offset = -zone.WidthM * 0.5f + (CentreOutLane(ai.Lane, ai.LaneCount) + 0.5f) * laneW;
                 var pts = zone.Points;
                 _tmp.Clear();
                 for (int i = 0; i < pts.Count; i++)
@@ -349,6 +485,12 @@ namespace AlpineSim.Core.Vehicles
                 Vec2 b = ZoneStart(zone, ai.Lane, ai.LaneCount, !ai.Uphill);
                 ai.Route.Add(a); ai.Route.Add(b);
             }
+            if (ai.Mode == AiMode.PlowZone && ai.Route.Count >= 2 && (zone.Kind == ZoneKind.Road || zone.Kind == ZoneKind.CatTrack))
+            {
+                Vec2 end = ai.Route[ai.Route.Count - 1];
+                Vec2 dir = (end - ai.Route[ai.Route.Count - 2]).Normalized;
+                ai.Route.Add(end + dir * LaneOverrunM);
+            }
             ai.RouteIndex = 0;
             ai.Loaded = true;
             ai.Phase = "working " + zone.Id + " pass " + (ai.Lane + 1) + "/" + ai.LaneCount;
@@ -363,7 +505,7 @@ namespace AlpineSim.Core.Vehicles
             bool selfLoading = vs.HasRole(ctx, v, VehicleRole.Load);
             if (ai.Phase == "" || ai.Route == null || ai.Route.Count == 0)
             {
-                ai.Route = vs.FindRoute(ctx, v.Pos, ai.LoadAt); ai.RouteIndex = 0; ai.Phase = "to load site"; ai.Loaded = false;
+                ai.Route = vs.FindRoute(ctx, v, ai.LoadAt); ai.RouteIndex = 0; ai.Phase = "to load site"; ai.Loaded = false;
             }
             if (ai.Phase == "to load site")
             {
@@ -387,7 +529,7 @@ namespace AlpineSim.Core.Vehicles
                 ai.WorkTimer += dt;
                 if (v.CargoKg >= capacity * 0.95f || (ai.WorkTimer > 240f && v.CargoKg > capacity * 0.3f))
                 {
-                    ai.Route = vs.FindRoute(ctx, v.Pos, ai.DeliverTo); ai.RouteIndex = 0; ai.Phase = "to dump site";
+                    ai.Route = vs.FindRoute(ctx, v, ai.DeliverTo); ai.RouteIndex = 0; ai.Phase = "to dump site";
                 }
                 else if (ai.WorkTimer > 600f) { ai.Phase = "waiting for loader"; }
                 return;
@@ -395,7 +537,7 @@ namespace AlpineSim.Core.Vehicles
             if (ai.Phase == "waiting for loader")
             {
                 input.Throttle = 0f; input.Brake = 1f; input.Work = true;
-                if (v.CargoKg >= capacity * 0.95f) { ai.Route = vs.FindRoute(ctx, v.Pos, ai.DeliverTo); ai.RouteIndex = 0; ai.Phase = "to dump site"; }
+                if (v.CargoKg >= capacity * 0.95f) { ai.Route = vs.FindRoute(ctx, v, ai.DeliverTo); ai.RouteIndex = 0; ai.Phase = "to dump site"; }
                 return;
             }
             if (ai.Phase == "to dump site")
@@ -414,9 +556,9 @@ namespace AlpineSim.Core.Vehicles
                     if (vs.HaulRemaining(ctx, v) <= 0f)
                     {
                         ai.Mode = AiMode.ReturnToBase; ai.Phase = "done hauling";
-                        ai.Route = vs.FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos); ai.RouteIndex = 0;
+                        ai.Route = vs.FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos); ai.RouteIndex = 0;
                     }
-                    else { ai.Route = vs.FindRoute(ctx, v.Pos, ai.LoadAt); ai.RouteIndex = 0; ai.Phase = "to load site"; }
+                    else { ai.Route = vs.FindRoute(ctx, v, ai.LoadAt); ai.RouteIndex = 0; ai.Phase = "to load site"; }
                 }
             }
         }

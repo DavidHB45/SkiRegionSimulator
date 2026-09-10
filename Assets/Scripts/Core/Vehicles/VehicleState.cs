@@ -154,6 +154,10 @@ namespace AlpineSim.Core.Vehicles
         public float FuelDeniedTimer;
         /// <summary>The job the AI was on when it left for fuel, so it can pick it up again afterwards.</summary>
         public AiMode JobMode = AiMode.Idle;
+        /// <summary>Set when a lane was abandoned part-way (stuck or refused): the next lane starts level with here, not at the far end.</summary>
+        public bool LaneAbandoned;
+        /// <summary>Tick the machine parked itself stuck on the way back; the foreman leaves it alone for a while after.</summary>
+        public long ParkedStuckTick = -1;
     }
 
     /// <summary>

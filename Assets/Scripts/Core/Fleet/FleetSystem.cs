@@ -221,14 +221,19 @@ namespace AlpineSim.Core.Fleet
             var f = ctx.World.Fleet;
             var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
             if (def == null) return false;
-            OperatorState best = null;
+            // the most competent qualified operator, but a specialist is kept back for the machine that needs the
+            // licence: putting the only truck driver in the pickup left the service truck unstaffable all winter
+            OperatorState best = null; float bestScore = float.MinValue;
             foreach (var op in f.Operators)
             {
                 if (op.IsPlayer || op.AssignedVehicleId >= 0 || op.TrainingLicensePending >= 0) continue;
                 if (op.HoursToday >= ctx.Data.Operators.ShiftHours) continue;
                 if (!OperatorLicensedFor(ctx, op, def)) continue;
                 if (jobLicence != OperatorLicense.Basic && !op.Has(jobLicence)) continue;
-                if (best == null || op.Competence > best.Competence) best = op;
+                int spare = 0;
+                foreach (var l in op.Licenses) if (l != OperatorLicense.Basic && l != def.OperatorLicense && l != jobLicence) spare++;
+                float score = op.Competence - 0.5f * spare;
+                if (best == null || score > bestScore) { best = op; bestScore = score; }
             }
             if (best == null) return false;
             return AssignOperator(ctx, best.Id, v.Id, out _);
@@ -656,6 +661,25 @@ namespace AlpineSim.Core.Fleet
         }
 
         // ------------------------------------------------------------------ fuel
+        private int _fuelOrderFailDay = -1;
+
+        /// <summary>
+        /// The office reorders diesel when stock plus deliveries on the way falls under fuel.autoOrderBelowFrac of the
+        /// depot, filling it: a resort whose machines work every night cannot wait for the player to notice the gauge.
+        /// </summary>
+        private void AutoOrderFuel(SimContext ctx)
+        {
+            var f = ctx.World.Fleet.Fuel;
+            if (!f.AutoOrder) return;
+            float pending = 0f; foreach (var d in f.Pending) pending += d.Liters;
+            if (f.DieselL + pending >= f.DieselCapacityL * ctx.Tuning.F("fuel.autoOrderBelowFrac")) return;
+            float liters = MathF.Floor(f.DieselCapacityL - f.DieselL - pending);
+            if (liters < ctx.Data.Stations.FuelDepot.DeliveryMinL) return;
+            bool contract = f.ContractRemainingL >= liters;
+            if (OrderFuel(ctx, liters, contract, out string why)) ctx.Sim.Log("Fuel office ordered " + liters + " L of diesel (depot at " + MathF.Round(f.DieselL) + " L).");
+            else if (_fuelOrderFailDay != ctx.Time.Day) { _fuelOrderFailDay = ctx.Time.Day; ctx.Sim.Log("Fuel office could not order diesel: " + why + ".", LogLevel.Warning); }
+        }
+
         public bool OrderFuel(SimContext ctx, float liters, bool contract, out string reason)
         {
             reason = "";
@@ -825,6 +849,7 @@ namespace AlpineSim.Core.Fleet
 
         private void Hourly(SimContext ctx)
         {
+            AutoOrderFuel(ctx);
             var f = ctx.World.Fleet;
             var t = ctx.Tuning;
             ctx.TryGetSystem<EconomySystem>(out var eco);

@@ -123,6 +123,8 @@ namespace AlpineSim.Core.Fleet
         public float ContractPricePerL;
         public List<FuelDelivery> Pending = new List<FuelDelivery>();
         public int NextDeliveryId = 1;
+        /// <summary>The office reorders diesel on its own when the depot runs low (fuel.autoOrderBelowFrac).</summary>
+        public bool AutoOrder = true;
         public float DieselUsedSeasonL;
         public double FuelSpendSeason;
     }

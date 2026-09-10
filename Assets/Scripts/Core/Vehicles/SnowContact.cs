@@ -194,7 +194,8 @@ namespace AlpineSim.Core.Vehicles
             res.BladeLoadKg += m.LoadKg;
             if (down && forward && moved > 1e-4f)
             {
-                float depth = att.Effects.CutDepthMm * (1f - m.Lift / 0.35f);
+                // the cut is per traverse, not per tick: a cell under the blade for five ticks loses the cut depth once
+                float depth = att.Effects.CutDepthMm * (1f - m.Lift / 0.35f) * MathUtil.Clamp01(moved / grid.CellSize);
                 // angled blade: effective width shrinks, spill goes to the trailing side
                 float angle = m.Angle;
                 float width = att.WorkingWidthM * MathF.Cos(angle);
@@ -216,8 +217,9 @@ namespace AlpineSim.Core.Vehicles
                 if (spill > 0f)
                 {
                     m.LoadKg -= spill;
-                    // deposit to the sides just outside the blade ends (toward the trailing side when angled)
-                    float leftShare = angle > 0.05f ? 0.15f : (angle < -0.05f ? 0.85f : 0.5f);
+                    // deposit just outside the blade ends: an angled blade discharges entirely off its trailing end (any
+                    // share dropped on the leading side lands on the strip just cleared), a straight one sheds both ways
+                    float leftShare = angle > 0.05f ? 0f : (angle < -0.05f ? 1f : 0.5f);
                     DepositLine(grid, bladeCenter + right * (width * 0.5f + 0.6f), fwd, spill * (1f - leftShare) / cellArea, loadDensity, 1.2f);
                     DepositLine(grid, bladeCenter - right * (width * 0.5f + 0.6f), fwd, spill * leftShare / cellArea, loadDensity, 1.2f);
                 }
@@ -226,10 +228,13 @@ namespace AlpineSim.Core.Vehicles
             }
             else if (m.LoadKg > 0f && (!down || v.Speed < -0.05f || (!forward && v.Input.Throttle <= 0f)))
             {
-                // raised, reversing or stopped: the pile stays where the blade is
+                // raised, reversing or stopped: the pile stays where the blade is; an angled blade has been carrying it
+                // at the trailing end, so it lands a metre beyond that end, off the strip being plowed
                 Vec2 bladeCenter = v.Pos + fwd * bladeOffset;
                 float width = att.WorkingWidthM * MathF.Cos(m.Angle);
-                DepositLine(grid, bladeCenter + fwd * 0.5f, right, m.LoadKg / cellArea, m.LoadDensity, width);
+                Vec2 side = m.Angle > 0.05f ? right : (m.Angle < -0.05f ? -right : Vec2.Zero);
+                Vec2 at = bladeCenter + fwd * 0.5f + side * (width * 0.5f + 1f);
+                DepositLine(grid, at, side.SqrLength > 0f ? fwd : right, m.LoadKg / cellArea, m.LoadDensity, side.SqrLength > 0f ? 2f : width);
                 m.LoadKg = 0f;
             }
             res.BladeLoadKg = m.LoadKg;
@@ -279,12 +284,17 @@ namespace AlpineSim.Core.Vehicles
             float speedPenalty = v.Speed > maxWork ? MathUtil.Clamp01(1f - (v.Speed - maxWork) / maxWork) : 1f;
             byte dir = (byte)(MathUtil.Repeat(v.Heading, MathUtil.TwoPi) / MathUtil.TwoPi * 255f);
             int tick = (int)ctx.Time.Tick;
+            // a cell sits under the tiller for several ticks as the machine crosses it: each tick applies the fraction of
+            // one pass the machine actually covered, so one traverse is one pass whatever the speed or tick rate (a
+            // cat creeping at walking pace no longer work-hardens its own tracks into ice)
+            float exposure = MathUtil.Clamp01(moved / grid.CellSize);
             for (int i = 0; i < _cells.Count; i++)
             {
                 int id = _cells[i];
                 float loose = grid.LooseMm[id];
                 float depthFactor = loose > depthRating ? MathUtil.Clamp01(depthRating / loose) : 1f;
-                SnowOps.Till(grid, id, target, eff * depthFactor * speedPenalty, comp, finish * speedPenalty * depthFactor, dir, tick, t);
+                float fin = 1f - MathF.Pow(1f - MathUtil.Clamp01(finish * speedPenalty * depthFactor), exposure);
+                SnowOps.Till(grid, id, target, eff * depthFactor * speedPenalty * exposure, comp * exposure, fin, dir, tick, t);
             }
             float area = width * moved; // geometric swath, independent of cell quantisation and tick rate
             v.TilledM2Today += area;

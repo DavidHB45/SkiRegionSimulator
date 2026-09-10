@@ -90,7 +90,7 @@ namespace AlpineSim.Core.Data
                 if (p.Points.Count < 2) continue;
                 var pts = new Vec2[p.Points.Count];
                 for (int i = 0; i < pts.Length; i++) pts[i] = p.Points[i].Pos;
-                into.Add(new TerrainCorridor { Points = pts, HalfWidthM = p.WidthM * 0.5f, BlendM = 12f, MaxGradeDeg = p.MaxGradeDeg });
+                into.Add(new TerrainCorridor { Points = pts, HalfWidthM = p.WidthM * 0.5f, BlendM = 12f, MaxGradeDeg = p.MaxGradeDeg, MaxEarthworkM = Terrain.PisteEarthworkM });
             }
             foreach (var z in Zones)
             {
@@ -106,7 +106,7 @@ namespace AlpineSim.Core.Data
                         if (Vec2.Distance(pts[i], BaseArea.Pos) <= BaseAreaRadiusM) pinned[i] = true;
                         foreach (var p in Pistes) foreach (var pp in p.Points) if (Vec2.Distance(pp.Pos, pts[i]) < 2f) pinned[i] = true;
                     }
-                    into.Add(new TerrainCorridor { Points = pts, HalfWidthM = z.WidthM * 0.5f, BlendM = z.BlendM, MaxGradeDeg = z.MaxGradeDeg, Pinned = pinned });
+                    into.Add(new TerrainCorridor { Points = pts, HalfWidthM = z.WidthM * 0.5f, BlendM = z.BlendM, MaxGradeDeg = z.MaxGradeDeg, Pinned = pinned, MaxEarthworkM = z.Kind == ZoneKind.Road ? Terrain.RoadEarthworkM : Terrain.TrackEarthworkM });
                 }
                 else if (z.Kind == ZoneKind.Lot && z.Points.Count > 0)
                 {

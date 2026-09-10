@@ -127,7 +127,7 @@ subsystem. The suite pins the design pillars, not just the code:
 | `Weather/WetBulbTests` | psychrometric wet-bulb against tables, monotonicity, altitude, snowmaking window edges |
 | `Data/FleetDataTests`, `Data/LiftDataTests`, `Data/EconomyDataTests` | 58 machines across 10 categories and 5 tiers, no two within 5 % on every key figure; 26 lift types; every enum has data |
 | `Vehicles/AttachmentEffectsTests` | a 6.0 m tiller covers 40 % more run per metre than a 4.3 m one; the heavy tiller needs a heavy cat |
-| `Fleet/FuelLogisticsTests` | a dry tank halts the machine and raises a service call; the service truck refuels it; an empty depot blocks until the delivery lands; AI machines refuel at the reserve |
+| `Fleet/FuelLogisticsTests` | a dry tank halts the machine and raises a service call; the service truck refuels it; an empty depot blocks until the delivery lands; AI machines head for the depot at the reserve |
 | `Lifts/LiftThroughputTests`, `Lifts/WindHoldTests` | every lift type moves its rated capacity through a saturated queue within 5 %; holds come in wind-limit order |
 | `Construction/TerrainGatingTests` | T-bar length, fixed-grip span, surface-lift grade; only the 3S and trams cross the valley; runs must descend |
 | `Guests/LapRateTests` | starving uphill capacity cuts laps and lengthens queues |

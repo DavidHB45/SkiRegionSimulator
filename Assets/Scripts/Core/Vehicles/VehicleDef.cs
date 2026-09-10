@@ -161,7 +161,7 @@ namespace AlpineSim.Core.Vehicles
     [Serializable]
     public sealed class AttachmentEffects
     {
-        public float CutDepthMm;            // blades: max depth cut per pass
+        public float CutDepthMm;            // blades: deepest snow taken in one pass (the moldboard's effective height)
         public float PushCapacityKg;        // blades: snow carried in front before spill
         public float TillTargetDensity;     // tillers: re-laid density
         public float TillEfficiency;        // tillers: fraction of the gap to target closed per pass

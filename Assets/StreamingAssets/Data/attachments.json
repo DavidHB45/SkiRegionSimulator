@@ -1,5 +1,5 @@
 {
-  "Comment": "Attachments: swapping is a workshop job, not an inventory toggle. Effects are the coefficients the snow contact and task models read; GrantsRoles is what the host machine can do with it mounted.",
+  "Comment": "Attachments: swapping is a workshop job, not an inventory toggle. Effects are the coefficients the snow contact and task models read; GrantsRoles is what the host machine can do with it mounted. CutDepthMm is the deepest snow a blade takes in one pass, its effective moldboard height: 0.45 m for a light pickup plow, 0.65-0.9 m for groomer blades.",
   "attachments": [
     {
       "Id": "blade_std_3_5",
@@ -13,7 +13,7 @@
       "RequiresPto": false,
       "WorkingWidthM": 3.5,
       "Effects": {
-        "CutDepthMm": 250,
+        "CutDepthMm": 650,
         "PushCapacityKg": 2600,
         "TillTargetDensity": 0,
         "TillEfficiency": 0,
@@ -78,7 +78,7 @@
       "RequiresPto": false,
       "WorkingWidthM": 4.3,
       "Effects": {
-        "CutDepthMm": 320,
+        "CutDepthMm": 800,
         "PushCapacityKg": 4200,
         "TillTargetDensity": 0,
         "TillEfficiency": 0,
@@ -143,7 +143,7 @@
       "RequiresPto": false,
       "WorkingWidthM": 5.0,
       "Effects": {
-        "CutDepthMm": 350,
+        "CutDepthMm": 900,
         "PushCapacityKg": 5600,
         "TillTargetDensity": 0,
         "TillEfficiency": 0,
@@ -406,7 +406,7 @@
       "RequiresPto": false,
       "WorkingWidthM": 2.4,
       "Effects": {
-        "CutDepthMm": 150,
+        "CutDepthMm": 450,
         "PushCapacityKg": 700,
         "TillTargetDensity": 0,
         "TillEfficiency": 0,
