@@ -30,6 +30,8 @@ jobs:
 
       - name: Meta-file discipline
         run: python3 tools/gen_meta.py --check
+      - name: Tuning documentation is current
+        run: python3 tools/gen_tuning_doc.py --check
 
       - name: Core must not reference UnityEngine
         run: |

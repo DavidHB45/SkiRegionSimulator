@@ -58,3 +58,64 @@ and `GraphicsSettings.asset` (Always Included Shaders); the compute shader is re
 ## D-010 Render settings are data too
 `render.json` (`RenderData`) holds chunk size, LOD distances, snow-map resolution, camera speeds.
 Not balance, but the "no numbers in code" rule is simpler to keep absolute.
+
+## D-011 Fifty-eight machine classes across ten categories
+The brief asks for 50 machines and enumerates more; the fleet table carries 58 records so every
+category has a full tier ladder (groomers T1–T5 incl. winch, hybrid and electric cats). Adding a
+machine remains a JSON record plus a mesh recipe; the integrity test only asserts "at least 50,
+all ten categories, all five tiers".
+
+## D-012 The default scenario starts in Act II
+Silberhorn starts with a fixed-grip quad, a T-bar, three runs and a tired fleet: the smallest
+loop that makes grooming matter. Act I (the village T-bar) is the `act1` scenario; a new
+player who wants the full ladder starts there. Act gates read `economy.json` acts only.
+
+## D-013 Runs built at runtime are not terrain-smoothed
+Scenario pistes get deterministic corridor smoothing at terrain generation (D-006). A run staked
+during play keeps the raw terrain under it; grading it is the `GradeRun` construction stage, which
+only flags the piste groomable. Re-smoothing the derived heightmap mid-game would either change
+the saved terrain (breaking D-006) or require saving it. Revisit in M7 if park shaping needs it.
+
+## D-014 Seed-derived streams for weather
+Weather days and forecasts draw from `SimContext.SeededRng(salt)` (seed × golden-ratio mix ×
+salt) rather than the world RNG. A save/load therefore cannot re-roll tomorrow's weather, and
+systems that consume randomness in a different order after a load still see the same sky.
+The world RNG remains the single stream for everything that happens inside the day.
+
+## D-015 Wet-bulb by psychrometric equation, not the Stull regression
+Snowmaking hangs on the wet-bulb, so it is solved from es(Tw) − A·P·(T − Tw) = e (Magnus
+saturation curve, ventilated-bulb constant 0.000662, ICAO pressure for the elevation). The Stull
+(2011) regression is 0.5–1 °C off in the −2…−8 °C window that decides whether guns run, and it
+crosses the dry-bulb below about −20 °C. Altitude lowers the wet-bulb by a few tenths, which is
+real and free.
+
+## D-016 Lift throughput is data, carriers are derived
+`CapacityPph` in `lifts.json` is the throughput the queue model uses directly (options and
+singles line scale it). Carrier count and spacing are derived from it and the line speed for the
+visuals and the capex, not the other way round, so a designer tunes the one number resorts quote.
+
+## D-017 Groom jobs are posted at close, completed by coverage
+The task system posts one grooming job per open groomable run whose PQI is under
+`tasks.groomJobPqiBelow` when the resort closes. A job completes when 97 % of the run's cells
+carry a groom stamp newer than the job (player or AI alike), so hand-groomed runs count and a
+cat that quits half-way leaves the job open on the board.
+
+## D-018 Terrain picking without colliders
+Staking and placement pick against the simulation heightfield by marching the camera ray and
+bisecting the crossing (`TerrainPicker`). Terrain chunks carry no colliders: no physics setup, no
+drift between what the sim thinks the ground is and what the mouse hits.
+
+## D-019 Instanced markers for guests and carriers
+Guests (cohorts) and lift carriers are drawn with `Graphics.DrawMeshInstanced` in batches of
+1023 through the `AlpineSim/Instanced` shader. Thousands of GameObjects would dominate frame
+time at 60x; a marker per cohort costs one matrix.
+
+## D-020 Scaffold systems tick as no-ops
+M7 and M8 register real `ISimSystem`s in their tick slots ("Scaffold", "Campaign") whose `Tick`
+does nothing and whose operations throw `NotImplementedException`. The tick order and the save
+shape are therefore final now; the schemas in `winch.json`, `park.json`, `avalanche.json`,
+`campaign.json`, `regions.json` are loaded if present so content can be authored ahead of code.
+
+## D-021 TUNING.md is generated
+`tools/gen_tuning_doc.py` renders `tuning.json` into `docs/TUNING.md`; CI checks it is current.
+A hand-maintained table of 230+ anchors would drift within a milestone.
