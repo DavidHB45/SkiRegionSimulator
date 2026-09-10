@@ -582,7 +582,225 @@
           }
         ],
         "Comment": "Diurnal cycle plus scripted storms; replaced by the climate model in M5."
-      }
+      },
+      "Lifts": [
+        {
+          "Id": "tbar",
+          "TypeId": "t_bar",
+          "Name": "Meadow T-bar",
+          "BottomX": 1120,
+          "BottomY": 440,
+          "TopX": 1160,
+          "TopY": 640,
+          "Options": [],
+          "ExistsFromAct": 1,
+          "ConditionPct": 78,
+          "AgeDays": 3650,
+          "Comment": "Village beginner lift; 200 m long, about 60 m vertical. The original 1990s installation."
+        },
+        {
+          "Id": "quad",
+          "TypeId": "fixed_quad",
+          "Name": "Silberhorn Quad",
+          "BottomX": 990,
+          "BottomY": 430,
+          "TopX": 930,
+          "TopY": 1300,
+          "Options": [],
+          "ExistsFromAct": 2,
+          "ConditionPct": 64,
+          "AgeDays": 7300,
+          "Comment": "Fixed-grip quad to the shoulder; 870 m slope length. Twenty seasons old, condition shows it. Only exists from Act II."
+        }
+      ],
+      "StartingFleet": [
+        {
+          "DefId": "groomer_mid",
+          "Name": "Cat 1",
+          "X": 955,
+          "Y": 322,
+          "HeadingDeg": 90,
+          "Hours": 2140,
+          "ConditionPct": 82,
+          "FuelFrac": 0.9,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "The hero machine: a mid-size tracked groomer with a 12-way blade and the 4.3 m tiller."
+        },
+        {
+          "DefId": "groomer_light",
+          "Name": "Cat 2 (old)",
+          "X": 968,
+          "Y": 318,
+          "HeadingDeg": 90,
+          "Hours": 6400,
+          "ConditionPct": 48,
+          "FuelFrac": 0.6,
+          "Sheltered": false,
+          "ExistsFromAct": 1,
+          "Comment": "A used starter cat bought at auction; worn drivetrain, lives outside."
+        },
+        {
+          "DefId": "snowmobile_utility",
+          "Name": "Sled",
+          "X": 944,
+          "Y": 335,
+          "HeadingDeg": 0,
+          "Hours": 900,
+          "ConditionPct": 88,
+          "FuelFrac": 0.7,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Patrol and errand snowmobile."
+        },
+        {
+          "DefId": "pickup_plow",
+          "Name": "Pickup",
+          "X": 935,
+          "Y": 352,
+          "HeadingDeg": 0,
+          "Hours": 3100,
+          "ConditionPct": 74,
+          "FuelFrac": 0.8,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Plow pickup for the access road and lots."
+        },
+        {
+          "DefId": "service_truck",
+          "Name": "Service truck",
+          "X": 925,
+          "Y": 360,
+          "HeadingDeg": 0,
+          "Hours": 4200,
+          "ConditionPct": 70,
+          "FuelFrac": 0.8,
+          "Sheltered": true,
+          "ExistsFromAct": 2,
+          "Comment": "Fuel, parts and a mechanic on wheels; keeps the night shift alive when a cat runs dry."
+        },
+        {
+          "DefId": "gun_fan_mobile",
+          "Name": "Fan gun A",
+          "X": 1085,
+          "Y": 345,
+          "HeadingDeg": 0,
+          "Hours": 1200,
+          "ConditionPct": 80,
+          "FuelFrac": 1.0,
+          "Sheltered": true,
+          "ExistsFromAct": 2,
+          "Comment": "One mobile fan gun in the pump-house yard."
+        },
+        {
+          "DefId": "gun_fan_mobile",
+          "Name": "Fan gun B",
+          "X": 1090,
+          "Y": 350,
+          "HeadingDeg": 0,
+          "Hours": 1450,
+          "ConditionPct": 76,
+          "FuelFrac": 1.0,
+          "Sheltered": true,
+          "ExistsFromAct": 2,
+          "Comment": "Second fan gun."
+        }
+      ],
+      "Hydrants": [
+        {
+          "Id": "h_village_1",
+          "X": 1000,
+          "Y": 520,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": "Lower Village run"
+        },
+        {
+          "Id": "h_village_2",
+          "X": 985,
+          "Y": 640,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_village_3",
+          "X": 970,
+          "Y": 760,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_village_4",
+          "X": 955,
+          "Y": 880,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_meadow_1",
+          "X": 1120,
+          "Y": 500,
+          "PisteId": "meadow",
+          "InstallCost": 0,
+          "Comment": "Meadow beginner run near the T-bar"
+        },
+        {
+          "Id": "h_meadow_2",
+          "X": 1140,
+          "Y": 580,
+          "PisteId": "meadow",
+          "InstallCost": 0,
+          "Comment": ""
+        }
+      ],
+      "StartingOperators": [
+        {
+          "Name": "Lena Marchetti",
+          "Competence": 0.86,
+          "Licenses": [
+            "Groomer"
+          ],
+          "Comment": "Veteran cat driver, twelve winters."
+        },
+        {
+          "Name": "Tobias Kerr",
+          "Competence": 0.62,
+          "Licenses": [],
+          "Comment": "Second-season hand; can plow lots, not licensed for cats yet."
+        },
+        {
+          "Name": "Marta Oberholzer",
+          "Competence": 0.74,
+          "Licenses": [
+            "Cdl"
+          ],
+          "Comment": "Drives the trucks."
+        }
+      ],
+      "StartingAttachments": [
+        "blade_std_3_5",
+        "tiller_4_3"
+      ],
+      "StartPumpStations": [
+        "pump_main_60lps"
+      ],
+      "StartCompressorStations": [],
+      "StartWorkshopTier": 1,
+      "StartGarageBays": 3,
+      "StartDieselL": 6000,
+      "StartGasolineL": 400,
+      "StartParts": {
+        "filters": 2,
+        "trackPads": 1
+      },
+      "ReservoirInitialM3": 45000,
+      "ReservoirCapacityM3": 60000,
+      "StartTicketPrice": 68,
+      "StartReputation": 50,
+      "ClimateId": "alpine"
     },
     {
       "Id": "act1",
@@ -1164,7 +1382,153 @@
           }
         ],
         "Comment": "Diurnal cycle plus scripted storms; replaced by the climate model in M5."
-      }
+      },
+      "Lifts": [
+        {
+          "Id": "tbar",
+          "TypeId": "t_bar",
+          "Name": "Meadow T-bar",
+          "BottomX": 1120,
+          "BottomY": 440,
+          "TopX": 1160,
+          "TopY": 640,
+          "Options": [],
+          "ExistsFromAct": 1,
+          "ConditionPct": 78,
+          "AgeDays": 3650,
+          "Comment": "Village beginner lift; 200 m long, about 60 m vertical. The original 1990s installation."
+        },
+        {
+          "Id": "quad",
+          "TypeId": "fixed_quad",
+          "Name": "Silberhorn Quad",
+          "BottomX": 990,
+          "BottomY": 430,
+          "TopX": 930,
+          "TopY": 1300,
+          "Options": [],
+          "ExistsFromAct": 2,
+          "ConditionPct": 64,
+          "AgeDays": 7300,
+          "Comment": "Fixed-grip quad to the shoulder; 870 m slope length. Twenty seasons old, condition shows it. Only exists from Act II."
+        }
+      ],
+      "StartingFleet": [
+        {
+          "DefId": "groomer_light",
+          "Name": "Cat 1 (old)",
+          "X": 968,
+          "Y": 318,
+          "HeadingDeg": 90,
+          "Hours": 6400,
+          "ConditionPct": 48,
+          "FuelFrac": 0.6,
+          "Sheltered": false,
+          "ExistsFromAct": 1,
+          "Comment": "A used starter cat bought at auction; worn drivetrain, lives outside."
+        },
+        {
+          "DefId": "snowmobile_utility",
+          "Name": "Sled",
+          "X": 944,
+          "Y": 335,
+          "HeadingDeg": 0,
+          "Hours": 900,
+          "ConditionPct": 88,
+          "FuelFrac": 0.7,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Patrol and errand snowmobile."
+        },
+        {
+          "DefId": "pickup_plow",
+          "Name": "Pickup",
+          "X": 935,
+          "Y": 352,
+          "HeadingDeg": 0,
+          "Hours": 3100,
+          "ConditionPct": 74,
+          "FuelFrac": 0.8,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Plow pickup for the access road and lots."
+        }
+      ],
+      "Hydrants": [
+        {
+          "Id": "h_village_1",
+          "X": 1000,
+          "Y": 520,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": "Lower Village run"
+        },
+        {
+          "Id": "h_village_2",
+          "X": 985,
+          "Y": 640,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_village_3",
+          "X": 970,
+          "Y": 760,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_village_4",
+          "X": 955,
+          "Y": 880,
+          "PisteId": "village",
+          "InstallCost": 0,
+          "Comment": ""
+        },
+        {
+          "Id": "h_meadow_1",
+          "X": 1120,
+          "Y": 500,
+          "PisteId": "meadow",
+          "InstallCost": 0,
+          "Comment": "Meadow beginner run near the T-bar"
+        },
+        {
+          "Id": "h_meadow_2",
+          "X": 1140,
+          "Y": 580,
+          "PisteId": "meadow",
+          "InstallCost": 0,
+          "Comment": ""
+        }
+      ],
+      "StartingOperators": [
+        {
+          "Name": "Tobias Kerr",
+          "Competence": 0.62,
+          "Licenses": [],
+          "Comment": "Second-season hand; can plow lots, not licensed for cats yet."
+        }
+      ],
+      "StartingAttachments": [
+        "blade_std_3_5"
+      ],
+      "StartPumpStations": [],
+      "StartCompressorStations": [],
+      "StartWorkshopTier": 1,
+      "StartGarageBays": 1,
+      "StartDieselL": 2500,
+      "StartGasolineL": 400,
+      "StartParts": {
+        "filters": 1
+      },
+      "ReservoirInitialM3": 45000,
+      "ReservoirCapacityM3": 60000,
+      "StartTicketPrice": 45,
+      "StartReputation": 42,
+      "ClimateId": "alpine"
     },
     {
       "Id": "test_small",
@@ -1363,7 +1727,115 @@
         "WindDirDeg": 270,
         "Script": [],
         "Comment": "No storms: tests add snow explicitly."
-      }
+      },
+      "Lifts": [
+        {
+          "Id": "t",
+          "TypeId": "fixed_quad",
+          "Name": "Test Quad",
+          "BottomX": 262,
+          "BottomY": 105,
+          "TopX": 262,
+          "TopY": 405,
+          "Options": [],
+          "ExistsFromAct": 1,
+          "ConditionPct": 100,
+          "AgeDays": 0,
+          "Comment": "A short fixed-grip quad serving t1 and t2; tests saturate its queue."
+        }
+      ],
+      "StartingFleet": [
+        {
+          "DefId": "groomer_mid",
+          "Name": "Test Cat",
+          "X": 232,
+          "Y": 72,
+          "HeadingDeg": 90,
+          "Hours": 500,
+          "ConditionPct": 95,
+          "FuelFrac": 1.0,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Hero groomer for the attachment and fuel tests."
+        },
+        {
+          "DefId": "service_truck",
+          "Name": "Test Service",
+          "X": 226,
+          "Y": 78,
+          "HeadingDeg": 0,
+          "Hours": 500,
+          "ConditionPct": 95,
+          "FuelFrac": 1.0,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Service truck for the fuel logistics test."
+        },
+        {
+          "DefId": "gun_fan_mobile",
+          "Name": "Test Gun",
+          "X": 282,
+          "Y": 76,
+          "HeadingDeg": 0,
+          "Hours": 100,
+          "ConditionPct": 100,
+          "FuelFrac": 1.0,
+          "Sheltered": true,
+          "ExistsFromAct": 1,
+          "Comment": "Fan gun for the wet-bulb gating test."
+        }
+      ],
+      "Hydrants": [
+        {
+          "Id": "th1",
+          "X": 262,
+          "Y": 200,
+          "PisteId": "t1",
+          "InstallCost": 0,
+          "Comment": "Mid t1"
+        },
+        {
+          "Id": "th2",
+          "X": 262,
+          "Y": 300,
+          "PisteId": "t1",
+          "InstallCost": 0,
+          "Comment": ""
+        }
+      ],
+      "StartingOperators": [
+        {
+          "Name": "Test Operator",
+          "Competence": 0.9,
+          "Licenses": [
+            "Groomer",
+            "Cdl"
+          ],
+          "Comment": "Fully licensed so tests are not blocked on staffing."
+        }
+      ],
+      "StartingAttachments": [
+        "tiller_6_0",
+        "blade_std_3_5"
+      ],
+      "StartPumpStations": [
+        "pump_main_60lps"
+      ],
+      "StartCompressorStations": [],
+      "StartWorkshopTier": 2,
+      "StartGarageBays": 4,
+      "StartDieselL": 8000,
+      "StartGasolineL": 500,
+      "StartParts": {
+        "filters": 3,
+        "engineKit": 1,
+        "hydraulicPump": 1,
+        "trackPads": 1,
+        "drivetrainKit": 1
+      },
+      "StartTicketPrice": 60,
+      "StartReputation": 50,
+      "ClimateId": "alpine"
     }
   ]
 }
