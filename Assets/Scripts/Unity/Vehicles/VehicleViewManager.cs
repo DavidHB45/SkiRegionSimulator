@@ -46,8 +46,6 @@ namespace AlpineSim.Unity.Vehicles
             boot.Sim.Events.Subscribe(_onAttach);
             boot.Sim.Events.Subscribe(_onPlayer);
             boot.Runner.Ticked += _onTicked;
-            boot.Ui.Hud.AddStatusProvider(VehicleStatus);
-            boot.Ui.Hud.AddLegend("Enter enter/leave machine  W/S A/D drive  Space brake  R/F blade  Q/E angle  T tiller  V implement  G work  L lights  I engine");
         }
 
         private void OnDestroy()
@@ -121,7 +119,7 @@ namespace AlpineSim.Unity.Vehicles
             foreach (var v in _views.Values) v.Present(alpha);
         }
 
-        private string VehicleStatus()
+        public string VehicleStatus()
         {
             var ctx = _boot.Sim.Ctx;
             var p = _vs.PlayerVehicle(ctx);

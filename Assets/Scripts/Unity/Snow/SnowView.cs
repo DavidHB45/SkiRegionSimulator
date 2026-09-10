@@ -48,8 +48,6 @@ namespace AlpineSim.Unity.Snow
             _uploader.Rebuild(boot.Sim.World.Time.Tick);
             boot.TerrainView.SetMaterial(_snowMaterial);
             ApplyOverlay();
-            boot.Ui.Hud.AddStatusProvider(Status);
-            boot.Ui.Hud.AddLegend("O snow overlay (depth / density / roughness / PQI / groom age / surface)");
         }
 
         public void CycleMode()
@@ -77,7 +75,7 @@ namespace AlpineSim.Unity.Snow
             _uploader.Update(_boot.Sim.World.Time.Tick);
         }
 
-        private string Status()
+        public string Status()
         {
             if (_mode == SnowDebugMode.None) return "";
             return "Snow overlay: " + _mode + (_uploader != null ? "  (" + (_uploader.UsesCompute ? "compute" : "cpu") + " upload, " + _uploader.PendingChunks + " chunks pending)" : "");
