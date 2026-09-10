@@ -33,6 +33,7 @@ namespace AlpineSim.Core.Vehicles
         {
             var grid = ctx.World.Snow;
             var t = ctx.Tuning;
+            _sp = SnowParams.From(t);
             var res = new ContactResult();
             Vec2 fwd = Vec2.FromAngle(v.Heading);
             Vec2 right = new Vec2(fwd.Y, -fwd.X);
@@ -49,19 +50,23 @@ namespace AlpineSim.Core.Vehicles
             // ---- running gear compaction
             if (def.ChassisType != ChassisType.Stationary && moved > 1e-4f)
             {
-                float trackLen = MathF.Max(1.5f, bodyL * 0.75f);
-                float exposure = MathUtil.Clamp01(moved / trackLen);
+                // Only the strip the running gear covered this tick is compacted, with the fraction of a pass that
+                // distance represents, so one traverse is one pass: compacting the whole track footprint every tick
+                // had been nine times the work for the same result.
+                float len = MathF.Max(cs, moved);
+                Vec2 strip = fwd * (-len * 0.5f * MathF.Sign(moved));
+                float exposure = MathUtil.Clamp01(moved / cs);
                 float pressure = def.GroundPressureKpa;
                 if (def.ChassisType == ChassisType.Tracked || def.TrackWidthM > 0f)
                 {
                     float tw = MathF.Max(0.3f, def.TrackWidthM > 0f ? def.TrackWidthM : 0.5f);
                     float offset = bodyW * 0.5f - tw * 0.5f;
-                    CompactStrip(grid, t, v.Pos + right * offset, fwd, right, trackLen, tw, pressure, exposure);
-                    CompactStrip(grid, t, v.Pos - right * offset, fwd, right, trackLen, tw, pressure, exposure);
+                    CompactStrip(grid, t, v.Pos + strip + right * offset, fwd, right, len, tw, pressure, exposure);
+                    CompactStrip(grid, t, v.Pos + strip - right * offset, fwd, right, len, tw, pressure, exposure);
                 }
                 else if (def.ChassisType == ChassisType.WalkBehind)
                 {
-                    CompactStrip(grid, t, v.Pos, fwd, right, 0.8f, 0.6f, pressure, exposure);
+                    CompactStrip(grid, t, v.Pos + strip, fwd, right, len, 0.6f, pressure, exposure);
                 }
                 else
                 {
@@ -71,9 +76,9 @@ namespace AlpineSim.Core.Vehicles
                     for (int a = 0; a < axles; a++)
                     {
                         float along = (axles == 1 ? 0f : -bodyL * 0.3f + a * (bodyL * 0.6f / (axles - 1)));
-                        Vec2 c = v.Pos + fwd * along;
-                        CompactStrip(grid, t, c + right * half, fwd, right, MathF.Max(0.5f, moved), tireW, pressure, 1f);
-                        CompactStrip(grid, t, c - right * half, fwd, right, MathF.Max(0.5f, moved), tireW, pressure, 1f);
+                        Vec2 c = v.Pos + fwd * along + strip;
+                        CompactStrip(grid, t, c + right * half, fwd, right, len, tireW, pressure, exposure);
+                        CompactStrip(grid, t, c - right * half, fwd, right, len, tireW, pressure, exposure);
                     }
                 }
             }
@@ -167,10 +172,13 @@ namespace AlpineSim.Core.Vehicles
             }
         }
 
+        private SnowParams _sp;
+
         private void CompactStrip(SnowGrid grid, TuningData t, Vec2 c, Vec2 fwd, Vec2 right, float len, float w, float pressure, float exposure)
         {
             RectCells(grid, c, fwd, right, len, w, _cells, false);
-            for (int i = 0; i < _cells.Count; i++) SnowOps.Compact(grid, _cells[i], pressure, exposure, t);
+            float target = t.Curve("snow.compactionTargetDensityByKpa", pressure);
+            for (int i = 0; i < _cells.Count; i++) SnowOps.Compact(grid, _cells[i], pressure, exposure, target, in _sp);
         }
 
         /// <summary>Strip swept since last tick: width w centred on the implement line at offset along fwd, length = distance moved (min one cell).</summary>
@@ -294,7 +302,7 @@ namespace AlpineSim.Core.Vehicles
                 float loose = grid.LooseMm[id];
                 float depthFactor = loose > depthRating ? MathUtil.Clamp01(depthRating / loose) : 1f;
                 float fin = 1f - MathF.Pow(1f - MathUtil.Clamp01(finish * speedPenalty * depthFactor), exposure);
-                SnowOps.Till(grid, id, target, eff * depthFactor * speedPenalty * exposure, comp * exposure, fin, dir, tick, t);
+                SnowOps.Till(grid, id, target, eff * depthFactor * speedPenalty * exposure, comp * exposure, fin, dir, tick, in _sp);
             }
             float area = width * moved; // geometric swath, independent of cell quantisation and tick rate
             v.TilledM2Today += area;

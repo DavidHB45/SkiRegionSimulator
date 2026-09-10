@@ -2,6 +2,39 @@ using System;
 using AlpineSim.Core.Data;
 using AlpineSim.Core.Math;
 
+    /// <summary>
+    /// The tuning anchors the per-cell snow operations read, gathered once per tick by their callers: a working
+    /// machine touches a few dozen cells a tick and every anchor lookup is a locked dictionary access, which had
+    /// made the snow contact the most expensive thing in the simulation.
+    /// </summary>
+    public struct SnowParams
+    {
+        public float CompactionReferenceKpa, CompactLooseFractionPerPass, CompactedLooseDensity, CompactionRatePerPass, RutSoftDensityLo, RutSoftDensityRange, RutPerVehiclePass;
+        public float CorduroyDensityHi, TillerHardeningRange, TillerMoistureRetain;
+        public float SkierIceRoughnessFactor, RoughnessPerSkierPass, SkierLoosenKgPerPass, ScrapeSlopeRefDeg, ScrapeKgPerSkierPass, ScrapeMaxFractionPerPass, ScrapeEdgeShare;
+
+        public static SnowParams From(TuningData t) => new SnowParams
+        {
+            CompactionReferenceKpa = t.F("snow.compactionReferenceKpa"),
+            CompactLooseFractionPerPass = t.F("snow.compactLooseFractionPerPass"),
+            CompactedLooseDensity = t.F("snow.compactedLooseDensity"),
+            CompactionRatePerPass = t.F("snow.compactionRatePerPass"),
+            RutSoftDensityLo = t.F("snow.rutSoftDensityLo"),
+            RutSoftDensityRange = t.F("snow.rutSoftDensityRange"),
+            RutPerVehiclePass = t.F("snow.rutPerVehiclePass"),
+            CorduroyDensityHi = t.F("snow.corduroyDensityHi"),
+            TillerHardeningRange = t.F("snow.tillerHardeningRange"),
+            TillerMoistureRetain = t.F("snow.tillerMoistureRetain"),
+            SkierIceRoughnessFactor = t.F("snow.skierIceRoughnessFactor"),
+            RoughnessPerSkierPass = t.F("snow.roughnessPerSkierPass"),
+            SkierLoosenKgPerPass = t.F("snow.skierLoosenKgPerPass"),
+            ScrapeSlopeRefDeg = t.F("snow.scrapeSlopeRefDeg"),
+            ScrapeKgPerSkierPass = t.F("snow.scrapeKgPerSkierPass"),
+            ScrapeMaxFractionPerPass = t.F("snow.scrapeMaxFractionPerPass"),
+            ScrapeEdgeShare = t.F("snow.scrapeEdgeShare"),
+        };
+    }
+
 namespace AlpineSim.Core.Snow
 {
     /// <summary>
@@ -108,22 +141,26 @@ namespace AlpineSim.Core.Snow
         /// <paramref name="exposure"/> is the fraction of a full pass (0..1) this call represents.
         /// </summary>
         public static void Compact(SnowGrid g, int id, float pressureKpa, float exposure, TuningData t)
+            => Compact(g, id, pressureKpa, exposure, t.Curve("snow.compactionTargetDensityByKpa", pressureKpa), SnowParams.From(t));
+
+        /// <summary>One running-gear pass over a cell with the anchors and the pressure's target density resolved by the caller.</summary>
+        public static void Compact(SnowGrid g, int id, float pressureKpa, float exposure, float targetDensity, in SnowParams p)
         {
             if (id < 0 || exposure <= 0f) return;
-            float refP = t.F("snow.compactionReferenceKpa");
+            float refP = p.CompactionReferenceKpa;
             float pf = MathUtil.Clamp01(pressureKpa / refP);
             // loose -> packed
-            float frac = MathUtil.Clamp01(t.F("snow.compactLooseFractionPerPass") * (0.4f + 0.6f * pf) * exposure);
+            float frac = MathUtil.Clamp01(p.CompactLooseFractionPerPass * (0.4f + 0.6f * pf) * exposure);
             float looseMass = g.LooseMm[id] * g.FreshDensity * 0.001f;
             if (looseMass > 0f && frac > 0f)
             {
                 float m = looseMass * frac;
                 g.LooseMm[id] -= m / g.FreshDensity * 1000f;
-                DepositPacked(g, id, m, t.F("snow.compactedLooseDensity"));
+                DepositPacked(g, id, m, p.CompactedLooseDensity);
             }
             // densify packed layer toward target
-            float target = t.Curve("snow.compactionTargetDensityByKpa", pressureKpa);
-            float k = t.F("snow.compactionRatePerPass") * exposure;
+            float target = targetDensity;
+            float k = p.CompactionRatePerPass * exposure;
             if (g.Density[id] < target)
             {
                 float mass = g.PackedMm[id] * g.Density[id] * 0.001f;
@@ -131,8 +168,8 @@ namespace AlpineSim.Core.Snow
                 if (mass > 0f) g.PackedMm[id] = mass / g.Density[id] * 1000f;
             }
             // rutting
-            float soft = MathUtil.Clamp01(1f - (g.Density[id] - t.F("snow.rutSoftDensityLo")) / t.F("snow.rutSoftDensityRange"));
-            g.Roughness[id] = MathUtil.Clamp01(g.Roughness[id] + t.F("snow.rutPerVehiclePass") * soft * exposure);
+            float soft = MathUtil.Clamp01(1f - (g.Density[id] - p.RutSoftDensityLo) / p.RutSoftDensityRange);
+            g.Roughness[id] = MathUtil.Clamp01(g.Roughness[id] + p.RutPerVehiclePass * soft * exposure);
             g.MarkDirty(id);
         }
 
@@ -143,6 +180,9 @@ namespace AlpineSim.Core.Snow
         /// roughness by finish quality and stamps the groom time/direction.
         /// </summary>
         public static void Till(SnowGrid g, int id, float targetDensity, float efficiency, float compactionPerPass, float finishQuality, byte groomDir, int tick, TuningData t)
+            => Till(g, id, targetDensity, efficiency, compactionPerPass, finishQuality, groomDir, tick, SnowParams.From(t));
+
+        public static void Till(SnowGrid g, int id, float targetDensity, float efficiency, float compactionPerPass, float finishQuality, byte groomDir, int tick, in SnowParams p)
         {
             if (id < 0) return;
             float looseMass = g.LooseMm[id] * g.FreshDensity * 0.001f;
@@ -159,8 +199,8 @@ namespace AlpineSim.Core.Snow
             }
             float depth = g.LooseMm[id] + g.PackedMm[id];
             float mixed = total / depth * 1000f; // mass-weighted mean density after pulverising
-            float bandHi = t.F("snow.corduroyDensityHi");
-            float iceRange = t.F("snow.tillerHardeningRange");
+            float bandHi = p.CorduroyDensityHi;
+            float iceRange = p.TillerHardeningRange;
             float d;
             if (mixed < targetDensity)
             {
@@ -177,7 +217,7 @@ namespace AlpineSim.Core.Snow
             g.PackedMm[id] = total / d * 1000f;
             g.LooseMm[id] = 0f;
             g.Roughness[id] = MathUtil.Clamp01(g.Roughness[id] * (1f - finishQuality));
-            g.Moisture[id] = MathUtil.Clamp01(g.Moisture[id] * t.F("snow.tillerMoistureRetain"));
+            g.Moisture[id] = MathUtil.Clamp01(g.Moisture[id] * p.TillerMoistureRetain);
             g.LastGroomTick[id] = tick;
             g.GroomDir[id] = groomDir;
             g.MarkDirty(id);
@@ -196,16 +236,18 @@ namespace AlpineSim.Core.Snow
         /// run edge (away from the centreline). Conserves mass; when a target cell is outside the
         /// allocated envelope the mass stays where it is.
         /// </summary>
-        public static void SkierPass(SnowGrid g, int id, float traffic, Vec2 moveDir, TuningData t)
+        public static void SkierPass(SnowGrid g, int id, float traffic, Vec2 moveDir, TuningData t) => SkierPass(g, id, traffic, moveDir, SnowParams.From(t));
+
+        public static void SkierPass(SnowGrid g, int id, float traffic, Vec2 moveDir, in SnowParams p)
         {
             if (id < 0 || traffic <= 0f) return;
             float density = g.ColumnDensity(id);
-            float soft = MathUtil.Clamp01(1f - (density - t.F("snow.rutSoftDensityLo")) / t.F("snow.rutSoftDensityRange"));
-            float iceBonus = density > t.F("snow.corduroyDensityHi") ? t.F("snow.skierIceRoughnessFactor") : 1f;
-            g.Roughness[id] = MathUtil.Clamp01(g.Roughness[id] + t.F("snow.roughnessPerSkierPass") * traffic * (0.4f + 0.6f * soft) * iceBonus);
+            float soft = MathUtil.Clamp01(1f - (density - p.RutSoftDensityLo) / p.RutSoftDensityRange);
+            float iceBonus = density > p.CorduroyDensityHi ? p.SkierIceRoughnessFactor : 1f;
+            g.Roughness[id] = MathUtil.Clamp01(g.Roughness[id] + p.RoughnessPerSkierPass * traffic * (0.4f + 0.6f * soft) * iceBonus);
 
             // edges chatter the surface into loose chop (mass conserved: packed -> loose)
-            float loosen = t.F("snow.skierLoosenKgPerPass") * traffic * (0.5f + 0.5f * soft);
+            float loosen = p.SkierLoosenKgPerPass * traffic * (0.5f + 0.5f * soft);
             float packedMass = g.PackedMm[id] * g.Density[id] * 0.001f;
             if (loosen > packedMass * 0.05f) loosen = packedMass * 0.05f;
             if (loosen > 0f && packedMass > 1e-6f)
@@ -214,10 +256,10 @@ namespace AlpineSim.Core.Snow
                 g.LooseMm[id] += loosen / g.FreshDensity * 1000f;
             }
 
-            float slopeFactor = MathUtil.Clamp01(g.SlopeDeg[id] / t.F("snow.scrapeSlopeRefDeg"));
-            float scrape = t.F("snow.scrapeKgPerSkierPass") * traffic * (0.3f + 0.7f * soft) * (0.3f + 0.7f * slopeFactor);
+            float slopeFactor = MathUtil.Clamp01(g.SlopeDeg[id] / p.ScrapeSlopeRefDeg);
+            float scrape = p.ScrapeKgPerSkierPass * traffic * (0.3f + 0.7f * soft) * (0.3f + 0.7f * slopeFactor);
             float available = g.MassKgPerM2(id);
-            if (scrape > available * t.F("snow.scrapeMaxFractionPerPass")) scrape = available * t.F("snow.scrapeMaxFractionPerPass");
+            if (scrape > available * p.ScrapeMaxFractionPerPass) scrape = available * p.ScrapeMaxFractionPerPass;
             if (scrape <= 1e-6f) { g.MarkDirty(id); return; }
 
             g.CellCoordsOf(id, out int cx, out int cy);
@@ -233,7 +275,7 @@ namespace AlpineSim.Core.Snow
             int py = MathF.Abs(perp.Y) >= 0.5f ? System.Math.Sign(perp.Y) : 0;
             int edge = g.CellId(cx + px, cy + py);
 
-            float edgeShare = t.F("snow.scrapeEdgeShare");
+            float edgeShare = p.ScrapeEdgeShare;
             float toEdge = scrape * edgeShare;
             float toDown = scrape - toEdge;
             float srcDensity = MathF.Max(density, MinDensity);

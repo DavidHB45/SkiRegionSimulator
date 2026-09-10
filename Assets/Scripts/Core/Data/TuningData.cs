@@ -33,7 +33,6 @@ namespace AlpineSim.Core.Data
     public sealed class TuningData
     {
         private readonly Dictionary<string, TuningEntry> _entries = new Dictionary<string, TuningEntry>(StringComparer.Ordinal);
-        private readonly Dictionary<string, float> _cache = new Dictionary<string, float>(StringComparer.Ordinal);
 
         public IReadOnlyDictionary<string, TuningEntry> Entries => _entries;
         public int Count => _entries.Count;
@@ -91,16 +90,14 @@ namespace AlpineSim.Core.Data
             throw new TuningKeyMissingException(key);
         }
 
-        /// <summary>Float value of a scalar entry.</summary>
+        /// <summary>
+        /// Float value of a scalar entry. One dictionary lookup, no lock: the simulation ticks on one thread, and the
+        /// hot per-cell paths read anchors through <c>SnowParams</c> and per-tick fields rather than through here.
+        /// </summary>
         public float F(string key)
         {
-            lock (_cache)
-            {
-                if (_cache.TryGetValue(key, out float v)) return v;
-                v = Entry(key).Value;
-                _cache[key] = v;
-                return v;
-            }
+            if (_entries.TryGetValue(key, out var e)) return e.Value;
+            throw new TuningKeyMissingException(key);
         }
 
         public int I(string key) => (int)System.Math.Round(F(key));
@@ -122,7 +119,6 @@ namespace AlpineSim.Core.Data
         {
             if (!_entries.TryGetValue(key, out var e)) { e = new TuningEntry { Key = key, Comment = "(override)" }; _entries[key] = e; }
             e.Value = value;
-            lock (_cache) _cache[key] = value;
         }
 
         /// <summary>Copy with independent overrides so one test cannot leak tuning into another.</summary>

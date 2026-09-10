@@ -245,3 +245,14 @@ not counted against it, an angled blade discharges entirely off its trailing end
 route follower tracks the path itself rather than the next waypoint so a plow that swung wide
 comes back onto its lane within a couple of lookaheads, entering the first lane from a lead-in
 point behind its start.
+
+## D-034 Per-cell work reads its anchors once a tick
+Two machines working every night made the snow contact the most expensive thing in the
+simulation: every cell under a track, tiller or blade read five to seven tuning anchors through
+a locked dictionary, every tick. `SnowParams` gathers those anchors once per tick for the contact
+and guest systems, `TuningData.F` is a single unlocked lookup (the simulation ticks on one
+thread), and the running gear compacts only the strip it covered this tick with the fraction of
+a pass that distance represents, which is the same total as compacting the whole footprint every
+tick for a ninth of the work. Guest cohorts step every fourth tick with four times the step
+(`simulation.guestTickDivisor`): walking, queueing and skiing at 5 Hz are indistinguishable from
+20 Hz. Two simulated days went from 76 s to 43 s; the thirty-day fixtures dominate the suite.

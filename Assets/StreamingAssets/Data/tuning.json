@@ -29,6 +29,13 @@
       "unit": "guests",
       "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed."
     },
+    "guestTickDivisor": {
+      "value": 4,
+      "min": 1,
+      "max": 10,
+      "unit": "ticks",
+      "comment": "Guest cohorts step every Nth tick with N times the step: skiing, walking and queueing at 5 Hz is indistinguishable from 20 Hz and costs a quarter as much; the snow, lifts and machines still tick at 20 Hz."
+    },
     "aiVehicleTickDivisor": {
       "value": 1,
       "min": 1,

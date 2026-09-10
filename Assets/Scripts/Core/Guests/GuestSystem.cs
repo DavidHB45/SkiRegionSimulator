@@ -98,11 +98,14 @@ namespace AlpineSim.Core.Guests
         }
 
         // ------------------------------------------------------------------ tick
+        private SnowParams _sp;
+
         public void Tick(SimContext ctx, float dt)
         {
             var g = ctx.World.Guests;
             var time = ctx.Time;
             var t = ctx.Tuning;
+            _sp = SnowParams.From(t);
             int open = t.I("simulation.resortOpenHour");
             int close = t.I("simulation.resortCloseHour");
 
@@ -171,10 +174,15 @@ namespace AlpineSim.Core.Guests
                 }
             }
             int onMountain = 0;
+            // cohorts step every gdiv-th tick with gdiv times the step (simulation.guestTickDivisor): skiing and
+            // queueing at 5 Hz is indistinguishable from 20 Hz and costs a quarter as much
+            int gdiv = System.Math.Max(1, t.I("simulation.guestTickDivisor"));
+            float adt = dt * gdiv;
             for (int i = agents.Count - 1; i >= 0; i--)
             {
                 var a = agents[i];
-                a.TicksInPhase += 1f;
+                if (gdiv > 1 && (time.Tick + a.Id) % gdiv != 0) { if (a.Phase != GuestPhase.Leaving && a.Phase != GuestPhase.Gone) onMountain += a.Guests; continue; }
+                a.TicksInPhase += gdiv;
                 switch (a.Phase)
                 {
                     case GuestPhase.AtBase: AtBase(ctx, a, lifts); break;
@@ -182,7 +190,7 @@ namespace AlpineSim.Core.Guests
                         {
                             var l = ctx.World.Lifts.Get(a.LiftId);
                             if (l == null) { a.Phase = GuestPhase.AtBase; break; }
-                            float walk = t.F("guests.walkSpeedMs") * dt;
+                            float walk = t.F("guests.walkSpeedMs") * adt;
                             Vec2 to = l.Bottom - a.Pos;
                             if (to.Length <= walk) { a.Pos = l.Bottom; a.Phase = GuestPhase.InQueue; a.TicksInPhase = 0f; lifts.Enqueue(ctx, l.Id, a.Id, a.Guests); }
                             else a.Pos += to.Normalized * walk;
@@ -190,7 +198,7 @@ namespace AlpineSim.Core.Guests
                         }
                     case GuestPhase.InQueue:
                         {
-                            a.QueueWaitMin += dt / 60f;
+                            a.QueueWaitMin += adt / 60f;
                             var l = ctx.World.Lifts.Get(a.LiftId);
                             var arch = ctx.Data.Guests.Archetype(a.ArchetypeId);
                             float patience = arch != null ? arch.QueuePatienceMin : 20f;
@@ -208,7 +216,7 @@ namespace AlpineSim.Core.Guests
                         }
                     case GuestPhase.Riding: break;
                     case GuestPhase.AtTop: AtTop(ctx, a); break;
-                    case GuestPhase.Skiing: Ski(ctx, a, dt); break;
+                    case GuestPhase.Skiing: Ski(ctx, a, adt); break;
                     case GuestPhase.Eating:
                         if (a.TicksInPhase >= t.F("guests.lunchMinutes") * SimTime.TicksPerMinute) { a.Phase = GuestPhase.AtBase; a.TicksInPhase = 0f; }
                         break;
@@ -442,10 +450,10 @@ namespace AlpineSim.Core.Guests
             {
                 _lastCell[a.Id] = cell;
                 float n = a.Guests;
-                SnowOps.SkierPass(grid, cell, n * 0.5f, dir, t);
+                SnowOps.SkierPass(grid, cell, n * 0.5f, dir, in _sp);
                 int side1 = grid.CellIdAt(pos + left * grid.CellSize), side2 = grid.CellIdAt(pos - left * grid.CellSize);
-                if (side1 >= 0) SnowOps.SkierPass(grid, side1, n * 0.25f, dir, t); else SnowOps.SkierPass(grid, cell, n * 0.25f, dir, t);
-                if (side2 >= 0) SnowOps.SkierPass(grid, side2, n * 0.25f, dir, t); else SnowOps.SkierPass(grid, cell, n * 0.25f, dir, t);
+                if (side1 >= 0) SnowOps.SkierPass(grid, side1, n * 0.25f, dir, in _sp); else SnowOps.SkierPass(grid, cell, n * 0.25f, dir, in _sp);
+                if (side2 >= 0) SnowOps.SkierPass(grid, side2, n * 0.25f, dir, in _sp); else SnowOps.SkierPass(grid, cell, n * 0.25f, dir, in _sp);
                 if (seg != null) seg.TrafficToday += n;
                 piste.TrafficToday += n * grid.CellSize / MathF.Max(1f, piste.LengthM);
                 piste.TrafficTotal += n * grid.CellSize / MathF.Max(1f, piste.LengthM);
