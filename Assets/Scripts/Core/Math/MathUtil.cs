@@ -2,7 +2,7 @@ using System;
 
 namespace AlpineSim.Core.Math
 {
-    /// <summary>Small deterministic math helpers. Core never uses UnityEngine.Mathf.</summary>
+    /// <summary>Small deterministic math helpers. Core never uses the engine math library.</summary>
     public static class MathUtil
     {
         public const float Pi = 3.14159265358979f;

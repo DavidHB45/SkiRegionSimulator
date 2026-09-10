@@ -8,7 +8,7 @@ namespace AlpineSim.Core.Serialization
 
     /// <summary>
     /// Minimal JSON DOM. Core owns its own JSON implementation so the simulation has no
-    /// dependency on UnityEngine.JsonUtility or third-party packages and behaves identically
+    /// dependency on the engine JSON utility or third-party packages and behaves identically
     /// under Unity and under `dotnet test`.
     /// Object members keep insertion order (deterministic output).
     /// </summary>

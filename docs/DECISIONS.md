@@ -119,3 +119,16 @@ shape are therefore final now; the schemas in `winch.json`, `park.json`, `avalan
 ## D-021 TUNING.md is generated
 `tools/gen_tuning_doc.py` renders `tuning.json` into `docs/TUNING.md`; CI checks it is current.
 A hand-maintained table of 230+ anchors would drift within a milestone.
+
+## D-022 Tractive effort and traction loss are anchors, not constants
+The driving model capped drive force at a hard-coded 0.36 g, which made any grade over about
+17° unclimbable and hid behind the traction curve. The cap is now `vehicles.maxTractiveEffortG`
+(0.75 g, the stall thrust of a hydrostatic snowcat) and traction loss follows track sinkage
+(`vehicles.sinkageTractionLoss`) instead of the ground-pressure ratio, so packed snow keeps the
+full density coefficient. Groomers now climb about 30° unassisted, which matches practice; winch
+cats (M7) will extend that.
+
+## D-023 Tilled and plowed areas are geometric
+Work accounting uses width × distance rather than counting swept cells: cell counting double
+counted rows at tick boundaries and made a 6.0 m tiller look 60 % wider than a 4.3 m one. The
+snow mutation still happens per cell; only the bookkeeping changed.
