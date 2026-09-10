@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AlpineSim.Core.Math;
 using AlpineSim.Core.Pistes;
+using AlpineSim.Core.Terrain;
 using AlpineSim.Core.Sim;
 
 namespace AlpineSim.Core.Vehicles
@@ -21,8 +22,19 @@ namespace AlpineSim.Core.Vehicles
 
         public int VertexCount => _verts.Count;
 
-        public void Build(PisteNetwork net, Vec2 basePos, float linkRadiusM)
+        private Terrain.TerrainData _terrain;
+        private float _maxGradeDeg = 24f, _steepFactor = 20f;
+
+        /// <summary>
+        /// Builds the graph from roads, cat tracks and pistes plus the base, links vertices within
+        /// <paramref name="linkRadiusM"/>, and adds straight cross-country links up to
+        /// <paramref name="longLinkRadiusM"/> where the ground between them stays under the grade limit and
+        /// takes a foundation. Edge cost grows with grade; edges over the limit cost <paramref name="steepFactor"/>x
+        /// so they are a last resort, never the first choice.
+        /// </summary>
+        public void Build(PisteNetwork net, Vec2 basePos, float linkRadiusM, Terrain.TerrainData terrain = null, float maxGradeDeg = 24f, float longLinkRadiusM = 0f, float steepFactor = 20f)
         {
+            _terrain = terrain; _maxGradeDeg = maxGradeDeg; _steepFactor = steepFactor;
             _verts.Clear(); _adj.Clear(); _cost.Clear();
             void AddPolyline(List<Vec2> pts, float costFactor)
             {
@@ -37,16 +49,44 @@ namespace AlpineSim.Core.Vehicles
             }
             foreach (var p in net.Pistes) AddPolyline(p.Points, 1.3f);
             _verts.Add(basePos); _adj.Add(new List<int>()); _cost.Add(new List<float>());
-            // proximity links
+            // proximity links, then longer cross-country links where the ground allows
             float r2 = linkRadiusM * linkRadiusM;
+            float l2 = longLinkRadiusM * longLinkRadiusM;
             for (int i = 0; i < _verts.Count; i++)
                 for (int j = i + 1; j < _verts.Count; j++)
-                    if (Vec2.SqrDistance(_verts[i], _verts[j]) <= r2) Link(i, j, 1f);
+                {
+                    float d2 = Vec2.SqrDistance(_verts[i], _verts[j]);
+                    if (d2 <= r2) Link(i, j, 1f);
+                    else if (d2 <= l2 && terrain != null && Passable(_verts[i], _verts[j])) Link(i, j, 1.2f);
+                }
+        }
+
+        /// <summary>Steepest grade along a straight segment, sampled every 10 m (0 without terrain).</summary>
+        private float MaxGradeAlong(Vec2 a, Vec2 b)
+        {
+            if (_terrain == null) return 0f;
+            float len = Vec2.Distance(a, b);
+            if (len < 1f) return 0f;
+            Vec2 dir = (b - a) / len;
+            float worst = 0f;
+            for (float s = 0f; s <= len; s += 10f) worst = MathF.Max(worst, MathF.Abs(_terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 8f)));
+            return worst;
+        }
+
+        private bool Passable(Vec2 a, Vec2 b)
+        {
+            if (MaxGradeAlong(a, b) > _maxGradeDeg) return false;
+            float len = Vec2.Distance(a, b);
+            Vec2 dir = (b - a) / MathF.Max(1f, len);
+            for (float s = 0f; s <= len; s += 10f) if (_terrain.HasFlag(a.X + dir.X * s, a.Y + dir.Y * s, TerrainFlags.NoFoundation)) return false;
+            return true;
         }
 
         private void Link(int a, int b, float factor)
         {
-            float d = Vec2.Distance(_verts[a], _verts[b]) * factor;
+            float grade = MaxGradeAlong(_verts[a], _verts[b]);
+            float gradeFactor = grade > _maxGradeDeg ? _steepFactor : 1f + 0.5f * grade / MathF.Max(1f, _maxGradeDeg);
+            float d = Vec2.Distance(_verts[a], _verts[b]) * factor * gradeFactor;
             if (!_adj[a].Contains(b)) { _adj[a].Add(b); _cost[a].Add(d); }
             if (!_adj[b].Contains(a)) { _adj[b].Add(a); _cost[b].Add(d); }
         }

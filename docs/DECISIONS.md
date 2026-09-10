@@ -132,3 +132,45 @@ cats (M7) will extend that.
 Work accounting uses width × distance rather than counting swept cells: cell counting double
 counted rows at tick boundaries and made a 6.0 m tiller look 60 % wider than a 4.3 m one. The
 snow mutation still happens per cell; only the bookkeeping changed.
+
+## D-024 Roads and cat tracks are graded, not just benched
+Corridor smoothing removed cross-slope but kept the natural profile, so an access road across a
+rib carried a 31° pitch that no wheeled machine and only a winch cat could take. Corridors now
+carry `MaxGradeDeg` (roads 9°, cat tracks 13°, pistes by colour 14/24/32/42°) and the generator
+clamps the centreline rise between vertices, forward and backward, before stamping: cut into the
+rib, fill the gully, the way a road is built. Vertices that tie into the base flat or a run are
+pinned so the road meets the surface it serves, and a corridor fades out past its end vertices
+instead of stamping the end height into the ground around a terminal (which had built a step at
+every run bottom). Each cell is stamped once, by the segment it is nearest to: stamping every
+segment over its own box had flattened the last metres before each interior vertex and left a
+27° step after it on a 20° run, which is where every AI groomer was getting stuck.
+
+## D-025 The route graph is grade aware
+`RouteGraph` links road, cat-track and run nodes within `vehicles.routeLinkRadiusM` and sets an
+edge cost of length × (1 + steepFactor × excess) once the grade sampled along the edge over a
+machine-length baseline exceeds `vehicles.routeMaxGradeDeg`; edges over the limit by a wide margin
+are dropped. A dispatched machine therefore takes the long way around a rib rather than the
+straight line up it, and the same sampling (`TerrainData.GradeAlongDeg` with a baseline) feeds
+the driving model and the AI's refusal check so a 1 m ripple never reads as a wall.
+
+## D-026 A night foreman dispatches idle machines
+`TaskSystem.AutoDispatch` (`tasks.autoDispatch`) walks the open board each minute in priority
+order and sends the nearest idle, fuelled, unassigned AI machine that can do the job, staffing it
+from the roster with the right licence. Without it the resort could only be run by hand, which
+made every thirty-day balance test a test of the test author. The player can turn it off; a
+machine the player is driving is never taken.
+
+## D-027 Satisfaction is a moving average of experiences
+Guest satisfaction blends each lap's experience score into the running value
+(`guests.satBlend`) around a neutral point (`guests.satNeutral`) instead of accumulating a
+signed sum. A sum could not distinguish a poor day from a long one; the moving average means
+the last few laps dominate what a guest tells the reputation model on leaving. PQI carries the
+largest weight (`guests.satPqiWeight`) because snow quality is the thing the player controls.
+
+## D-028 A dry depot does not park the machine
+An AI operator who reaches the depot on reserve and finds it dry carries on with the job on what
+is in the tank (`vehicles.aiDryDepotRetrySeconds` before it tries again) and eventually strands
+where it is, which raises the service call. Parking with the engine off would hide the problem:
+no service call, no fuel order, a job that silently never happens. After any depot stop the AI
+resumes the job it left (through the board when it holds a task, else from its own record), so a
+refuel run is a detour, not the end of the shift.

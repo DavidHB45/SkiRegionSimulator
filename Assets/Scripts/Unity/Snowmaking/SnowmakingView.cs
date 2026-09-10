@@ -15,7 +15,6 @@ namespace AlpineSim.Unity.Snowmaking
         private Bootstrap _boot;
         private InstancedBatch _hydrants;
         private InstancedBatch _plumes;
-        private int _hydrantCount = -1;
 
         public void Construct(Bootstrap boot)
         {

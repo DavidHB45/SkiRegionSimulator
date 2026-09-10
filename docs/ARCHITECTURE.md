@@ -53,7 +53,7 @@ the debug HUD.
 ## Save format
 
 ```
-{ "schemaVersion": 2, "gameVersion": "0.1.0", "savedAtTick": 1234, "world": { ...WorldState... } }
+{ "schemaVersion": 4, "gameVersion": "0.1.0", "savedAtTick": 1234, "world": { ...WorldState... } }
 ```
 
 Saves live in `Application.persistentDataPath/saves/<slot>.arsave.json`. Loading parses the
@@ -71,7 +71,7 @@ document, runs `SaveMigrations.Migrate` on the DOM (one step per schema version)
 | `LiftSystem` | Lifts | `Lifts` | Queue simulation at data throughput, ride time, wind/lightning/cold holds, breakdowns and inspections, condition, staff wages, energy |
 | `ConstructionSystem` | Construction | `Construction` | Staking with terrain gating (length, vertical, span, grade, gorge), stage chains from `construction.json` as driven tasks, weather windows, helicopter mode, run grading |
 | `GuestSystem` | Guests | `Guests` | Daily demand from acts, price, reputation, weather and the snow report; cohorts arriving, queueing, riding, skiing runs cell by cell (traffic into the snow grid), eating, leaving; satisfaction and reputation |
-| `VehicleSystem` | Vehicles | `Vehicles` | Driving models (tracked, wheeled, articulated, walk-behind), snow contact (blade, tiller, blower, bucket, spreader), fuel and cold start, wear per subsystem, failures, AI operator (`VehicleAi`), routes |
+| `VehicleSystem` | Vehicles | `Vehicles` | Driving models (tracked, wheeled, articulated, walk-behind), snow contact (blade, tiller, blower, bucket, spreader), fuel and cold start, wear per subsystem, failures, AI operator (`VehicleAi`: lanes, refusals, stuck give-up), grade-aware route graph over roads, cat tracks and runs |
 | `TaskSystem` | Tasks | `TaskBoard` | The job board: candidates by role and licence, dispatch, accrual by AI or player, groom jobs posted at close and completed by coverage, deadlines |
 | `FleetSystem` | Fleet | `Fleet` | Operators (hire, licences, training, fatigue, accidents), market (new/used/lease/rent, hidden defects, inspections), workshop tiers and service jobs, parts, fuel depot and deliveries, service calls, insurance and depreciation |
 | `EconomySystem` | Economy | `Economy` | Ledger, daily and weekly close, loans, net worth, act promotion, ticket pricing |

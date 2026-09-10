@@ -32,11 +32,13 @@ namespace AlpineSim.Core.Vehicles
             var t = ctx.Tuning;
             input.Lights = true;
 
-            // low fuel: go home
+            // low fuel: go home (unless the depot was found dry a moment ago: then work on what is in the tank)
             float reserve = t.F("vehicles.fuelReserveWarningFrac");
-            if (ai.Mode != AiMode.Refuel && ai.Mode != AiMode.ReturnToBase && v.Fuel < def.EnergyCapacity * reserve && def.FuelType != FuelType.None)
+            if (ai.FuelDeniedTimer > 0f) ai.FuelDeniedTimer -= dt;
+            if (ai.Mode != AiMode.Refuel && ai.Mode != AiMode.ReturnToBase && ai.FuelDeniedTimer <= 0f && v.Fuel < def.EnergyCapacity * reserve && def.FuelType != FuelType.None)
             {
                 ai.Phase = "low fuel: returning to depot";
+                ai.JobMode = ai.Mode;
                 var depot = ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.FuelLandmarkId).Pos;
                 ai.Route = vs.FindRoute(ctx, v.Pos, depot);
                 ai.RouteIndex = 0;
@@ -52,7 +54,21 @@ namespace AlpineSim.Core.Vehicles
                     if (FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt))
                     {
                         if (ai.Mode == AiMode.GoToSite) { ai.Mode = AiMode.WorkAtSite; ai.WorkTimer = 0f; }
-                        else if (ai.Mode == AiMode.Refuel) { ai.Mode = AiMode.Idle; ai.Phase = "waiting for fuel"; vs.ArrivedAtDepot(ctx, v); }
+                        else if (ai.Mode == AiMode.Refuel)
+                        {
+                            if (vs.ArrivedAtDepot(ctx, v))
+                            {
+                                // tank full: back to the job it left, or park if it had none
+                                if (!vs.ResumeJob(ctx, v)) { ai.Mode = AiMode.Idle; ai.Phase = "refuelled, parked"; vs.OnAiIdle(ctx, v); }
+                            }
+                            else
+                            {
+                                // the depot is dry: carry on with the job on what is in the tank and try again later
+                                ai.FuelDeniedTimer = t.F("vehicles.aiDryDepotRetrySeconds");
+                                ctx.Sim.Log(v.Name + ": no fuel at the depot, carrying on with " + MathF.Round(v.Fuel) + " L in the tank.", LogLevel.Warning);
+                                if (!vs.ResumeJob(ctx, v)) { ai.Mode = AiMode.Idle; ai.Phase = "waiting for fuel"; vs.OnAiIdle(ctx, v); }
+                            }
+                        }
                         else { ai.Mode = AiMode.Idle; ai.Phase = "parked"; vs.OnAiIdle(ctx, v); }
                     }
                     break;
@@ -97,6 +113,7 @@ namespace AlpineSim.Core.Vehicles
             if (dist < reach || (!last && PassedWaypoint(v, ai.Route, ai.RouteIndex)))
             {
                 ai.RouteIndex++;
+                ai.StuckCount = 0;
                 if (ai.RouteIndex >= ai.Route.Count) { input.Throttle = 0f; input.Brake = 1f; return true; }
                 return false;
             }
@@ -110,18 +127,46 @@ namespace AlpineSim.Core.Vehicles
                 input.Steer = err > 0f ? 0.5f : -0.5f;
                 return false;
             }
-            if (MathF.Abs(v.Speed) < 0.15f && v.EngineOn) ai.WorkTimer += dt; else ai.WorkTimer = 0f;
-            if (ai.WorkTimer > t.F("vehicles.aiStuckSeconds")) { ai.StuckTimer = -t.F("vehicles.aiReverseSeconds"); ai.WorkTimer = 0f; return false; }
+            // stuck = trying to drive roughly straight at a waypoint and not moving (turning in place is not stuck)
+            bool tryingStraight = MathF.Abs(err) < 0.6f;
+            if (MathF.Abs(v.Speed) < 0.15f && v.EngineOn && tryingStraight) ai.WorkTimer += dt; else ai.WorkTimer = 0f;
+            if (ai.WorkTimer > t.F("vehicles.aiStuckSeconds"))
+            {
+                ai.WorkTimer = 0f;
+                ai.StuckCount++;
+                if (ai.StuckCount >= (int)t.F("vehicles.aiGiveUpAfterStucks"))
+                {
+                    // the machine cannot make this pitch (traction, not nerve): same outcome as a refusal
+                    ai.StuckCount = 0;
+                    float g = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f));
+                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped += System.Math.Max(1, ai.LaneCount - ai.Lane); ai.Lane = ai.LaneCount - 1; return true; }
+                    ai.Mode = AiMode.Idle; ai.Phase = "stuck";
+                    ctx.System<VehicleSystem>().OnAiRefused(ctx, v, "cannot climb the " + MathF.Round(MathF.Abs(g)) + " deg pitch");
+                    return false;
+                }
+                ai.StuckTimer = -t.F("vehicles.aiReverseSeconds");
+                return false;
+            }
             // slope refusal: operators do not drive onto pitches above their rating
-            float grade = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to);
+            float grade = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f));
             if (MathF.Abs(grade) > maxSlopeDeg + t.F("vehicles.aiSlopeMarginDeg") && ai.Mode != AiMode.Refuel)
             {
                 input.Throttle = 0f; input.Brake = 1f;
                 ai.Phase = "refusing slope " + MathF.Round(MathF.Abs(grade)) + " deg";
-                ai.WorkTimer += dt;
-                if (ai.WorkTimer > 8f) { ai.Mode = AiMode.Idle; ai.Phase = "refused slope"; }
+                ai.RefuseTimer += dt;
+                ai.WorkTimer = 0f;
+                if (ai.RefuseTimer > 8f)
+                {
+                    ai.RefuseTimer = 0f;
+                    // a groomer skips the pitch it cannot take and carries on with the next lane; anyone else gives the job back
+                    if (ai.Mode == AiMode.GroomPiste && ai.Loaded) { ai.LanesSkipped += System.Math.Max(1, ai.LaneCount - ai.Lane); ai.Lane = ai.LaneCount - 1; return true; }
+                    ai.Mode = AiMode.Idle; ai.Phase = "refused slope";
+                    ctx.System<VehicleSystem>().OnAiRefused(ctx, v, "slope " + MathF.Round(MathF.Abs(grade)) + " deg is above the operator's rating");
+                }
                 return false;
             }
+            // refusals decay slowly so a pitch that keeps rolling the machine back still adds up to a refusal
+            ai.RefuseTimer = MathF.Max(0f, ai.RefuseTimer - dt * 0.25f);
             // steer proportional to heading error; slow down for sharp turns and near the end
             float steer = MathUtil.Clamp(-err / 0.6f, -1f, 1f);
             input.Steer = steer;
@@ -155,6 +200,7 @@ namespace AlpineSim.Core.Vehicles
                 float lane = width * (1f - ctx.Tuning.F("vehicles.aiLaneOverlapFrac"));
                 ai.LaneCount = System.Math.Max(1, (int)MathF.Ceiling(piste.WidthM / lane));
                 ai.Lane = 0;
+                ai.LanesSkipped = 0;
                 ai.Uphill = true;
                 ai.Phase = "driving to " + piste.Name;
                 // route to the bottom of the run first
@@ -181,6 +227,7 @@ namespace AlpineSim.Core.Vehicles
                 {
                     ai.Phase = "finished " + piste.Name;
                     vs.OnGroomFinished(ctx, v, piste);
+                    ai = v.Ai; // the job may have been handed back, which resets the AI state
                     ai.LaneCount = 0;
                     ai.Loaded = false;
                     ai.Mode = AiMode.ReturnToBase;

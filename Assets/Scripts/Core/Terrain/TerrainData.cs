@@ -118,6 +118,20 @@ namespace AlpineSim.Core.Terrain
             return MathF.Atan(Vec2.Dot(g, d)) * MathUtil.Rad2Deg;
         }
 
+        /// <summary>
+        /// Grade along a direction over a baseline (metres): the pitch a machine of that length actually
+        /// sits at, which ignores metre-scale steps at corridor edges that the point gradient exaggerates.
+        /// </summary>
+        public float GradeAlongDeg(float x, float y, Vec2 dir, float baselineM)
+        {
+            if (baselineM <= Spacing * 2f) return GradeAlongDeg(x, y, dir);
+            var d = dir.Normalized;
+            float h = baselineM * 0.5f;
+            float back = SampleHeight(x - d.X * h, y - d.Y * h);
+            float fore = SampleHeight(x + d.X * h, y + d.Y * h);
+            return MathF.Atan((fore - back) / baselineM) * MathUtil.Rad2Deg;
+        }
+
         internal void RecomputeBounds()
         {
             float mn = float.MaxValue, mx = float.MinValue;

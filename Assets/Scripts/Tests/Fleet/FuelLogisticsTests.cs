@@ -10,6 +10,14 @@ namespace AlpineSim.Tests.Fleet
     [TestFixture]
     public sealed class FuelLogisticsTests
     {
+        /// <summary>Data with the night foreman off: these tests assign the machines by hand and check the operator they picked.</summary>
+        private static AlpineSim.Core.Data.GameData Data()
+        {
+            var data = TestEnv.FreshData();
+            data.Tuning.Override("tasks.autoDispatch", 0f);
+            return data;
+        }
+
         private static VehicleState Find(Simulation sim, string defId)
         {
             foreach (var v in sim.World.Vehicles.List) if (v.DefId == defId) return v;
@@ -43,7 +51,7 @@ namespace AlpineSim.Tests.Fleet
         [Test]
         public void RunningDryHaltsTheMachineAndRaisesAServiceCall()
         {
-            var sim = Simulation.CreateNew(TestEnv.Data, 31, "test_small");
+            var sim = Simulation.CreateNew(Data(), 31, "test_small");
             StrandTheCat(sim, out var cat);
             Assert.IsTrue(cat.Stranded, "the cat should run dry within the hour");
             StringAssert.Contains("fuel", cat.StrandedReason);
@@ -61,7 +69,7 @@ namespace AlpineSim.Tests.Fleet
         [Test]
         public void ServiceTruckRefuelsAStrandedMachine()
         {
-            var sim = Simulation.CreateNew(TestEnv.Data, 32, "test_small");
+            var sim = Simulation.CreateNew(Data(), 32, "test_small");
             var ctx = sim.Ctx;
             StrandTheCat(sim, out var cat);
             Assert.IsTrue(cat.Stranded);
@@ -88,7 +96,7 @@ namespace AlpineSim.Tests.Fleet
         [Test]
         public void EmptyDepotBlocksRefuellingUntilADeliveryArrives()
         {
-            var sim = Simulation.CreateNew(TestEnv.Data, 33, "test_small");
+            var sim = Simulation.CreateNew(Data(), 33, "test_small");
             var ctx = sim.Ctx;
             var fs = sim.GetSystem<FleetSystem>();
             var cat = Find(sim, "groomer_mid");
@@ -100,7 +108,7 @@ namespace AlpineSim.Tests.Fleet
             StringAssert.Contains("dry", reason);
             Assert.IsTrue(fs.OrderFuel(ctx, 5000f, false, out reason), reason);
             Assert.AreEqual(1, depot.Pending.Count);
-            float lead = TestEnv.Data.Stations.FuelDepot.DeliveryLeadHours;
+            float lead = sim.Data.Stations.FuelDepot.DeliveryLeadHours;
             sim.StepHours(lead * 0.5);
             Assert.AreEqual(0f, fs.RefuelAtDepot(ctx, cat.Id, out _), "the delivery has not arrived yet");
             sim.StepHours(lead * 0.5 + 1.5);
@@ -112,15 +120,15 @@ namespace AlpineSim.Tests.Fleet
         [Test]
         public void AiMachinesReturnToRefuelBeforeTheyRunDry()
         {
-            var sim = Simulation.CreateNew(TestEnv.Data, 34, "test_small");
+            var sim = Simulation.CreateNew(Data(), 34, "test_small");
             var ctx = sim.Ctx;
             var vs = sim.GetSystem<VehicleSystem>();
             var fs = sim.GetSystem<FleetSystem>();
             var cat = Find(sim, "groomer_mid");
-            var def = TestEnv.Data.Vehicle(cat.DefId);
+            var def = sim.Data.Vehicle(cat.DefId);
             var op = OperatorWith(sim, OperatorLicense.Groomer);
             Assert.IsTrue(fs.AssignOperator(ctx, op.Id, cat.Id, out string reason), reason);
-            float reserve = TestEnv.Data.Tuning.F("vehicles.fuelReserveWarningFrac");
+            float reserve = sim.Data.Tuning.F("vehicles.fuelReserveWarningFrac");
             cat.Fuel = def.FuelCapacityL * reserve * 1.3f;
             for (int i = 0; i < 40 && !cat.EngineOn; i++) vs.StartEngine(ctx, cat.Id, out _);
             vs.AssignGroom(ctx, cat.Id, "t1");

@@ -53,7 +53,7 @@ namespace AlpineSim.Core.Terrain
             foreach (var c in scenario.GetCorridors())
             {
                 if (c.IsDisc) Flatten(t, c.Points[0].X, c.Points[0].Y, c.HalfWidthM, float.NaN, c.BlendM, true);
-                else SmoothCorridor(t, c.Points, c.HalfWidthM, c.BlendM);
+                else SmoothCorridor(t, c.Points, c.HalfWidthM, c.BlendM, c.MaxGradeDeg, c.Pinned);
             }
 
             ComputeFlags(t, p);
@@ -118,37 +118,77 @@ namespace AlpineSim.Core.Terrain
         /// removed (height follows the centreline), blending back to natural terrain over blend metres.
         /// Used for pistes, cat tracks and access roads so machinery and guests get legible surfaces.
         /// </summary>
-        public static void SmoothCorridor(TerrainData t, Vec2[] polyline, float halfWidth, float blend)
+        public static void SmoothCorridor(TerrainData t, Vec2[] polyline, float halfWidth, float blend, float maxGradeDeg = 0f, bool[] pinned = null)
         {
             if (polyline == null || polyline.Length < 2) return;
             int res = t.Res;
             // Pre-sample centreline heights from the untouched map so smoothing is order independent per corridor.
-            for (int s = 0; s < polyline.Length - 1; s++)
+            var h = new float[polyline.Length];
+            for (int i = 0; i < h.Length; i++) h[i] = t.SampleHeight(polyline[i]);
+            if (maxGradeDeg > 0f)
+            {
+                // cut and fill: clamp the rise between consecutive vertices to the grade limit, forward then backward,
+                // so the road profile is the nearest feasible one (a real road cuts into ribs and fills gullies).
+                // Pinned vertices are tie-ins to other corridors and never move; two passes each way let their
+                // constraint propagate through the free vertices between them.
+                float tanMax = MathF.Tan(maxGradeDeg * MathUtil.Deg2Rad);
+                bool Free(int i) => pinned == null || i >= pinned.Length || !pinned[i];
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    for (int i = 1; i < h.Length; i++) { if (!Free(i)) continue; float rise = Vec2.Distance(polyline[i - 1], polyline[i]) * tanMax; h[i] = MathUtil.Clamp(h[i], h[i - 1] - rise, h[i - 1] + rise); }
+                    for (int i = h.Length - 2; i >= 0; i--) { if (!Free(i)) continue; float rise = Vec2.Distance(polyline[i], polyline[i + 1]) * tanMax; h[i] = MathUtil.Clamp(h[i], h[i + 1] - rise, h[i + 1] + rise); }
+                }
+            }
+            // Each cell is stamped once, by the segment it is nearest to, so the result does not depend on segment
+            // order and interior vertices carry no seam: stamping every segment over its own bounding box used to
+            // flatten the last metres before a vertex toward the vertex height and leave a step after it.
+            int last = polyline.Length - 2;
+            float pad = halfWidth + blend;
+            for (int s = 0; s <= last; s++)
             {
                 Vec2 a = polyline[s], b = polyline[s + 1];
-                float ha = t.SampleHeight(a), hb = t.SampleHeight(b);
-                float pad = halfWidth + blend;
+                if ((b - a).SqrLength < 1e-6f) continue;
                 int x0 = System.Math.Max(0, (int)(MathF.Min(a.X, b.X) - pad)), x1 = System.Math.Min(res - 1, (int)(MathF.Max(a.X, b.X) + pad));
                 int y0 = System.Math.Max(0, (int)(MathF.Min(a.Y, b.Y) - pad)), y1 = System.Math.Min(res - 1, (int)(MathF.Max(a.Y, b.Y) + pad));
-                Vec2 ab = b - a;
-                float len2 = ab.SqrLength;
-                if (len2 < 1e-6f) continue;
                 for (int iy = y0; iy <= y1; iy++)
                     for (int ix = x0; ix <= x1; ix++)
                     {
                         var pnt = new Vec2(ix, iy);
-                        float u = MathUtil.Clamp01(Vec2.Dot(pnt - a, ab) / len2);
-                        Vec2 c = a + ab * u;
-                        float d = Vec2.Distance(pnt, c);
-                        if (d > pad) continue;
-                        float target = ha + (hb - ha) * u;
+                        if (!Nearest(polyline, pnt, out int ns, out float uRaw, out float d) || ns != s || d > pad) continue;
+                        float u = MathUtil.Clamp01(uRaw);
+                        float target = h[ns] + (h[ns + 1] - h[ns]) * u;
                         float w = d <= halfWidth ? 1f : 1f - MathUtil.SmoothStep(halfWidth, pad, d);
+                        // beyond the polyline's ends the corridor fades out over the blend distance instead of stamping
+                        // the end height into the ground around the terminal (which built a step at every run bottom)
+                        float len = Vec2.Distance(polyline[ns], polyline[ns + 1]);
+                        float over = ns == 0 && uRaw < 0f ? -uRaw * len : (ns == last && uRaw > 1f ? (uRaw - 1f) * len : 0f);
+                        if (over > 0f) w *= 1f - MathUtil.SmoothStep(0f, blend, over);
+                        if (w <= 0f) continue;
                         int i = iy * res + ix;
-                        // Keep a little of the natural roll inside the corridor so it is not a billiard table.
-                        float inside = MathUtil.Lerp(t.Heights[i], target, 0.85f);
+                        // Keep a little of the natural roll inside the corridor so it is not a billiard table (none on a graded road).
+                        float inside = MathUtil.Lerp(t.Heights[i], target, maxGradeDeg > 0f ? 1f : 0.85f);
                         t.Heights[i] = MathUtil.Lerp(t.Heights[i], inside, w);
                     }
             }
+        }
+
+        /// <summary>
+        /// Nearest segment of a polyline to a point: its index, the unclamped parameter along it and the distance
+        /// to the clamped foot. Ties at a shared vertex go to the earlier segment.
+        /// </summary>
+        private static bool Nearest(Vec2[] polyline, Vec2 pnt, out int seg, out float uRaw, out float dist)
+        {
+            seg = -1; uRaw = 0f; dist = float.MaxValue;
+            for (int s = 0; s < polyline.Length - 1; s++)
+            {
+                Vec2 a = polyline[s], ab = polyline[s + 1] - a;
+                float len2 = ab.SqrLength;
+                if (len2 < 1e-6f) continue;
+                float ur = Vec2.Dot(pnt - a, ab) / len2;
+                float d = Vec2.Distance(pnt, a + ab * MathUtil.Clamp01(ur));
+                if (d < dist - 1e-4f) { dist = d; seg = s; uRaw = ur; }
+            }
+            return seg >= 0;
         }
 
         private static void ComputeFlags(TerrainData t, TerrainParams p)

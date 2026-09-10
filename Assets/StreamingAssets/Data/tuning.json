@@ -1032,6 +1032,20 @@
       "unit": "s",
       "comment": "Reverse time when stuck."
     },
+    "aiGiveUpAfterStucks": {
+      "value": 3,
+      "min": 1,
+      "max": 10,
+      "unit": "count",
+      "comment": "Stuck-and-reverse attempts an AI operator makes on one pitch before giving the lane (or the job) up. Three tries is what a real operator does before radioing in."
+    },
+    "aiDryDepotRetrySeconds": {
+      "value": 1800,
+      "min": 300,
+      "max": 7200,
+      "unit": "s",
+      "comment": "How long an AI operator who found the depot dry keeps working on what is in the tank before trying the depot again. Half an hour: a fuel delivery or a service truck is the fix, not queueing at an empty pump."
+    },
     "aiLookaheadM": {
       "value": 6,
       "min": 3,
@@ -1059,6 +1073,27 @@
       "max": 200,
       "unit": "m",
       "comment": "Below this distance vehicles drive straight instead of routing."
+    },
+    "routeMaxGradeDeg": {
+      "value": 24,
+      "min": 10,
+      "max": 40,
+      "unit": "deg",
+      "comment": "Steepest ground the AI router treats as normal driving; steeper edges cost routeSteepCostFactor times more. A groomer climbs 30 degrees on firm snow, but the router keeps a margin for soft conditions."
+    },
+    "routeLinkRadiusM": {
+      "value": 180,
+      "min": 40,
+      "max": 500,
+      "unit": "m",
+      "comment": "Route graph adds a straight cross-country link between any two waypoints this close when the ground between them is under the grade limit and buildable."
+    },
+    "routeSteepCostFactor": {
+      "value": 20,
+      "min": 2,
+      "max": 100,
+      "unit": "x",
+      "comment": "Cost multiplier on route edges steeper than routeMaxGradeDeg: still usable when nothing else exists, never chosen when a gentler way exists."
     }
   },
   "fuel": {

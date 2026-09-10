@@ -12,6 +12,8 @@ namespace AlpineSim.Core.Data
         public string Name = "";
         public PisteDifficulty Difficulty = PisteDifficulty.Blue;
         public float WidthM = 40f;
+        /// <summary>Runs are shaped to this grade at terrain generation (0 = natural profile). Green about 14, blue 24, red 32, black 42.</summary>
+        public float MaxGradeDeg;
         public List<MapPoint> Points = new List<MapPoint>();
         public string TopNodeId = "";
         public string BottomNodeId = "";
@@ -28,6 +30,10 @@ namespace AlpineSim.Core.Data
         public List<MapPoint> Points = new List<MapPoint>();
         public float WidthM = 6f;
         public float RadiusM = 40f;
+        /// <summary>Roads and cat tracks are cut and filled to this grade (0 = follow the natural terrain).</summary>
+        public float MaxGradeDeg;
+        /// <summary>Embankment blend distance beyond the corridor edge.</summary>
+        public float BlendM = 6f;
         public string Comment = "";
     }
 
@@ -84,7 +90,7 @@ namespace AlpineSim.Core.Data
                 if (p.Points.Count < 2) continue;
                 var pts = new Vec2[p.Points.Count];
                 for (int i = 0; i < pts.Length; i++) pts[i] = p.Points[i].Pos;
-                into.Add(new TerrainCorridor { Points = pts, HalfWidthM = p.WidthM * 0.5f, BlendM = 12f });
+                into.Add(new TerrainCorridor { Points = pts, HalfWidthM = p.WidthM * 0.5f, BlendM = 12f, MaxGradeDeg = p.MaxGradeDeg });
             }
             foreach (var z in Zones)
             {
@@ -92,8 +98,15 @@ namespace AlpineSim.Core.Data
                 {
                     if (z.Points.Count < 2) continue;
                     var pts = new Vec2[z.Points.Count];
-                    for (int i = 0; i < pts.Length; i++) pts[i] = z.Points[i].Pos;
-                    into.Add(new TerrainCorridor { Points = pts, HalfWidthM = z.WidthM * 0.5f, BlendM = 6f });
+                    var pinned = new bool[z.Points.Count];
+                    for (int i = 0; i < pts.Length; i++)
+                    {
+                        pts[i] = z.Points[i].Pos;
+                        // a track vertex that sits on a run vertex or in the base flat is a tie-in: grading works around it
+                        if (Vec2.Distance(pts[i], BaseArea.Pos) <= BaseAreaRadiusM) pinned[i] = true;
+                        foreach (var p in Pistes) foreach (var pp in p.Points) if (Vec2.Distance(pp.Pos, pts[i]) < 2f) pinned[i] = true;
+                    }
+                    into.Add(new TerrainCorridor { Points = pts, HalfWidthM = z.WidthM * 0.5f, BlendM = z.BlendM, MaxGradeDeg = z.MaxGradeDeg, Pinned = pinned });
                 }
                 else if (z.Kind == ZoneKind.Lot && z.Points.Count > 0)
                 {

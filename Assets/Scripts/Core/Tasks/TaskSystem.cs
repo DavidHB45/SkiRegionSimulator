@@ -294,6 +294,18 @@ namespace AlpineSim.Core.Tasks
             return true;
         }
 
+        /// <summary>Sends the assigned machine back to its job; false when the task is closed or has no AI machine.</summary>
+        public bool Resume(SimContext ctx, int taskId)
+        {
+            var task = Get(ctx, taskId);
+            if (task == null || !task.IsActive || task.AssignedVehicleId < 0) return false;
+            var vs = ctx.System<VehicleSystem>();
+            var v = vs.Get(ctx, task.AssignedVehicleId);
+            if (v == null || v.PlayerControlled) return false;
+            Dispatch(ctx, task, v, vs);
+            return true;
+        }
+
         private void Dispatch(SimContext ctx, WorkTask task, VehicleState v, VehicleSystem vs)
         {
             switch (task.Kind)

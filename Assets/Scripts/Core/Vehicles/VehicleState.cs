@@ -145,6 +145,15 @@ namespace AlpineSim.Core.Vehicles
         public Vec2 DeliverTo;
         public bool Loaded;
         public string Phase = "";
+        /// <summary>Grooming lanes abandoned this job because the pitch was above the operator's rating.</summary>
+        public int LanesSkipped;
+        public float RefuseTimer;
+        /// <summary>Consecutive stuck recoveries without passing a waypoint; the AI gives up after a few.</summary>
+        public int StuckCount;
+        /// <summary>Seconds left before the AI tries the depot again after finding it dry; meanwhile it works on what is in the tank.</summary>
+        public float FuelDeniedTimer;
+        /// <summary>The job the AI was on when it left for fuel, so it can pick it up again afterwards.</summary>
+        public AiMode JobMode = AiMode.Idle;
     }
 
     /// <summary>

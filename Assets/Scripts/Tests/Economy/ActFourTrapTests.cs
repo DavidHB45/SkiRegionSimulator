@@ -21,6 +21,10 @@ namespace AlpineSim.Tests.Economy
         {
             var data = TestEnv.FreshData();
             data.Tuning.Override("simulation.guestsPerAgent", 40f);
+            // the comparison is about capacity against grooming, not about which run happened to lose a cat
+            // to a random breakdown or an operator accident, so both are switched off for both runs
+            foreach (var v in data.Vehicles) v.MtbfHours = 1e6f;
+            data.Operators.LicensedAccidentProbabilityPerHour = 0f;
             var scen = data.GetScenario("default");
             foreach (var l in scen.Lifts) if (l.Id == "quad") l.TypeId = quadType;
             var sim = Simulation.CreateNew(data, seed, "default");

@@ -74,6 +74,10 @@ namespace AlpineSim.Core.Data
         public float HalfWidthM;
         public float BlendM;
         public bool IsDisc;
+        /// <summary>Cut-and-fill grade limit along the centreline (0 = natural profile).</summary>
+        public float MaxGradeDeg;
+        /// <summary>Vertices that tie into another corridor (run bottoms, the base): grading never moves them.</summary>
+        public bool[] Pinned;
     }
 
     [Serializable]

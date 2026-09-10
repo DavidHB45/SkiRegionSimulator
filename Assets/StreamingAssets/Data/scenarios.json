@@ -73,7 +73,7 @@
         "X": 1024,
         "Y": 300
       },
-      "BaseAreaRadiusM": 140,
+      "BaseAreaRadiusM": 170,
       "Landmarks": [
         {
           "Id": "lodge",
@@ -139,7 +139,8 @@
           "TopNodeId": "lift:tbar:top",
           "BottomNodeId": "lift:tbar:bottom",
           "ExistsFromAct": 1,
-          "Comment": "Beginner slope under the T-bar. Act I's only run."
+          "Comment": "Beginner slope under the T-bar. Act I's only run.",
+          "MaxGradeDeg": 14
         },
         {
           "Id": "village",
@@ -179,7 +180,8 @@
           "TopNodeId": "lift:quad:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 2,
-          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on."
+          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on.",
+          "MaxGradeDeg": 24
         },
         {
           "Id": "ridgebowl",
@@ -219,7 +221,8 @@
           "TopNodeId": "lift:quad:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 2,
-          "Comment": "Fall-line run from the quad top; steeper, ruts first."
+          "Comment": "Fall-line run from the quad top; steeper, ruts first.",
+          "MaxGradeDeg": 32
         },
         {
           "Id": "northface",
@@ -271,7 +274,8 @@
           "TopNodeId": "lift:ridge:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 0,
-          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold)."
+          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold).",
+          "MaxGradeDeg": 42
         },
         {
           "Id": "eastbowl",
@@ -327,7 +331,8 @@
           "TopNodeId": "lift:gorge:top",
           "BottomNodeId": "lift:gorge:bottom",
           "ExistsFromAct": 0,
-          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap."
+          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap.",
+          "MaxGradeDeg": 32
         }
       ],
       "Zones": [
@@ -354,7 +359,9 @@
           ],
           "WidthM": 8,
           "RadiusM": 0,
-          "Comment": "Access road from the valley to the base area."
+          "Comment": "Access road from the valley to the base area.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "lotA",
@@ -401,7 +408,9 @@
           ],
           "WidthM": 7,
           "RadiusM": 0,
-          "Comment": "Lot A spur."
+          "Comment": "Lot A spur.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "lotRoadB",
@@ -422,7 +431,9 @@
           ],
           "WidthM": 7,
           "RadiusM": 0,
-          "Comment": "Lot B spur."
+          "Comment": "Lot B spur.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "catTrackWest",
@@ -457,13 +468,15 @@
               "Y": 1160
             },
             {
-              "X": 920,
-              "Y": 1290
+              "X": 930,
+              "Y": 1300
             }
           ],
           "WidthM": 6,
           "RadiusM": 0,
-          "Comment": "Machine access track from the garage to the quad top, west of Village Run."
+          "Comment": "Cat track from the garage up the west flank to the top of the quad (shared with the Village and Ridge Bowl tops), graded to 13 degrees.",
+          "MaxGradeDeg": 13,
+          "BlendM": 18
         },
         {
           "Id": "catTrackMeadow",
@@ -474,21 +487,27 @@
               "Y": 340
             },
             {
-              "X": 1110,
-              "Y": 420
+              "X": 1096,
+              "Y": 430
             },
             {
-              "X": 1150,
-              "Y": 520
+              "X": 1112,
+              "Y": 480
             },
             {
-              "X": 1168,
-              "Y": 630
+              "X": 1140,
+              "Y": 560
+            },
+            {
+              "X": 1162,
+              "Y": 640
             }
           ],
           "WidthM": 5,
           "RadiusM": 0,
-          "Comment": "Track to the T-bar top."
+          "Comment": "Cat track along the east edge of the Meadow from the base flat to the T-bar top; shares the run's vertices so it never steps.",
+          "MaxGradeDeg": 13,
+          "BlendM": 18
         },
         {
           "Id": "quadBottomRamp",
@@ -881,7 +900,7 @@
         "X": 1024,
         "Y": 300
       },
-      "BaseAreaRadiusM": 140,
+      "BaseAreaRadiusM": 170,
       "Landmarks": [
         {
           "Id": "lodge",
@@ -947,7 +966,8 @@
           "TopNodeId": "lift:tbar:top",
           "BottomNodeId": "lift:tbar:bottom",
           "ExistsFromAct": 1,
-          "Comment": "Beginner slope under the T-bar. Act I's only run."
+          "Comment": "Beginner slope under the T-bar. Act I's only run.",
+          "MaxGradeDeg": 14
         },
         {
           "Id": "village",
@@ -987,7 +1007,8 @@
           "TopNodeId": "lift:quad:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 2,
-          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on."
+          "Comment": "Main cruiser from the quad top with two traverses; the run the fleet lives or dies on.",
+          "MaxGradeDeg": 24
         },
         {
           "Id": "ridgebowl",
@@ -1027,7 +1048,8 @@
           "TopNodeId": "lift:quad:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 2,
-          "Comment": "Fall-line run from the quad top; steeper, ruts first."
+          "Comment": "Fall-line run from the quad top; steeper, ruts first.",
+          "MaxGradeDeg": 32
         },
         {
           "Id": "northface",
@@ -1079,7 +1101,8 @@
           "TopNodeId": "lift:ridge:top",
           "BottomNodeId": "lift:quad:bottom",
           "ExistsFromAct": 0,
-          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold)."
+          "Comment": "Act III+ run from the ridge lift. Winch-cat terrain (M7 scaffold).",
+          "MaxGradeDeg": 42
         },
         {
           "Id": "eastbowl",
@@ -1135,7 +1158,8 @@
           "TopNodeId": "lift:gorge:top",
           "BottomNodeId": "lift:gorge:bottom",
           "ExistsFromAct": 0,
-          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap."
+          "Comment": "Across the valley: only reachable by a 3S or tram. No lodge, no parking - the Act V trap.",
+          "MaxGradeDeg": 32
         }
       ],
       "Zones": [
@@ -1162,7 +1186,9 @@
           ],
           "WidthM": 8,
           "RadiusM": 0,
-          "Comment": "Access road from the valley to the base area."
+          "Comment": "Access road from the valley to the base area.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "lotA",
@@ -1209,7 +1235,9 @@
           ],
           "WidthM": 7,
           "RadiusM": 0,
-          "Comment": "Lot A spur."
+          "Comment": "Lot A spur.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "lotRoadB",
@@ -1230,7 +1258,9 @@
           ],
           "WidthM": 7,
           "RadiusM": 0,
-          "Comment": "Lot B spur."
+          "Comment": "Lot B spur.",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "catTrackWest",
@@ -1265,13 +1295,15 @@
               "Y": 1160
             },
             {
-              "X": 920,
-              "Y": 1290
+              "X": 930,
+              "Y": 1300
             }
           ],
           "WidthM": 6,
           "RadiusM": 0,
-          "Comment": "Machine access track from the garage to the quad top, west of Village Run."
+          "Comment": "Cat track from the garage up the west flank to the top of the quad (shared with the Village and Ridge Bowl tops), graded to 13 degrees.",
+          "MaxGradeDeg": 13,
+          "BlendM": 18
         },
         {
           "Id": "catTrackMeadow",
@@ -1282,21 +1314,27 @@
               "Y": 340
             },
             {
-              "X": 1110,
-              "Y": 420
+              "X": 1096,
+              "Y": 430
             },
             {
-              "X": 1150,
-              "Y": 520
+              "X": 1112,
+              "Y": 480
             },
             {
-              "X": 1168,
-              "Y": 630
+              "X": 1140,
+              "Y": 560
+            },
+            {
+              "X": 1162,
+              "Y": 640
             }
           ],
           "WidthM": 5,
           "RadiusM": 0,
-          "Comment": "Track to the T-bar top."
+          "Comment": "Cat track along the east edge of the Meadow from the base flat to the T-bar top; shares the run's vertices so it never steps.",
+          "MaxGradeDeg": 13,
+          "BlendM": 18
         },
         {
           "Id": "quadBottomRamp",
@@ -1649,7 +1687,8 @@
           "TopNodeId": "lift:t:top",
           "BottomNodeId": "lift:t:bottom",
           "ExistsFromAct": 1,
-          "Comment": "Straight test run 290 m long."
+          "Comment": "Straight test run 290 m long.",
+          "MaxGradeDeg": 24
         },
         {
           "Id": "t2",
@@ -1677,7 +1716,8 @@
           "TopNodeId": "lift:t:top",
           "BottomNodeId": "lift:t:bottom",
           "ExistsFromAct": 1,
-          "Comment": "Second test run."
+          "Comment": "Second test run.",
+          "MaxGradeDeg": 32
         }
       ],
       "Zones": [
@@ -1696,7 +1736,9 @@
           ],
           "WidthM": 6,
           "RadiusM": 0,
-          "Comment": ""
+          "Comment": "",
+          "MaxGradeDeg": 9,
+          "BlendM": 14
         },
         {
           "Id": "lot",

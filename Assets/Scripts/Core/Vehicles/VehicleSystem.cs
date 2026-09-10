@@ -60,7 +60,8 @@ namespace AlpineSim.Core.Vehicles
             var net = ctx.World.Pistes;
             int version = net.Pistes.Count * 1000 + net.Zones.Count;
             if (version == _routeVersion) return;
-            _routes.Build(net, ctx.Sim.Scenario.BaseArea.Pos, 25f);
+            var t = ctx.Tuning;
+            _routes.Build(net, ctx.Sim.Scenario.BaseArea.Pos, t.F("vehicles.routeSnapRadiusM"), ctx.Terrain, t.F("vehicles.routeMaxGradeDeg"), t.F("vehicles.routeLinkRadiusM"), t.F("vehicles.routeSteepCostFactor"));
             _routeVersion = version;
         }
 
@@ -346,7 +347,7 @@ namespace AlpineSim.Core.Vehicles
         public void AssignSiteWork(SimContext ctx, int id, Vec2 site, int taskId)
         {
             var v = Get(ctx, id); if (v == null) return;
-            v.Ai = new VehicleAiState { Mode = AiMode.GoToSite, TaskId = taskId, Phase = "to site" };
+            v.Ai = new VehicleAiState { Mode = AiMode.GoToSite, TaskId = taskId, Phase = "to site", DeliverTo = site };
             v.Ai.Route = FindRoute(ctx, v.Pos, site);
             v.Ai.RouteIndex = 0;
             v.TaskId = taskId;
@@ -398,12 +399,39 @@ namespace AlpineSim.Core.Vehicles
 
         internal void OnGroomFinished(SimContext ctx, VehicleState v, PisteState piste)
         {
+            if (v.Ai.LanesSkipped > 0)
+            {
+                // the steep pitch was left alone: the job goes back on the board, blocked with the reason, and completes only through measured coverage
+                ctx.Sim.Log(v.Name + " groomed what it could on " + piste.Name + "; " + v.Ai.LanesSkipped + " lane(s) skipped on a pitch above the operator's rating.", LogLevel.Warning);
+                if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var tsk))
+                {
+                    int id = v.TaskId;
+                    tsk.Unassign(ctx, id);
+                    tsk.Block(ctx, id, v.Name + ": pitch above the operator's rating");
+                }
+                return;
+            }
             if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts))
             {
                 var task = ts.Get(ctx, v.TaskId);
                 if (task != null) ts.ReportWork(ctx, v.TaskId, MathF.Max(0f, task.WorkRequired - task.WorkDone));
             }
             ctx.Sim.Log(v.Name + " finished grooming " + piste.Name + ".");
+        }
+
+        /// <summary>An AI operator gave a job back (slope above rating): the job goes back on the board, blocked with the reason, and the machine parks.</summary>
+        internal void OnAiRefused(SimContext ctx, VehicleState v, string reason)
+        {
+            if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts))
+            {
+                int id = v.TaskId;
+                ts.Unassign(ctx, id);
+                ts.Block(ctx, id, v.Name + ": " + reason);
+            }
+            ctx.Sim.Log(v.Name + " gave up: " + reason + ".", LogLevel.Warning);
+            v.Ai.Route = FindRoute(ctx, v.Pos, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+            v.Ai.RouteIndex = 0;
+            v.Ai.Mode = AiMode.ReturnToBase;
         }
 
         internal void OnZoneFinished(SimContext ctx, VehicleState v, SurfaceZone zone)
@@ -420,6 +448,8 @@ namespace AlpineSim.Core.Vehicles
         {
             v.Input.Clear();
             v.Input.Brake = 1f;
+            // a parked machine does not idle its engine all night
+            if (v.EngineOn) StopEngine(ctx, v.Id);
             if (v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts))
             {
                 var task = ts.Get(ctx, v.TaskId);
@@ -427,16 +457,41 @@ namespace AlpineSim.Core.Vehicles
             }
         }
 
-        internal void ArrivedAtDepot(SimContext ctx, VehicleState v)
+        /// <summary>Fills the tank from the depot; returns false when the depot could not lift it above the reserve line.</summary>
+        internal bool ArrivedAtDepot(SimContext ctx, VehicleState v)
         {
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
             if (DepotArrival != null) DepotArrival(ctx, v);
             else
             {
                 // M2: the depot is bottomless; M6 charges the tank from depot stock
-                var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
                 Refuel(ctx, v.Id, def.EnergyCapacity);
                 ctx.Sim.Log(v.Name + " refuelled at the depot.");
             }
+            return def.FuelType == FuelType.None || v.Fuel >= def.EnergyCapacity * ctx.Tuning.F("vehicles.fuelReserveWarningFrac");
+        }
+
+        /// <summary>
+        /// Sends the machine back to the job it left for fuel: through the job board when it holds a task, else from the
+        /// AI's own record of the job. False when it had none. The dry-depot timer survives the re-dispatch.
+        /// </summary>
+        internal bool ResumeJob(SimContext ctx, VehicleState v)
+        {
+            var ai = v.Ai;
+            float denied = ai.FuelDeniedTimer;
+            bool ok = v.TaskId >= 0 && ctx.TryGetSystem<TaskSystem>(out var ts) && ts.Resume(ctx, v.TaskId);
+            if (!ok)
+            {
+                switch (ai.JobMode)
+                {
+                    case AiMode.GroomPiste: AssignGroom(ctx, v.Id, ai.TargetId, v.TaskId); ok = true; break;
+                    case AiMode.PlowZone: case AiMode.BlowZone: case AiMode.SpreadZone: AssignZoneWork(ctx, v.Id, ai.TargetId, ai.JobMode, v.TaskId); ok = true; break;
+                    case AiMode.HaulLoop: _haulRemaining.TryGetValue(v.Id, out float left); AssignHaul(ctx, v.Id, ai.LoadAt, ai.DeliverTo, ai.TargetId, left, v.TaskId); ok = true; break;
+                    case AiMode.GoToSite: case AiMode.WorkAtSite: AssignSiteWork(ctx, v.Id, ai.DeliverTo, v.TaskId); ok = true; break;
+                }
+            }
+            if (ok) v.Ai.FuelDeniedTimer = denied;
+            return ok;
         }
 
         // ------------------------------------------------------------------ queries
@@ -597,7 +652,7 @@ namespace AlpineSim.Core.Vehicles
             dc.ShearKpa = t.Curve("vehicles.shearStrengthByDensity", density);
             dc.GroundPressureKpa = def.GroundPressureKpa * (mass / MathF.Max(1f, def.MassKg));
             dc.LooseDepthM = loose;
-            dc.GradeAlongRad = terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, fwd) * MathUtil.Deg2Rad;
+            dc.GradeAlongRad = terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, fwd, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f)) * MathUtil.Deg2Rad;
             dc.SideSlopeRad = terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, new Vec2(fwd.Y, -fwd.X)) * -MathUtil.Deg2Rad;
             dc.BladeLoadKg = bladeLoad;
             dc.Chains = def.TireSpec != null && def.TireSpec.Chains;

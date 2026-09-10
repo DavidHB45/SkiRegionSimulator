@@ -19,6 +19,7 @@ namespace AlpineSim.Core.Save
         {
             { 1, MigrateV1ToV2 },
             { 2, MigrateV2ToV3 },
+            { 3, MigrateV3ToV4 },
         };
 
         /// <summary>Returns the migrated document (mutated in place) and the resulting version.</summary>
@@ -45,6 +46,10 @@ namespace AlpineSim.Core.Save
         /// <summary>v3: LiftState.PlayerClosed and EconomyState.LastCloseTick were added. Absent members keep their defaults
         /// (false / -1), which is the correct pre-v3 behaviour, so the step only stamps the version.</summary>
         private static void MigrateV2ToV3(JsonNode root) { }
+
+        /// <summary>v4: VehicleAiState gained LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer and JobMode. All default to zero (Idle),
+        /// which is the state of an AI that has not refused, stuck or been turned away from the depot, so the step only stamps.</summary>
+        private static void MigrateV3ToV4(JsonNode root) { }
 
         private static void MigrateV1ToV2(JsonNode root)
         {
