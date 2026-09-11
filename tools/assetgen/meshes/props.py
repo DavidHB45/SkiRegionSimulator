@@ -775,8 +775,10 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
              _scaled_plan(plan, 1.0, 1.0, eave_y)]
     m.loft(rings, mat=BODY)
     ridge = _pitched_roof(m, length, width, eave_y, 26.0, 0.90, 0.26, 0.60)
+    # A capped ridge, because an unclosed one is a line of sky through the roof from
+    # below and a dark seam from above.
     m.box((0.0, ridge + 0.03, 0.0), (length + 1.20, 0.10, 0.36), mat=METAL)
-    _eave_brackets(m, length, width, eave_y, int(_clamp(int(length / 3.2), 4, 12)))
+    _eave_brackets(m, length, width, eave_y, _clamp(int(length / 3.2), 4, 12))
     _snow_guards(m, length, width, eave_y, 26.0)
     for i in range(chimneys):
         x = (i - (chimneys - 1) * 0.5) * length * 0.42
@@ -785,7 +787,7 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
 
     # Glazing: a band to the plaza on every floor, and a smaller one on the gable ends.
     face_z = width * 0.5 + LAP
-    panes = int(_clamp(int(length / 2.6), 3, 10))
+    panes = _clamp(int(length / 2.6), 3, 10)
     for floor in range(storeys):
         sill = storey_h * floor + 1.00
         _window_band(m, -length * 0.42, length * 0.42, face_z, sill, 1.55, panes)
@@ -800,7 +802,7 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
         z1 = z0 + deck_depth
         m.box((0.0, deck_y - 0.09, (z0 + z1) * 0.5), (length * 0.92, 0.18, deck_depth),
               mat=BODY)
-        posts = int(_clamp(int(length / 3.4), 2, 12))
+        posts = _clamp(int(length / 3.4), 2, 12)
         step = length * 0.88 / max(1, posts - 1)
         leg = m.box((-length * 0.44, deck_y * 0.5 - 0.09, z1 - 0.25),
                     (0.16, deck_y - 0.18, 0.16), mat=BODY, bevel=False)
