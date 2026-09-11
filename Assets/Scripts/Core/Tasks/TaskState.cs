@@ -12,6 +12,17 @@ namespace AlpineSim.Core.Tasks
     /// and licence it needs; the task system tells the player which machines can take it.
     /// Work is measured in units defined by the kind (m² groomed, towers set, m³ delivered, ...).
     /// </summary>
+    /// <summary>One machine's history of handing a particular task back.</summary>
+    [Serializable]
+    public sealed class TaskRefusal
+    {
+        public int VehicleId = -1;
+        /// <summary>Tick it last handed the task back.</summary>
+        public long Tick = -1;
+        /// <summary>How many times, in total. A rescue call is never held back, but a truck that has turned round this often is not sent up the same pitch again either.</summary>
+        public int Count;
+    }
+
     [Serializable]
     public sealed class WorkTask
     {
@@ -34,10 +45,19 @@ namespace AlpineSim.Core.Tasks
         public string BlockReason = "";
         /// <summary>Tick the task was last blocked at; auto-generated jobs reopen after tasks.blockRetryMinutes.</summary>
         public long BlockedTick = -1;
-        /// <summary>Machine that handed the task back (-1 when nobody did): it is not offered the same job again within tasks.blockRetrySameMachineHours.</summary>
-        public int BlockedByVehicleId = -1;
-        /// <summary>Tick that machine handed it back. Its own field, not BlockedTick, so a later block for another reason (weather, a broken machine) does not move or erase the hold.</summary>
-        public long BlockedByTick = -1;
+        /// <summary>
+        /// Every machine that has handed this task back, with when and how often. One slot per machine, not one for the
+        /// task: with a single slot the next refuser released the previous one's hold, and two capable machines simply
+        /// took turns driving to the same unclimbable pitch.
+        /// </summary>
+        public List<TaskRefusal> Refusals = new List<TaskRefusal>();
+
+        /// <summary>The record for a machine, or null when it has never handed this task back.</summary>
+        public TaskRefusal Refusal(int vehicleId)
+        {
+            for (int i = 0; i < Refusals.Count; i++) if (Refusals[i].VehicleId == vehicleId) return Refusals[i];
+            return null;
+        }
         public long CreatedTick;
         public long DeadlineTick = -1;
         public long CompletedTick = -1;

@@ -298,9 +298,9 @@ top of a run by track was planned against the operator's rating, but a worn ligh
 an eighteen-degree track on corduroy stalls on the same track under thirty centimetres of fresh
 snow. `VehicleSystem.ClimbLimitDeg` derives the grade a machine can hold from the driving model
 (traction by surface density, track wear, sinkage, rolling resistance) and transfers and the route
-home after a give-up are planned under it, using the machine's LOADED ground pressure (blade,
-tiller and a full tank all make it sink), so the estimate matches the model that will actually
-drive it. With two cats at the base the sound one now goes out first
+home after a give-up are planned under it, using the machine's LOADED ground pressure (the blade,
+the tiller and any cargo all make it sink), so the estimate matches the model that will actually
+drive it. Fuel is not counted, here or in the driving model: the tank is small against the machine. With two cats at the base the sound one now goes out first
 (`tasks.dispatchWearPenaltyM`), which is what a foreman does with a worn machine.
 
 A traction-limited search must be checked before it is used. `RouteGraph.Find` answers a query it
@@ -317,9 +317,9 @@ Refuel, repair and rescue calls are exempt from the same-machine hold: a job tha
 a machine is already stranded goes to anyone who can reach it, including the truck that turned
 back once, because the alternative is a cat on the hill all night.
 
-`WorkTask` gains a public field, so the save schema goes to v5 with a stamp-only migration: a v4
-save has no `BlockedByVehicleId` and defaults to -1, which reads as "no machine handed this job
-in" and is exactly the pre-v5 behaviour.
+`WorkTask` gains public fields, so the save schema is bumped: v5 for the first pair of them, then
+v6 when D-039 replaced the pair with a per-machine list. A v4 save has no record of who handed a
+job in, which reads as "nobody did" and is exactly the pre-v5 behaviour.
 
 Measured on the Act IV probe, thirty simulated days, seed 91: before, the second cat never turned
 a track all month (its driver was shuffled away during every scan) and the old cat gave three
@@ -354,3 +354,36 @@ settling and being tracked, and the cost of being wrong is a machine stopped on 
 Separately, the blade-float command matched only `AttachmentKind.Blade`, while `SnowContact` cuts
 with seven kinds. Most cats carry a 12-way blade, so the command fell through to its "raise"
 fallback and no cat ever shaved a mogul. Both now ask `AttachmentKind.IsBlade()`.
+
+## D-039 The hold is per machine, the last machine still goes, and a rescue is not retried for ever
+Three holes in D-037, each found by running the simulation rather than reading it.
+
+`WorkTask` held one "who handed this in" slot, so the second machine's refusal overwrote the
+first's and released it. On the shipped two-cat resort the pair simply took turns driving to the
+same unclimbable pitch every three hours instead of standing down for the shift: the loop D-037
+set out to stop, at half the rate. The record is now one entry per machine
+(`WorkTask.Refusals`), which is a `WorldState` shape change, so the save schema goes to v6 with a
+real migration that carries a v5 task's single slot into a one-entry list.
+
+The hold had no escape. On the Act I fleet, whose only plow-capable machine is the pickup, one
+give-up left the access road unplowed for a full eight-hour shift with the pickup parked at the
+garage. The hold is now dropped when it is the only reason nobody is going: the foreman sends the
+best of the machines it was holding out rather than leave the job standing. Conditions change
+through a night, so a second attempt is worth making; the board still waits
+`tasks.blockRetryMinutes` between rounds.
+
+The exemption that lets a refuel or repair call through immediately had no limit, which made it a
+permanent version of exactly the loop being fixed: a stranded machine does not move, so a truck
+that turns back from the pitch up to it turns back again every ninety minutes all night. After
+`tasks.rescueRetryAttempts` turn-backs the ordinary hold applies to that truck too, and unlike an
+ordinary job it is not waived by the last-machine escape, because another identical attempt only
+burns the truck's own fuel.
+
+Finally, `FindRouteWithinTraction` checked the grades along the route it got back but not whether
+it was a route at all. `RouteGraph.Find` answers a query it cannot satisfy with a bare two-point
+line, and a machine coming down the mountain is handed a line that descends the whole way, so
+every climb test passes and the degraded answer was returned as though it were a real route. Swept
+over the default scenario that is 23 positions where a cat was sent on a straight line across the
+map instead of down the cat track, the worst a 1,071 m line in place of an eleven-vertex route. A
+two-point answer between points too far apart to be a straight hop is now recognised as the
+failure it is.

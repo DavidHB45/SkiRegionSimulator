@@ -1881,12 +1881,19 @@
       "unit": "min",
       "comment": "How long an auto-generated job stays blocked after a machine gave it back before the foreman offers it again."
     },
+    "rescueRetryAttempts": {
+      "value": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "count",
+      "comment": "Times a machine is sent back to a refuel, repair or rescue call it has already turned back from before the ordinary same-machine hold applies to it too. A stranded machine must not wait out a shift for fuel, but it does not move either, so the pitch up to it never gets easier and a third identical attempt only burns the truck's own fuel."
+    },
     "blockRetrySameMachineHours": {
       "value": 8,
       "min": 1,
       "max": 48,
       "unit": "h",
-      "comment": "A machine that gave a job back (stalled on a pitch, refused a slope) is not offered the same job again for this long: it would drive to the same spot and stall there again. Another machine may take it at once; by the next shift the snow has settled or the job has been reposted. Refuel, repair and rescue calls are exempt: a stranded machine does not wait a shift."
+      "comment": "A machine that gave a job back (stalled on a pitch, refused a slope) is not offered the same job again for this long: it would drive to the same spot and stall there again. Held per machine, so one machine handing a job in does not release another's hold. Any machine that has not handed this job in may take it on the next dispatch; by the next shift the snow has settled or the job has been reposted. Two exceptions: when every machine that could go is held out the best of them is sent anyway rather than leave the job standing, and refuel, repair and rescue calls are never held at first because a stranded machine must not wait a shift."
     },
     "dispatchWearPenaltyM": {
       "value": 300,

@@ -21,6 +21,7 @@ namespace AlpineSim.Core.Save
             { 2, MigrateV2ToV3 },
             { 3, MigrateV3ToV4 },
             { 4, MigrateV4ToV5 },
+            { 5, MigrateV5ToV6 },
         };
 
         /// <summary>Returns the migrated document (mutated in place) and the resulting version.</summary>
@@ -56,6 +57,41 @@ namespace AlpineSim.Core.Save
         /// which reads as "no machine handed this job in" - the pre-v5 meaning, and the foreman then offers the job to
         /// the whole fleet as it always did. So the step only stamps the version.</summary>
         private static void MigrateV4ToV5(JsonNode root) { }
+
+        /// <summary>
+        /// v6: WorkTask.BlockedByVehicleId and BlockedByTick become WorkTask.Refusals, one record per machine. A v5
+        /// task carried at most one machine's hold, so it converts to a one-entry list; a task that had none converts
+        /// to an empty one. The old members are dropped, which is harmless to read back because JsonMapper skips keys
+        /// the type no longer has, but they are removed anyway so a v6 document says only what v6 means.
+        /// </summary>
+        private static void MigrateV5ToV6(JsonNode root)
+        {
+            var world = root["world"];
+            if (!world.IsObject) return;
+            var board = world["TaskBoard"];
+            if (!board.IsObject) return;
+            var tasks = board["Tasks"];
+            if (!tasks.IsArray) return;
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                var task = tasks[i];
+                if (!task.IsObject) continue;
+                int vehicleId = task.GetInt("BlockedByVehicleId", -1);
+                long tick = task.Has("BlockedByTick") && !task["BlockedByTick"].IsNull ? task["BlockedByTick"].AsLong : -1L;
+                var refusals = JsonNode.NewArray();
+                if (vehicleId >= 0 && tick >= 0)
+                {
+                    var r = JsonNode.NewObject();
+                    r.Set("VehicleId", vehicleId);
+                    r.Set("Tick", tick);
+                    r.Set("Count", 1);
+                    refusals.Add(r);
+                }
+                task.Set("Refusals", refusals);
+                task.Remove("BlockedByVehicleId");
+                task.Remove("BlockedByTick");
+            }
+        }
 
         private static void MigrateV1ToV2(JsonNode root)
         {

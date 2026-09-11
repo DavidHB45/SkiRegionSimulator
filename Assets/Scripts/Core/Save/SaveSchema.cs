@@ -7,9 +7,10 @@ namespace AlpineSim.Core.Save
     /// v3: LiftState.PlayerClosed, EconomyState.LastCloseTick.
     /// v4: VehicleAiState.LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer, JobMode, LaneAbandoned, ParkedStuckTick, TopDown, ServiceCall; WorkTask.BlockedTick; SurfaceZone.SnowScore; FuelDepotState.AutoOrder.
     /// v5: WorkTask.BlockedByVehicleId and BlockedByTick (the machine that handed a job back and when, so the foreman does not offer it straight back).
+    /// v6: those two become WorkTask.Refusals, one record per machine, so one machine handing a job in no longer releases another's hold.
     /// </summary>
     public static class SaveSchema
     {
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
     }
 }

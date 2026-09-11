@@ -557,8 +557,9 @@ namespace AlpineSim.Core.Vehicles
             float density = id >= 0 ? grid.ColumnDensity(id) : grid.BackgroundDensity;
             float loose = (id >= 0 ? grid.LooseMm[id] : grid.BackgroundLooseMm) * 0.001f;
             float shear = t.Curve("vehicles.shearStrengthByDensity", density);
-            // loaded ground pressure, as StepPhysics computes it: a cat carrying a blade, a tiller, a full tank and a
-            // windrow on the mouldboard sinks deeper than its bare spec says, and sinkage is what takes the grip away
+            // loaded ground pressure, as StepPhysics computes it: a cat carrying a blade, a tiller, a load of snow,
+            // salt or brine and a windrow on the mouldboard sinks deeper than its bare spec says, and sinkage is what
+            // takes the grip away. (Fuel is not counted, here or in StepPhysics: the tank is small against the machine.)
             float mass = def.MassKg + v.CargoKg + v.SaltKg + v.BrineL + v.WaterL;
             float bladeLoad = 0f;
             for (int i = 0; i < v.Mounted.Count; i++)
@@ -636,10 +637,18 @@ namespace AlpineSim.Core.Vehicles
         /// that stalled in fresh snow bee-lining at the nearest headwall. So the answer is checked before it is used,
         /// and a search that degraded falls back to the route the machine would have driven before.
         /// </summary>
+        /// <summary>
+        /// The graph's way of saying it could not answer: a bare two-point line between points too far apart to be a
+        /// straight hop. Checking the grades along it is not enough to catch that, because a machine coming down the
+        /// mountain is handed a line that descends all the way and so passes every climb test there is.
+        /// </summary>
+        private static bool IsDegradedLine(SimContext ctx, Vec2 from, Vec2 to, List<Vec2> route)
+            => route.Count <= 2 && Vec2.Distance(from, to) > ctx.Tuning.F("vehicles.routeStraightMaxM");
+
         public List<Vec2> FindRouteWithinTraction(SimContext ctx, VehicleState v, Vec2 to)
         {
             var route = FindRoute(ctx, v, to, TransitClimbLimitDeg(ctx, v));
-            if (route != null && RouteWithinTraction(ctx, v, route, out _)) return route;
+            if (route != null && !IsDegradedLine(ctx, v.Pos, to, route) && RouteWithinTraction(ctx, v, route, out _)) return route;
             return FindRoute(ctx, v, to);
         }
 

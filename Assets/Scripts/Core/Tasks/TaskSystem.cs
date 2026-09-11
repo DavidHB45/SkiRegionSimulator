@@ -110,13 +110,18 @@ namespace AlpineSim.Core.Tasks
             var vehicles = ctx.World.Vehicles.List;
             long sameMachine = (long)(ctx.Tuning.F("tasks.blockRetrySameMachineHours") * SimTime.TicksPerHour);
             float wearPenalty = ctx.Tuning.F("tasks.dispatchWearPenaltyM");
+            int rescueAttempts = ctx.Tuning.I("tasks.rescueRetryAttempts");
             foreach (var task in _openTmp)
             {
                 _skipTmp.Clear();
+                // the hold is dropped only when it is the sole reason nobody is going: a road the one plow-capable
+                // machine handed back must not sit unplowed for half the night because the fleet has no second plow
+                bool ignoreHold = false;
                 // at most one attempt per machine: a machine the fleet would not staff or the board would not assign
                 // is set aside and the next best one tried, so one awkward machine cannot hold a job up
-                for (int attempt = 0; attempt <= vehicles.Count; attempt++)
+                for (int attempt = 0; attempt <= vehicles.Count + 1; attempt++)
                 {
+                    bool heldSomeoneOut = false;
                     VehicleState pick = null;
                     float bestDist = float.MaxValue;
                     for (int i = 0; i < vehicles.Count; i++)
@@ -129,8 +134,23 @@ namespace AlpineSim.Core.Tasks
                         // the machine that gave this job back does not get it again on the same shift: it would drive to
                         // the same pitch and stall there again (the old cat burned a quarter tank a night doing exactly
                         // that). A machine already stranded is the exception: somebody goes now, even the truck that
-                        // turned back, because the alternative is a cat on the hill all night.
-                        if (!IsRescue(task.Kind) && task.BlockedByVehicleId == v.Id && task.BlockedByTick >= 0 && ctx.Time.Tick - task.BlockedByTick < sameMachine) continue;
+                        // turned back, because the alternative is a cat on the hill all night - but only so many times,
+                        // because a stranded machine does not move and the pitch to it does not get any easier.
+                        var refusal = task.Refusal(v.Id);
+                        if (refusal != null && refusal.Tick >= 0)
+                        {
+                            if (IsRescue(task.Kind))
+                            {
+                                // past the cap the machine is not sent again even if nobody else can go: the stranded
+                                // machine has not moved, so another identical attempt only burns the truck's own fuel
+                                if (refusal.Count > rescueAttempts) continue;
+                            }
+                            else if (!ignoreHold && ctx.Time.Tick - refusal.Tick < sameMachine)
+                            {
+                                heldSomeoneOut = true;
+                                continue;
+                            }
+                        }
                         var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
                         if (def == null || def.IsStationary || def.ChassisType == ChassisType.Towed) continue;
                         // capability first, staffing last, and only for the machine finally picked: putting a driver into
@@ -143,7 +163,13 @@ namespace AlpineSim.Core.Tasks
                         float d = Vec2.Distance(v.Pos, task.Site) + (PreferredFor(task.Kind, def.Category) ? 0f : 5000f) + WorstWear(v) * wearPenalty;
                         if (d < bestDist) { bestDist = d; pick = v; }
                     }
-                    if (pick == null) break;
+                    if (pick == null)
+                    {
+                        // nobody went, and the only machines that could were the ones held out: send the best of them
+                        // rather than leave the job standing. The board still waits tasks.blockRetryMinutes each round.
+                        if (!ignoreHold && heldSomeoneOut) { ignoreHold = true; continue; }
+                        break;
+                    }
                     // staffing is the one step that can still fail on the machine the scan chose (the fleet's own checks
                     // are not the dispatcher's): the job then goes to the next best machine rather than waiting a minute
                     if (pick.OperatorId < 0 && (fleet == null || !fleet.StaffMachine(ctx, pick, task.RequiredLicense))) { _skipTmp.Add(pick.Id); continue; }
@@ -449,9 +475,16 @@ namespace AlpineSim.Core.Tasks
             task.Status = TaskStatus.Blocked;
             task.BlockReason = reason;
             task.BlockedTick = ctx.Time.Tick;
-            // only a machine handing the job in writes the hold: a weather hold or a broken machine blocking the same
-            // task must not erase the record of who could not do it, nor restart its clock
-            if (byVehicleId >= 0) { task.BlockedByVehicleId = byVehicleId; task.BlockedByTick = ctx.Time.Tick; }
+            // only a machine handing the job in writes a hold, and it writes its own: a weather hold or a broken
+            // machine blocking the same task must not erase the record of who could not do it, and one machine
+            // handing the job in must not release another machine's hold
+            if (byVehicleId >= 0)
+            {
+                var r = task.Refusal(byVehicleId);
+                if (r == null) { r = new TaskRefusal { VehicleId = byVehicleId }; task.Refusals.Add(r); }
+                r.Tick = ctx.Time.Tick;
+                r.Count++;
+            }
             ctx.Events.Publish(new TaskBlockedEvent { TaskId = taskId, Reason = reason });
         }
 
