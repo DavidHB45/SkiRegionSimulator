@@ -19,7 +19,6 @@ namespace AlpineSim.Core.Vehicles
         private readonly List<List<int>> _adj = new List<List<int>>();
         private readonly List<List<float>> _cost = new List<List<float>>();
         private readonly List<List<float>> _grade = new List<List<float>>();
-        private int _builtForVersion = -1;
 
         public int VertexCount => _verts.Count;
 
