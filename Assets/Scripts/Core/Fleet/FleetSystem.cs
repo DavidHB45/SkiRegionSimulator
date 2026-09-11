@@ -235,6 +235,23 @@ namespace AlpineSim.Core.Fleet
                 float score = op.Competence - 0.5f * spare;
                 if (best == null || score > bestScore) { best = op; bestScore = score; }
             }
+            if (best == null)
+            {
+                // nobody free: a qualified driver sitting in a parked machine with no job comes over (the only truck
+                // driver had been left in the pickup while a stranded cat waited for the service truck all month)
+                foreach (var op in f.Operators)
+                {
+                    if (op.IsPlayer || op.AssignedVehicleId < 0 || op.TrainingLicensePending >= 0) continue;
+                    if (op.HoursToday >= ctx.Data.Operators.ShiftHours) continue;
+                    if (!OperatorLicensedFor(ctx, op, def)) continue;
+                    if (jobLicence != OperatorLicense.Basic && !op.Has(jobLicence)) continue;
+                    var other = ctx.World.Vehicles.Get(op.AssignedVehicleId);
+                    if (other == null || other.PlayerControlled || other.TaskId >= 0 || other.Ai.Mode != AiMode.Idle) continue;
+                    UnassignOperator(ctx, op.Id);
+                    best = op;
+                    break;
+                }
+            }
             if (best == null) return false;
             return AssignOperator(ctx, best.Id, v.Id, out _);
         }

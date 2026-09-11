@@ -272,3 +272,13 @@ links everything on the base pad to the base. A machine on a refuel, repair or r
 the one exception to its rating: it goes where the stranded machine is, up to
 `vehicles.aiServiceCallExtraGradeDeg` past what it would otherwise take, because the alternative
 is a cat stranded on the run all night.
+
+## D-036 A cleared machine parks; a service call may borrow a parked machine's driver
+Clearing a machine's AI (a job unassigned, an operator taken off) had left it idling where it
+stood, and a cat cleared mid-run on day 13 of an Act IV probe burned its tank dry and stood
+stranded for the rest of the month while the refuel call went unserved because the only truck
+driver was sitting in the parked pickup. A cleared machine now parks with its engine off, a job
+whose deadline passes is unassigned before it is cancelled, and when nobody free holds the
+licence a service call needs, the foreman takes a qualified driver out of a machine that is
+parked with no job. The Act IV trap then shows its real mechanism: both resorts groom the same
+runs with the same two cats, and the one with the detachable moves more skiers onto them.

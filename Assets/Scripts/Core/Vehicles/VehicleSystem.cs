@@ -365,12 +365,19 @@ namespace AlpineSim.Core.Vehicles
             v.Ai.Phase = "returning";
         }
 
+        /// <summary>
+        /// Drops the AI's job and parks the machine where it is with the engine off: a machine cleared mid-mountain
+        /// had idled its tank dry and stood stranded for the rest of the month. A caller that sends it somewhere next
+        /// (home, to the depot) sets the mode afterwards and the AI restarts the engine on its next step.
+        /// </summary>
         public void ClearAi(SimContext ctx, int id)
         {
             var v = Get(ctx, id); if (v == null) return;
-            v.Ai = new VehicleAiState();
+            v.Ai = new VehicleAiState { Phase = "parked" };
             v.Input.Clear();
+            v.Input.Brake = 1f;
             v.TaskId = -1;
+            if (v.EngineOn && !v.PlayerControlled) StopEngine(ctx, v.Id);
         }
 
         private readonly Dictionary<int, float> _haulRemaining = new Dictionary<int, float>();

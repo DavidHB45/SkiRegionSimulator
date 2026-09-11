@@ -39,6 +39,7 @@ namespace AlpineSim.Core.Tasks
                 if (!task.IsActive) continue;
                 if (task.DeadlineTick >= 0 && ctx.Time.Tick > task.DeadlineTick && task.Status != TaskStatus.Done)
                 {
+                    if (task.AssignedVehicleId >= 0) Unassign(ctx, task.Id);
                     task.Status = TaskStatus.Cancelled;
                     task.Notes = "deadline passed";
                     ctx.Events.Publish(new TaskCancelledEvent { TaskId = task.Id });
