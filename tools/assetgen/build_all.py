@@ -56,24 +56,27 @@ def _mesh_modules():
 def module_for(record, mods):
     """Which chassis generator owns a machine.
 
-    One generator per chassis family, parameterised by the JSON: all eleven groomers,
-    the tracked carrier and the tracked UTV come out of the same code path, and the
-    numbers in vehicles.json - mass, track width, power, seats, tier - drive the
-    proportions.
+    One generator per chassis family, parameterised by the JSON: all eleven groomers, the
+    tracked carrier and the tracked UTV come out of the same code path, and the numbers in
+    vehicles.json - mass, track width, power, seats, tier - drive the proportions.
+
+    ChassisType decides the family and the silhouette does not get a vote, because the
+    silhouette describes what a machine looks like and the chassis describes how it is
+    built. An articulated tractor carries the "tractor" silhouette but is an articulated
+    machine first: only chassis_artic knows how to build a centre pivot, and routing it by
+    silhouette would hand it to the rigid-frame generator and quietly produce a machine
+    that cannot steer.
     """
-    silhouette = (record.get("Visual") or {}).get("Silhouette", "truck")
     chassis = record.get("ChassisType", "Wheeled")
-    for key in ("snowmaking", "tracked", "artic", "wheeled"):
-        mod = mods[key]
-        if silhouette in getattr(mod, "SILHOUETTES", frozenset()):
-            if key != "tracked" or chassis in ("Tracked", "Towed", "WalkBehind"):
-                return mod
+    silhouette = (record.get("Visual") or {}).get("Silhouette", "truck")
     if chassis == "Artic":
         return mods["artic"]
-    if chassis == "Tracked":
-        return mods["tracked"]
+    if silhouette in getattr(mods["snowmaking"], "SILHOUETTES", frozenset()):
+        return mods["snowmaking"]          # a gun stays a gun however it is carried
     if chassis in ("Stationary", "Towed"):
         return mods["snowmaking"]
+    if chassis in ("Tracked", "WalkBehind"):
+        return mods["tracked"]
     return mods["wheeled"]
 
 

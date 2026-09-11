@@ -91,12 +91,22 @@ def convex_hull_mesh(points, name):
 
 
 def box_collider(name, center, size):
-    """Axis-aligned box collider as a mesh child (`*_col`); ModelRegistry reads its bounds."""
-    m = meshkit.Model("__box__")
-    m.box(center, size, bevel=False)
+    """Axis-aligned box collider as a mesh child (`*_col`); ModelRegistry reads its bounds.
+
+    Built straight into a mesh rather than through a `meshkit.Model`: constructing a
+    Model empties the Blender document, which would take the model being assembled with
+    it.
+    """
+    hx, hy, hz = (float(size[0]) * 0.5, float(size[1]) * 0.5, float(size[2]) * 0.5)
+    corners = [(-hx, -hy, -hz), (hx, -hy, -hz), (hx, -hy, hz), (-hx, -hy, hz),
+               (-hx, hy, -hz), (hx, hy, -hz), (hx, hy, hz), (-hx, hy, hz)]
+    verts = [meshkit.to_blender((x + center[0], y + center[1], z + center[2]))
+             for x, y, z in corners]
+    faces = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4),
+             (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
     mesh = bpy.data.meshes.new(name)
-    node = m.nodes[m.ROOT]
-    node.bm.to_mesh(mesh)
+    mesh.from_pydata(verts, [], faces)
+    mesh.validate()
     obj = bpy.data.objects.new(name, mesh)
     _link(obj)
     return obj
