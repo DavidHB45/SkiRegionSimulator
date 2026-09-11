@@ -1,0 +1,14 @@
+# Alpine Resort Simulator - asset generation toolchain.
+#
+# Pinned exactly: `make assets` must produce byte-identical output on any machine,
+# so every version here is exact and no build step fetches anything else.
+# Python 3.11 is required (bpy ships cp311 wheels for this release line).
+#
+#   python3 -m pip install -r tools/assetgen/requirements.txt
+#
+bpy==4.2.0          # Blender as a Python module: all mesh generation and FBX export
+numpy==2.4.6        # procedural texture synthesis, audio synthesis, mesh arrays
+Pillow==11.3.0      # PNG encode/decode, image compositing
+cairosvg==2.8.2     # SVG -> PNG rasterisation for UI icons
+scipy==1.16.3       # filtering and resampling for audio synthesis
+trimesh==4.8.3      # convex hulls, watertightness and manifold checks

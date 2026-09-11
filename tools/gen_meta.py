@@ -23,6 +23,12 @@ import sys
 import uuid
 
 NAMESPACE = uuid.UUID("4b9d3f1e-2c7a-4e5b-9a8d-1f6c2e3b4a5d")
+
+# Generated art is build output, not repository content: it is gitignored, and
+# tools/assetgen writes its own .meta files (with GUIDs from guid_for below) as it
+# produces each asset. Walking it here would make --check fail on a machine that has
+# run `make assets` and pass on one that has not.
+SKIP_DIRS = ("Assets/Art/Generated",)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "Assets")
 
@@ -66,6 +72,9 @@ def iter_assets():
         dirnames.sort()
         filenames.sort()
         rel_dir = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
+        if any(rel_dir == s or rel_dir.startswith(s + "/") for s in SKIP_DIRS):
+            dirnames[:] = []
+            continue
         if rel_dir != "Assets":
             yield rel_dir, True
         for f in filenames:
