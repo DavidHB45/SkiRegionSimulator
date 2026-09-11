@@ -157,6 +157,27 @@ namespace AlpineSim.Core.Vehicles
         TowerJib, SledHitch, LightTower, PumpSkid, Mulcher, PlowStraight
     }
 
+    public static class AttachmentKindExtensions
+    {
+        /// <summary>The kinds SnowContact pushes snow with, so the one place that asks "is there a blade on the front" agrees with the one that cuts.</summary>
+        public static bool IsBlade(this AttachmentKind kind)
+        {
+            switch (kind)
+            {
+                case AttachmentKind.Blade:
+                case AttachmentKind.Blade12Way:
+                case AttachmentKind.UBlade:
+                case AttachmentKind.VPlow:
+                case AttachmentKind.PlowStraight:
+                case AttachmentKind.BoxPusher:
+                case AttachmentKind.ParkBlade:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+
     /// <summary>Effect coefficients an attachment applies to the snow grid or a job.</summary>
     [Serializable]
     public sealed class AttachmentEffects

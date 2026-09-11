@@ -1039,6 +1039,13 @@
       "unit": "s",
       "comment": "Reverse time when stuck."
     },
+    "routeTractionMarginDeg": {
+      "value": 3,
+      "min": 0,
+      "max": 15,
+      "unit": "deg",
+      "comment": "Margin a planned route keeps under the grade the machine can actually hold in the snow along it. The estimate is made of snow that is still falling, settling and being tracked, and the cost of being wrong is a machine stopped on a pitch, so the planner keeps the same few degrees in hand an operator does."
+    },
     "aiTransferGradeMarginDeg": {
       "value": 8,
       "min": 0,

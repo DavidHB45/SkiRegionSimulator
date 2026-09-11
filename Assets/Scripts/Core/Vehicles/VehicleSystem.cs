@@ -557,19 +557,35 @@ namespace AlpineSim.Core.Vehicles
             float density = id >= 0 ? grid.ColumnDensity(id) : grid.BackgroundDensity;
             float loose = (id >= 0 ? grid.LooseMm[id] : grid.BackgroundLooseMm) * 0.001f;
             float shear = t.Curve("vehicles.shearStrengthByDensity", density);
-            // loaded ground pressure, as StepPhysics computes it: a cat carrying a blade, a tiller and a full tank
-            // sinks deeper than its bare spec says, and sinkage is what takes the grip away
+            // loaded ground pressure, as StepPhysics computes it: a cat carrying a blade, a tiller, a full tank and a
+            // windrow on the mouldboard sinks deeper than its bare spec says, and sinkage is what takes the grip away
             float mass = def.MassKg + v.CargoKg + v.SaltKg + v.BrineL + v.WaterL;
-            for (int i = 0; i < v.Mounted.Count; i++) { var a = ctx.Data.Attachment(v.Mounted[i].DefId); if (a != null) mass += a.MassKg; }
-            float pressure = def.GroundPressureKpa * (mass / MathF.Max(1f, def.MassKg));
+            float bladeLoad = 0f;
+            for (int i = 0; i < v.Mounted.Count; i++)
+            {
+                var a = ctx.Data.Attachment(v.Mounted[i].DefId);
+                if (a != null) mass += a.MassKg;
+                bladeLoad += v.Mounted[i].LoadKg;
+            }
+            float pressure = def.GroundPressureKpa * ((mass + bladeLoad) / MathF.Max(1f, def.MassKg));
             float ratio = shear > 0.01f ? pressure / shear : 5f;
             float sinkMax = t.F("vehicles.sinkageMaxM");
             float sink = MathF.Min(sinkMax, loose * t.F("vehicles.sinkageFactor") * MathUtil.Clamp01(ratio));
-            float scale = def.TrackWidthM > 0f ? 1f : t.F("vehicles.tireTractionFactor") + (def.TireSpec != null && def.TireSpec.Chains ? t.F("vehicles.chainsTractionBonus") : 0f);
+            // traction scale by chassis, exactly as DrivingModels dispatches it: tracks pull at full coefficient,
+            // wheels at the tyre fraction unless the machine is a track conversion. Reading it off TrackWidthM alone
+            // would quietly penalise a tracked machine authored without one, and adding a machine is a JSON record.
+            float scale = 1f;
+            if (def.ChassisType == ChassisType.Wheeled || def.ChassisType == ChassisType.Artic)
+                scale = def.TrackWidthM > 0f ? 1f : t.F("vehicles.tireTractionFactor") + (def.TireSpec != null && def.TireSpec.Chains ? t.F("vehicles.chainsTractionBonus") : 0f);
             float mu = t.Curve("vehicles.tractionByDensity", density) * (1f - v.Condition.WearTracks * t.F("vehicles.trackGripLossAtFullWear")) * scale
                      * MathUtil.Clamp01(1f - sink / MathF.Max(0.01f, sinkMax) * t.F("vehicles.sinkageTractionLoss"));
             float rr = t.F("vehicles.rollingResistanceBase") + t.F("vehicles.rollingResistancePerSinkageM") * sink;
-            return MathF.Atan(MathF.Max(0f, mu - rr)) * MathUtil.Rad2Deg;
+            // a windrow on the mouldboard is dragged up the pitch as well as carried: the driving model charges the
+            // climb with the snow sliding along the blade, so the budget must pay for it here too
+            float drag = bladeLoad * t.F("vehicles.bladeFrictionCoeff") / MathF.Max(1f, mass + bladeLoad);
+            // NOT clamped at zero: when rolling resistance beats traction the machine cannot move at all, on the flat
+            // or on any gentle descent, and a negative limit is how the route check hears that
+            return MathF.Atan(mu - rr - drag) * MathUtil.Rad2Deg;
         }
 
         /// <summary>Grade limit for a transit route from where the machine stands: its rating, or less in snow it cannot grip.</summary>
@@ -588,6 +604,7 @@ namespace AlpineSim.Core.Vehicles
         {
             worstShortfallDeg = 0f;
             if (route == null) return false;
+            float margin = ctx.Tuning.F("vehicles.routeTractionMarginDeg");
             for (int i = 0; i + 1 < route.Count; i++)
             {
                 Vec2 a = route[i], b = route[i + 1];
@@ -597,9 +614,15 @@ namespace AlpineSim.Core.Vehicles
                 for (float s = 0f; s <= len; s += 5f)
                 {
                     var p = new Vec2(a.X + dir.X * s, a.Y + dir.Y * s);
+                    float limit = ClimbLimitDeg(ctx, v, p);
+                    // a machine whose rolling resistance beats its traction is stuck where it stands: no part of the
+                    // route is passable, level or downhill, so say so rather than waving a flat route through
+                    if (limit <= 0f) { worstShortfallDeg = MathF.Max(worstShortfallDeg, margin - limit); continue; }
                     float grade = ctx.Terrain.GradeAlongDeg(p.X, p.Y, dir, 6f);
                     if (grade <= 0f) continue;
-                    float shortfall = grade - ClimbLimitDeg(ctx, v, p);
+                    // the same margin every other grade gate on this route keeps: the estimate is of a machine in
+                    // snow that is still changing, and the cost of being wrong is a cat stopped on a pitch
+                    float shortfall = grade - limit + margin;
                     if (shortfall > worstShortfallDeg) worstShortfallDeg = shortfall;
                 }
             }

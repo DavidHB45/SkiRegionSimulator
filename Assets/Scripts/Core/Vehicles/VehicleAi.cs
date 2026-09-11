@@ -231,7 +231,9 @@ namespace AlpineSim.Core.Vehicles
             for (int i = 0; i < v.Mounted.Count; i++)
             {
                 var a = ctx.Data.Attachment(v.Mounted[i].DefId);
-                if (a == null || a.Kind != AttachmentKind.Blade) continue;
+                // every kind SnowContact cuts with, not just the plain blade: the 12-way that comes on most cats
+                // matched nothing here, so the float command fell through to "raise" and no cat ever shaved a mogul
+                if (a == null || !a.Kind.IsBlade()) continue;
                 float lift = v.Mounted[i].Lift;
                 return lift > pose + 0.02f ? -1f : (lift < pose - 0.02f ? 1f : 0f);
             }
@@ -280,6 +282,11 @@ namespace AlpineSim.Core.Vehicles
             }
             if (!ai.Loaded)
             {
+                // driving to the run, or transferring back to the top by track: blade up and tiller up. Left floating
+                // it keeps cutting and carries a windrow the whole way, which is both a furrow up the cat track and
+                // several tonnes dragged up a pitch the transfer was planned without.
+                input.BladeLift = 1f;
+                input.Tiller = false;
                 if (FollowRoute(ctx, v, def, competence, maxSlopeDeg, dt)) { BuildLaneRoute(ctx, v, piste); }
                 return;
             }

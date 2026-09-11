@@ -240,6 +240,59 @@ namespace AlpineSim.Tests.Tasks
             Assert.GreaterOrEqual(worn, 0f);
         }
 
+        /// <summary>
+        /// A machine whose rolling resistance beats its traction cannot move at all, on the flat or down a gentle
+        /// grade. The climb limit goes negative to say so, and no route is passable for it - a flat one included.
+        /// </summary>
+        [Test]
+        public void AMachineThatCannotMoveHasNoPassableRoute()
+        {
+            var sim = Simulation.CreateNew(Data(), 50, "test_small");
+            var ctx = sim.Ctx;
+            var vs = sim.GetSystem<VehicleSystem>();
+            var cat = Cat(sim);
+            var grid = sim.World.Snow;
+
+            var spot = cat.Pos;
+            int id = grid.EnsureCellAt(spot);
+            grid.LooseMm[id] = 1000f; grid.PackedMm[id] = 0f; grid.Density[id] = 120f;
+            cat.Condition.WearTracks = 1f;
+
+            Assert.Less(vs.ClimbLimitDeg(ctx, cat, spot), 0f, "buried in a metre of unconsolidated snow the cat cannot move");
+
+            // a level hop across the same ground is not passable either
+            var flat = new System.Collections.Generic.List<Vec2> { spot, spot + new Vec2(6f, 0f) };
+            Assert.IsFalse(vs.RouteWithinTraction(ctx, cat, flat, out float shortfall), "a stuck machine was waved through a flat route");
+            Assert.Greater(shortfall, 0f);
+        }
+
+        /// <summary>Snow on the mouldboard is dragged up the pitch as well as carried, so it costs the machine climb.</summary>
+        [Test]
+        public void ALoadedBladeCostsClimb()
+        {
+            var sim = Simulation.CreateNew(Data(), 51, "test_small");
+            var ctx = sim.Ctx;
+            var vs = sim.GetSystem<VehicleSystem>();
+            var cat = Cat(sim);
+            var grid = sim.World.Snow;
+
+            var spot = cat.Pos;
+            int id = grid.EnsureCellAt(spot);
+            grid.LooseMm[id] = 0f; grid.PackedMm[id] = 600f; grid.Density[id] = 520f;
+            cat.Condition.WearTracks = 0f;
+
+            AlpineSim.Core.Vehicles.MountedAttachment blade = null;
+            foreach (var m in cat.Mounted) { var a = ctx.Data.Attachment(m.DefId); if (a != null && a.Kind.IsBlade()) { blade = m; break; } }
+            Assert.IsNotNull(blade, "the cat should carry a blade");
+
+            blade.LoadKg = 0f;
+            float empty = vs.ClimbLimitDeg(ctx, cat, spot);
+            blade.LoadKg = 2500f;
+            float loaded = vs.ClimbLimitDeg(ctx, cat, spot);
+            Assert.Less(loaded, empty, "a windrow on the blade must cost the machine climb");
+            blade.LoadKg = 0f;
+        }
+
         /// <summary>A transit limit is never above what the machine is rated for, however good the grip.</summary>
         [Test]
         public void TransitLimitNeverExceedsTheMachineRating()

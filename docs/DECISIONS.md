@@ -324,3 +324,33 @@ in" and is exactly the pre-v5 behaviour.
 Measured on the Act IV probe, thirty simulated days, seed 91: before, the second cat never turned
 a track all month (its driver was shuffled away during every scan) and the old cat gave three
 grooming jobs back eleven times a night; after, both cats work every night and the give-ups stop.
+
+## D-038 The climb estimate pays for the blade, admits when a machine cannot move, and reads the chassis
+Three corrections to `ClimbLimitDeg` found by reading it term by term against `DrivingModels.Longitudinal`.
+
+A windrow on the mouldboard is dragged up the pitch as well as carried. The driving model charges
+the climb with `BladeLoadKg * g * (sin + bladeFrictionCoeff)`; the estimate omitted it, and on a
+transfer entered straight off a downhill lane the blade is still floating at
+`vehicles.aiGroomBladeFloat` with several tonnes on it, which is far enough below the cutting
+threshold to keep cutting. The estimate now pays the friction term and counts the load in ground
+pressure, and the AI raises the blade and lifts the tiller while it is driving rather than
+grooming, which is what an operator does and what makes the planned climb the real one.
+
+`MathF.Max(0f, mu - rr)` hid a distinct state. When rolling resistance beats traction the machine
+cannot move at all, on the flat or down a gentle grade, and clamping that to a 0 degree limit made
+`RouteWithinTraction` wave through any level route, since it skipped every sample that was not a
+climb. The limit is no longer clamped: a negative answer means stuck, and the route check now asks
+for the limit at every sample before it looks at the grade.
+
+Traction scale was read off `TrackWidthM`, which agrees with the driving model for every machine in
+`vehicles.json` today but not by construction: the model dispatches on `ChassisType`, and adding a
+machine is a JSON record, so a tracked machine authored without a track width would have been
+planned with the wheeled penalty the physics never applies to it. It now dispatches the same way.
+
+`RouteWithinTraction` also keeps `vehicles.routeTractionMarginDeg` in hand, the same few degrees
+every other grade gate on the same route keeps. The estimate is of snow that is still falling,
+settling and being tracked, and the cost of being wrong is a machine stopped on a pitch.
+
+Separately, the blade-float command matched only `AttachmentKind.Blade`, while `SnowContact` cuts
+with seven kinds. Most cats carry a 12-way blade, so the command fell through to its "raise"
+fallback and no cat ever shaved a mogul. Both now ask `AttachmentKind.IsBlade()`.
