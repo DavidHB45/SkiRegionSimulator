@@ -222,6 +222,19 @@ present**: delete `Assets/Art/Generated/` and every model falls through to tier 
 For lifts the override may be a folder; the registry looks for `tower`, `terminal_drive`,
 `terminal_return` and `carrier` inside it.
 
+A lift folder carries three tower height classes, because a line crosses ground that
+needs a 9 m tower in one span and a 22 m tower in the next:
+
+| Resource | Use |
+|---|---|
+| `tower` | the height class for the type, and the one to fall back on |
+| `tower_low` | roughly 60 % of it, for shallow ground |
+| `tower_high` | roughly 145 %, for a deep span or a steep pitch |
+
+`terminal_drive` and `terminal_return` differ from each other (a drive end has the motor
+room, a return end a tensioning carriage), and `barn` is present only on types whose
+`CabinBarnCapex` is above zero.
+
 ## 10. Validation rules
 
 `tools/assetgen/lib/validate.py` fails the build on:

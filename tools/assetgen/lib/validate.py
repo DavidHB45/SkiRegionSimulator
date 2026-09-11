@@ -17,6 +17,7 @@ REQUIRED_NODES = {
     "wheeled": (),
     "artic": ("pivot_center",),
     "lift_terminal": ("bullwheel",),
+    "lift_barn": (),           # a cabin garage is a shed on a storage rail, not a station
     "lift_tower": (),
     "lift_carrier": (),
     "attachment": (),          # an implement's transforms depend on its Kind, not the family
