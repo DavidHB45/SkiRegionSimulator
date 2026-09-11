@@ -417,7 +417,7 @@ namespace AlpineSim.Core.Vehicles
                 {
                     int id = v.TaskId;
                     tsk.Unassign(ctx, id);
-                    tsk.Block(ctx, id, v.Name + ": pitch above the operator's rating");
+                    tsk.Block(ctx, id, v.Name + ": pitch above the operator's rating", v.Id);
                 }
                 return;
             }
@@ -446,10 +446,12 @@ namespace AlpineSim.Core.Vehicles
                 var task = ts.Get(ctx, id);
                 if (task != null) job = " on '" + task.Title + "'";
                 ts.Unassign(ctx, id);
-                ts.Block(ctx, id, v.Name + ": " + reason);
+                ts.Block(ctx, id, v.Name + ": " + reason, v.Id);
             }
             ctx.Sim.Log(v.Name + " gave up" + job + " at " + MathF.Round(v.Pos.X) + "," + MathF.Round(v.Pos.Y) + ": " + reason + ".", LogLevel.Warning);
-            v.Ai.Route = FindRoute(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
+            // home by a route it can hold in this snow: snapping to the graph vertex up the pitch it just stalled on
+            // sent it straight back up there
+            v.Ai.Route = FindRouteWithinTraction(ctx, v, ctx.Sim.Scenario.Landmark(ctx.Sim.Scenario.GarageLandmarkId).Pos);
             v.Ai.RouteIndex = 0;
             v.Ai.Mode = AiMode.ReturnToBase;
         }
@@ -538,6 +540,84 @@ namespace AlpineSim.Core.Vehicles
             RebuildRoutes(ctx);
             var t = ctx.Tuning;
             return _routes.Find(v.Pos, to, t.F("vehicles.routeSnapRadiusM"), t.F("vehicles.routeStraightMaxM"), maxGradeDeg);
+        }
+
+        /// <summary>
+        /// Steepest grade the machine can climb in the snow lying at a point: the driving model's traction (surface
+        /// density, track wear, sinkage) less its rolling resistance. What an operator judges before committing a cat
+        /// to a pitch: a worn light cat in thirty centimetres of fresh snow holds about thirteen degrees, not its rated 38.
+        /// </summary>
+        public float ClimbLimitDeg(SimContext ctx, VehicleState v, Vec2 at)
+        {
+            var t = ctx.Tuning;
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+            if (def == null) return 0f;
+            var grid = ctx.World.Snow;
+            int id = grid.CellIdAt(at);
+            float density = id >= 0 ? grid.ColumnDensity(id) : grid.BackgroundDensity;
+            float loose = (id >= 0 ? grid.LooseMm[id] : grid.BackgroundLooseMm) * 0.001f;
+            float shear = t.Curve("vehicles.shearStrengthByDensity", density);
+            // loaded ground pressure, as StepPhysics computes it: a cat carrying a blade, a tiller and a full tank
+            // sinks deeper than its bare spec says, and sinkage is what takes the grip away
+            float mass = def.MassKg + v.CargoKg + v.SaltKg + v.BrineL + v.WaterL;
+            for (int i = 0; i < v.Mounted.Count; i++) { var a = ctx.Data.Attachment(v.Mounted[i].DefId); if (a != null) mass += a.MassKg; }
+            float pressure = def.GroundPressureKpa * (mass / MathF.Max(1f, def.MassKg));
+            float ratio = shear > 0.01f ? pressure / shear : 5f;
+            float sinkMax = t.F("vehicles.sinkageMaxM");
+            float sink = MathF.Min(sinkMax, loose * t.F("vehicles.sinkageFactor") * MathUtil.Clamp01(ratio));
+            float scale = def.TrackWidthM > 0f ? 1f : t.F("vehicles.tireTractionFactor") + (def.TireSpec != null && def.TireSpec.Chains ? t.F("vehicles.chainsTractionBonus") : 0f);
+            float mu = t.Curve("vehicles.tractionByDensity", density) * (1f - v.Condition.WearTracks * t.F("vehicles.trackGripLossAtFullWear")) * scale
+                     * MathUtil.Clamp01(1f - sink / MathF.Max(0.01f, sinkMax) * t.F("vehicles.sinkageTractionLoss"));
+            float rr = t.F("vehicles.rollingResistanceBase") + t.F("vehicles.rollingResistancePerSinkageM") * sink;
+            return MathF.Atan(MathF.Max(0f, mu - rr)) * MathUtil.Rad2Deg;
+        }
+
+        /// <summary>Grade limit for a transit route from where the machine stands: its rating, or less in snow it cannot grip.</summary>
+        public float TransitClimbLimitDeg(SimContext ctx, VehicleState v)
+        {
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+            float rated = (def != null ? def.MaxGradeDeg : 90f) + ctx.Tuning.F("vehicles.aiSlopeMarginDeg");
+            return MathF.Min(rated, ClimbLimitDeg(ctx, v, v.Pos));
+        }
+
+        /// <summary>
+        /// Whether every climb along a route's straight legs (sampled every 5 m over a 6 m baseline) is under what the
+        /// machine can hold in the snow lying there. The steepest shortfall comes back in worstShortfallDeg (0 when the route is fine).
+        /// </summary>
+        public bool RouteWithinTraction(SimContext ctx, VehicleState v, List<Vec2> route, out float worstShortfallDeg)
+        {
+            worstShortfallDeg = 0f;
+            if (route == null) return false;
+            for (int i = 0; i + 1 < route.Count; i++)
+            {
+                Vec2 a = route[i], b = route[i + 1];
+                float len = Vec2.Distance(a, b);
+                if (len < 1f) continue;
+                Vec2 dir = (b - a) / len;
+                for (float s = 0f; s <= len; s += 5f)
+                {
+                    var p = new Vec2(a.X + dir.X * s, a.Y + dir.Y * s);
+                    float grade = ctx.Terrain.GradeAlongDeg(p.X, p.Y, dir, 6f);
+                    if (grade <= 0f) continue;
+                    float shortfall = grade - ClimbLimitDeg(ctx, v, p);
+                    if (shortfall > worstShortfallDeg) worstShortfallDeg = shortfall;
+                }
+            }
+            return worstShortfallDeg <= 0f;
+        }
+
+        /// <summary>
+        /// A route the machine can actually hold, or the ordinary rated route when no such route exists. The graph
+        /// answers an impossible query with a straight line from A to B, and a straight line over a ridge is exactly
+        /// what a machine must not be handed: planning home under a tight traction limit would otherwise send a cat
+        /// that stalled in fresh snow bee-lining at the nearest headwall. So the answer is checked before it is used,
+        /// and a search that degraded falls back to the route the machine would have driven before.
+        /// </summary>
+        public List<Vec2> FindRouteWithinTraction(SimContext ctx, VehicleState v, Vec2 to)
+        {
+            var route = FindRoute(ctx, v, to, TransitClimbLimitDeg(ctx, v));
+            if (route != null && RouteWithinTraction(ctx, v, route, out _)) return route;
+            return FindRoute(ctx, v, to);
         }
 
         /// <summary>Steepest climb along a route's straight legs, sampled every 5 m over a 6 m baseline.</summary>

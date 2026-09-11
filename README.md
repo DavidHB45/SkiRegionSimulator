@@ -123,11 +123,12 @@ subsystem. The suite pins the design pillars, not just the code:
 | --- | --- |
 | `Snow/SnowGridTests` | mass conservation under blade, tiller and skier traffic; compaction curve (corduroy, then ice); PQI never rises under traffic without grooming; hourly PQI publish is cheap; grid survives save/load exactly |
 | `Sim/DeterminismTests` | identical hash after 10,000 ticks; different seeds differ; save/load mid-run stays on trajectory; canonical tick order |
-| `Foundation/*` | JSON round trips, RNG, calendar, clock consumes ticks not dt, v1 → v4 save migration |
+| `Foundation/*` | JSON round trips, RNG, calendar, clock consumes ticks not dt, v1 → v5 save migration |
 | `Weather/WetBulbTests` | psychrometric wet-bulb against tables, monotonicity, altitude, snowmaking window edges |
 | `Data/FleetDataTests`, `Data/LiftDataTests`, `Data/EconomyDataTests` | 58 machines across 10 categories and 5 tiers, no two within 5 % on every key figure; 26 lift types; every enum has data |
 | `Vehicles/AttachmentEffectsTests` | a 6.0 m tiller covers 40 % more run per metre than a 4.3 m one; the heavy tiller needs a heavy cat |
 | `Fleet/FuelLogisticsTests` | a dry tank halts the machine and raises a service call; the service truck refuels it; an empty depot blocks until the delivery lands; AI machines head for the depot at the reserve |
+| `Tasks/ForemanDispatchTests` | one driver and two cats still gets the job out; a job handed in is not offered straight back to the same machine, but a rescue call always is; the climb a machine can hold falls with fresh snow and worn tracks |
 | `Lifts/LiftThroughputTests`, `Lifts/WindHoldTests` | every lift type moves its rated capacity through a saturated queue within 5 %; holds come in wind-limit order |
 | `Construction/TerrainGatingTests` | T-bar length, fixed-grip span, surface-lift grade; only the 3S and trams cross the valley; runs must descend |
 | `Guests/LapRateTests` | starving uphill capacity cuts laps and lengthens queues |

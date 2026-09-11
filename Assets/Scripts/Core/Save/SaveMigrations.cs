@@ -20,6 +20,7 @@ namespace AlpineSim.Core.Save
             { 1, MigrateV1ToV2 },
             { 2, MigrateV2ToV3 },
             { 3, MigrateV3ToV4 },
+            { 4, MigrateV4ToV5 },
         };
 
         /// <summary>Returns the migrated document (mutated in place) and the resulting version.</summary>
@@ -50,6 +51,11 @@ namespace AlpineSim.Core.Save
         /// <summary>v4: VehicleAiState gained LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer, JobMode, LaneAbandoned, ParkedStuckTick, TopDown and ServiceCall, WorkTask gained BlockedTick, SurfaceZone gained SnowScore, FuelDepotState gained AutoOrder (true). All default to their pre-v4 meaning (zero, Idle, false, -1, a full clearance score),
         /// which is the state of an AI that has not refused, stuck or been turned away from the depot, so the step only stamps.</summary>
         private static void MigrateV3ToV4(JsonNode root) { }
+
+        /// <summary>v5: WorkTask gained BlockedByVehicleId and BlockedByTick, the machine that handed a job back and when. Absent they default to -1,
+        /// which reads as "no machine handed this job in" - the pre-v5 meaning, and the foreman then offers the job to
+        /// the whole fleet as it always did. So the step only stamps the version.</summary>
+        private static void MigrateV4ToV5(JsonNode root) { }
 
         private static void MigrateV1ToV2(JsonNode root)
         {

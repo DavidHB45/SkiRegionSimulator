@@ -81,6 +81,8 @@ namespace AlpineSim.Core.Tasks
         }
 
         private readonly List<WorkTask> _openTmp = new List<WorkTask>();
+        /// <summary>Machine ids set aside for the job currently being dispatched (a list, not a set: iteration order must stay stable).</summary>
+        private readonly List<int> _skipTmp = new List<int>();
 
         /// <summary>
         /// Foreman dispatch: every open job, highest priority first, goes to an idle AI machine that can do it.
@@ -106,28 +108,59 @@ namespace AlpineSim.Core.Tasks
             _openTmp.Sort((a, b) => { int c = b.Priority.CompareTo(a.Priority); return c != 0 ? c : a.Id.CompareTo(b.Id); });
             int dispatched = 0;
             var vehicles = ctx.World.Vehicles.List;
+            long sameMachine = (long)(ctx.Tuning.F("tasks.blockRetrySameMachineHours") * SimTime.TicksPerHour);
+            float wearPenalty = ctx.Tuning.F("tasks.dispatchWearPenaltyM");
             foreach (var task in _openTmp)
             {
-                VehicleState pick = null;
-                float bestDist = float.MaxValue;
-                for (int i = 0; i < vehicles.Count; i++)
+                _skipTmp.Clear();
+                // at most one attempt per machine: a machine the fleet would not staff or the board would not assign
+                // is set aside and the next best one tried, so one awkward machine cannot hold a job up
+                for (int attempt = 0; attempt <= vehicles.Count; attempt++)
                 {
-                    var v = vehicles[i];
-                    if (v.PlayerControlled || v.TaskId >= 0 || v.Ai.Mode != AiMode.Idle || !v.IsUsable || v.PlacedGunId >= 0) continue;
-                    // a machine that parked itself stuck is left for an hour: sending it straight back out only burns fuel
-                    if (v.Ai.ParkedStuckTick >= 0 && ctx.Time.Tick - v.Ai.ParkedStuckTick < SimTime.TicksPerHour) continue;
-                    var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
-                    if (def == null || def.IsStationary || def.ChassisType == ChassisType.Towed) continue;
-                    if (v.OperatorId < 0 && (fleet == null || !fleet.StaffMachine(ctx, v, task.RequiredLicense))) continue;
-                    if (!CanVehicleDo(ctx, task, v, out _)) continue;
-                    // nearest wins among machines built for the job; a groomer plows the lot only when nothing else can
-                    float d = Vec2.Distance(v.Pos, task.Site) + (PreferredFor(task.Kind, def.Category) ? 0f : 5000f);
-                    if (d < bestDist) { bestDist = d; pick = v; }
+                    VehicleState pick = null;
+                    float bestDist = float.MaxValue;
+                    for (int i = 0; i < vehicles.Count; i++)
+                    {
+                        var v = vehicles[i];
+                        if (v.PlayerControlled || v.TaskId >= 0 || v.Ai.Mode != AiMode.Idle || !v.IsUsable || v.PlacedGunId >= 0) continue;
+                        if (_skipTmp.Contains(v.Id)) continue;
+                        // a machine that parked itself stuck is left for an hour: sending it straight back out only burns fuel
+                        if (v.Ai.ParkedStuckTick >= 0 && ctx.Time.Tick - v.Ai.ParkedStuckTick < SimTime.TicksPerHour) continue;
+                        // the machine that gave this job back does not get it again on the same shift: it would drive to
+                        // the same pitch and stall there again (the old cat burned a quarter tank a night doing exactly
+                        // that). A machine already stranded is the exception: somebody goes now, even the truck that
+                        // turned back, because the alternative is a cat on the hill all night.
+                        if (!IsRescue(task.Kind) && task.BlockedByVehicleId == v.Id && task.BlockedByTick >= 0 && ctx.Time.Tick - task.BlockedByTick < sameMachine) continue;
+                        var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+                        if (def == null || def.IsStationary || def.ChassisType == ChassisType.Towed) continue;
+                        // capability first, staffing last, and only for the machine finally picked: putting a driver into
+                        // every candidate before knowing it could do the job shuffled the one cat driver between machines
+                        // during a single scan, and the machine picked had lost them again by the time it was assigned
+                        if (!CanVehicleDo(ctx, task, v, out _, v.OperatorId < 0)) continue;
+                        if (v.OperatorId < 0 && (fleet == null || !fleet.CanStaffMachine(ctx, v, task.RequiredLicense))) continue;
+                        // nearest wins among machines built for the job, the sound machine before the worn one;
+                        // a groomer plows the lot only when nothing else can
+                        float d = Vec2.Distance(v.Pos, task.Site) + (PreferredFor(task.Kind, def.Category) ? 0f : 5000f) + WorstWear(v) * wearPenalty;
+                        if (d < bestDist) { bestDist = d; pick = v; }
+                    }
+                    if (pick == null) break;
+                    // staffing is the one step that can still fail on the machine the scan chose (the fleet's own checks
+                    // are not the dispatcher's): the job then goes to the next best machine rather than waiting a minute
+                    if (pick.OperatorId < 0 && (fleet == null || !fleet.StaffMachine(ctx, pick, task.RequiredLicense))) { _skipTmp.Add(pick.Id); continue; }
+                    if (Assign(ctx, task.Id, pick.Id, out _)) { dispatched++; break; }
+                    _skipTmp.Add(pick.Id);
                 }
-                if (pick == null) continue;
-                if (Assign(ctx, task.Id, pick.Id, out _)) dispatched++;
             }
             return dispatched;
+        }
+
+        /// <summary>Jobs that exist because a machine is stranded: they are never held back from any machine that can go.</summary>
+        private static bool IsRescue(TaskKind kind) => kind == TaskKind.Refuel || kind == TaskKind.Repair || kind == TaskKind.Rescue;
+
+        private static float WorstWear(VehicleState v)
+        {
+            var c = v.Condition;
+            return MathF.Max(MathF.Max(c.WearEngine, c.WearHydraulics), MathF.Max(c.WearDrivetrain, c.WearTracks));
         }
 
         /// <summary>The machine classes a job is normally given to; any capable machine still qualifies when none of these is free.</summary>
@@ -270,7 +303,11 @@ namespace AlpineSim.Core.Tasks
             return true;
         }
 
-        public bool CanVehicleDo(SimContext ctx, WorkTask task, VehicleState vehicle, out string reason)
+        /// <summary>
+        /// Whether the machine, as it stands, can take the task. With assumeStaffed the operator licence is not checked
+        /// (the caller will staff the machine if it is picked).
+        /// </summary>
+        public bool CanVehicleDo(SimContext ctx, WorkTask task, VehicleState vehicle, out string reason, bool assumeStaffed = false)
         {
             var vs = ctx.System<VehicleSystem>();
             var def = vehicle.Def ?? ctx.Data.Vehicle(vehicle.DefId);
@@ -284,7 +321,7 @@ namespace AlpineSim.Core.Tasks
             if (vehicle.Condition.IsDown) { reason = "down for repair"; return false; }
             if (vehicle.Stranded) { reason = vehicle.StrandedReason; return false; }
             if (vehicle.Rented && vehicle.RentalEndDay >= 0 && ctx.Time.Day > vehicle.RentalEndDay) { reason = "rental expired"; return false; }
-            if (LicenceCheck != null && !LicenceCheck(ctx, vehicle, task.RequiredLicense)) { reason = "operator lacks licence " + task.RequiredLicense; return false; }
+            if (!assumeStaffed && LicenceCheck != null && !LicenceCheck(ctx, vehicle, task.RequiredLicense)) { reason = "operator lacks licence " + task.RequiredLicense; return false; }
             if (task.AssignedVehicleId >= 0 && task.AssignedVehicleId != vehicle.Id) { reason = "already assigned"; return false; }
             return true;
         }
@@ -404,13 +441,17 @@ namespace AlpineSim.Core.Tasks
             ctx.Sim.Log("Task done: " + task.Title + ".");
         }
 
-        public void Block(SimContext ctx, int taskId, string reason)
+        /// <summary>Blocks the task; byVehicleId names the machine that gave it back, which is then not offered it again for tasks.blockRetrySameMachineHours.</summary>
+        public void Block(SimContext ctx, int taskId, string reason, int byVehicleId = -1)
         {
             var task = Get(ctx, taskId);
             if (task == null || !task.IsActive) return;
             task.Status = TaskStatus.Blocked;
             task.BlockReason = reason;
             task.BlockedTick = ctx.Time.Tick;
+            // only a machine handing the job in writes the hold: a weather hold or a broken machine blocking the same
+            // task must not erase the record of who could not do it, nor restart its clock
+            if (byVehicleId >= 0) { task.BlockedByVehicleId = byVehicleId; task.BlockedByTick = ctx.Time.Tick; }
             ctx.Events.Publish(new TaskBlockedEvent { TaskId = taskId, Reason = reason });
         }
 

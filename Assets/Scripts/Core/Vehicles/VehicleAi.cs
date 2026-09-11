@@ -173,11 +173,13 @@ namespace AlpineSim.Core.Vehicles
                     if (ai.Mode == AiMode.ReturnToBase || ai.Mode == AiMode.Refuel)
                     {
                         // stuck on the way home: park here with the engine off rather than loop between refusing and returning,
-                        // and hand any job back so the board does not carry a task nobody is working
-                        ai.Mode = AiMode.Idle; ai.Phase = "stuck on the way back"; ai.ParkedStuckTick = ctx.Time.Tick;
+                        // and hand any job back so the board does not carry a task nobody is working. The job goes back
+                        // first: handing it back resets the AI state, and the parked-stuck mark must outlive that
                         ctx.Sim.Log(v.Name + " is stuck on the way back (" + MathF.Round(MathF.Abs(g)) + " deg pitch at " + MathF.Round(v.Pos.X) + "," + MathF.Round(v.Pos.Y) + ") and parked where it is.", LogLevel.Warning);
                         var vsys = ctx.System<VehicleSystem>();
                         vsys.ReleaseJob(ctx, v);
+                        ai = v.Ai;
+                        ai.Mode = AiMode.Idle; ai.Phase = "stuck on the way back"; ai.ParkedStuckTick = ctx.Time.Tick;
                         vsys.OnAiIdle(ctx, v);
                         return false;
                     }
@@ -308,16 +310,28 @@ namespace AlpineSim.Core.Vehicles
                 // transfer back to the top by track between lanes. Switch to that for the rest of the run if the
                 // machine may descend it and a track route to the top exists under the operator's rating; a run
                 // steeper than the machine's own rating stays for the winch cat.
-                if (ai.LaneAbandoned && ai.Uphill && !ai.TopDown && CanGroomTopDown(ctx, vs, v, def, piste, maxSlopeDeg)) ai.TopDown = true;
+                if (ai.LaneAbandoned && ai.Uphill && !ai.TopDown && CanGroomTopDown(ctx, vs, v, def, piste, maxSlopeDeg, ai.Lane, ai.LaneCount)) ai.TopDown = true;
                 if (ai.TopDown)
                 {
-                    ai.Uphill = false;
-                    ai.Loaded = false;
-                    ai.LaneAbandoned = false;
-                    ai.Route = vs.FindRoute(ctx, v, LanePoint(piste, ai.Lane, ai.LaneCount, 0), maxSlopeDeg - ctx.Tuning.F("vehicles.aiTransferGradeMarginDeg"));
-                    ai.RouteIndex = 0;
-                    ai.Phase = "to the top of " + piste.Name + " by track for lane " + (ai.Lane + 1) + "/" + ai.LaneCount;
-                    return;
+                    // every lane's transfer is planned and checked on its own: the snow along the track changes
+                    // through the night, and the lane tops sit up to half the run's width apart. A lane the cat can
+                    // no longer reach by track ends the top-down pattern rather than sending it at a pitch it cannot
+                    // hold, and the rest of the run is groomed the ordinary way from below.
+                    var top = LanePoint(piste, ai.Lane, ai.LaneCount, 0);
+                    float transferLimit = maxSlopeDeg - ctx.Tuning.F("vehicles.aiTransferGradeMarginDeg");
+                    var route = vs.FindRoute(ctx, v, top, transferLimit);
+                    if (route != null && vs.RouteMaxClimbDeg(ctx, route) <= transferLimit + ctx.Tuning.F("vehicles.aiSlopeMarginDeg")
+                        && vs.RouteWithinTraction(ctx, v, route, out _))
+                    {
+                        ai.Uphill = false;
+                        ai.Loaded = false;
+                        ai.LaneAbandoned = false;
+                        ai.Route = route;
+                        ai.RouteIndex = 0;
+                        ai.Phase = "to the top of " + piste.Name + " by track for lane " + (ai.Lane + 1) + "/" + ai.LaneCount;
+                        return;
+                    }
+                    ai.TopDown = false;
                 }
                 ai.Uphill = !ai.Uphill;
                 BuildLaneRoute(ctx, v, piste, ai.LaneAbandoned);
@@ -325,16 +339,19 @@ namespace AlpineSim.Core.Vehicles
             }
         }
 
-        private static bool CanGroomTopDown(SimContext ctx, VehicleSystem vs, VehicleState v, VehicleDef def, PisteState piste, float maxSlopeDeg)
+        private static bool CanGroomTopDown(SimContext ctx, VehicleSystem vs, VehicleState v, VehicleDef def, PisteState piste, float maxSlopeDeg, int lane, int lanes)
         {
             float steepest = 0f;
             foreach (var sid in piste.SegmentIds) { var sg = ctx.World.Pistes.Segment(sid); if (sg != null) steepest = MathF.Max(steepest, MathF.Abs(sg.GradeDeg)); }
             if (steepest > def.MaxGradeDeg) return false;
             // the transfer is planned well under the operator's rating: off the groomed runs the snow is untracked,
-            // and a pitch the cat climbs on corduroy stalls it in fresh snow
+            // and a pitch the cat climbs on corduroy stalls it in fresh snow. The probe goes to the top of the lane
+            // the cat is about to transfer to, which is the route it will actually drive.
             float limit = maxSlopeDeg - ctx.Tuning.F("vehicles.aiTransferGradeMarginDeg");
-            var route = vs.FindRoute(ctx, v, LanePoint(piste, 0, 1, 0), limit);
-            return route != null && route.Count >= 2 && vs.RouteMaxClimbDeg(ctx, route) <= limit + ctx.Tuning.F("vehicles.aiSlopeMarginDeg");
+            var route = vs.FindRoute(ctx, v, LanePoint(piste, lane, lanes, 0), limit);
+            // and under what this machine can hold in the snow along it: a worn light cat that climbs the track on
+            // corduroy stalls on the same track under thirty centimetres of fresh snow
+            return route != null && route.Count >= 2 && vs.RouteMaxClimbDeg(ctx, route) <= limit + ctx.Tuning.F("vehicles.aiSlopeMarginDeg") && vs.RouteWithinTraction(ctx, v, route, out _);
         }
 
         /// <summary>A lane's waypoint at polyline vertex index (0 = the top of the run).</summary>

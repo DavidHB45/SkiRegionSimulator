@@ -218,9 +218,19 @@ namespace AlpineSim.Core.Fleet
         /// <summary>Puts a free, rested operator who holds the machine's licence (and the job's) on the machine; false when nobody qualifies.</summary>
         public bool StaffMachine(SimContext ctx, VehicleState v, OperatorLicense jobLicence)
         {
+            var op = PickOperatorFor(ctx, v, jobLicence);
+            if (op == null) return false;
+            return AssignOperator(ctx, op.Id, v.Id, out _); // AssignOperator takes them off whatever they were in
+        }
+
+        /// <summary>True when StaffMachine would find somebody, without moving anyone (the dispatcher asks this for every candidate and staffs only the one it picks).</summary>
+        public bool CanStaffMachine(SimContext ctx, VehicleState v, OperatorLicense jobLicence) => PickOperatorFor(ctx, v, jobLicence) != null;
+
+        private OperatorState PickOperatorFor(SimContext ctx, VehicleState v, OperatorLicense jobLicence)
+        {
             var f = ctx.World.Fleet;
             var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
-            if (def == null) return false;
+            if (def == null) return null;
             // the most competent qualified operator, but a specialist is kept back for the machine that needs the
             // licence: putting the only truck driver in the pickup left the service truck unstaffable all winter
             OperatorState best = null; float bestScore = float.MinValue;
@@ -235,25 +245,20 @@ namespace AlpineSim.Core.Fleet
                 float score = op.Competence - 0.5f * spare;
                 if (best == null || score > bestScore) { best = op; bestScore = score; }
             }
-            if (best == null)
+            if (best != null) return best;
+            // nobody free: a qualified driver sitting in a parked machine with no job comes over (the only truck
+            // driver had been left in the pickup while a stranded cat waited for the service truck all month)
+            foreach (var op in f.Operators)
             {
-                // nobody free: a qualified driver sitting in a parked machine with no job comes over (the only truck
-                // driver had been left in the pickup while a stranded cat waited for the service truck all month)
-                foreach (var op in f.Operators)
-                {
-                    if (op.IsPlayer || op.AssignedVehicleId < 0 || op.TrainingLicensePending >= 0) continue;
-                    if (op.HoursToday >= ctx.Data.Operators.ShiftHours) continue;
-                    if (!OperatorLicensedFor(ctx, op, def)) continue;
-                    if (jobLicence != OperatorLicense.Basic && !op.Has(jobLicence)) continue;
-                    var other = ctx.World.Vehicles.Get(op.AssignedVehicleId);
-                    if (other == null || other.PlayerControlled || other.TaskId >= 0 || other.Ai.Mode != AiMode.Idle) continue;
-                    UnassignOperator(ctx, op.Id);
-                    best = op;
-                    break;
-                }
+                if (op.IsPlayer || op.AssignedVehicleId < 0 || op.TrainingLicensePending >= 0) continue;
+                if (op.HoursToday >= ctx.Data.Operators.ShiftHours) continue;
+                if (!OperatorLicensedFor(ctx, op, def)) continue;
+                if (jobLicence != OperatorLicense.Basic && !op.Has(jobLicence)) continue;
+                var other = ctx.World.Vehicles.Get(op.AssignedVehicleId);
+                if (other == null || other.Id == v.Id || other.PlayerControlled || other.TaskId >= 0 || other.Ai.Mode != AiMode.Idle) continue;
+                return op;
             }
-            if (best == null) return false;
-            return AssignOperator(ctx, best.Id, v.Id, out _);
+            return null;
         }
 
         public void UnassignOperator(SimContext ctx, int operatorId)

@@ -34,6 +34,10 @@ namespace AlpineSim.Core.Tasks
         public string BlockReason = "";
         /// <summary>Tick the task was last blocked at; auto-generated jobs reopen after tasks.blockRetryMinutes.</summary>
         public long BlockedTick = -1;
+        /// <summary>Machine that handed the task back (-1 when nobody did): it is not offered the same job again within tasks.blockRetrySameMachineHours.</summary>
+        public int BlockedByVehicleId = -1;
+        /// <summary>Tick that machine handed it back. Its own field, not BlockedTick, so a later block for another reason (weather, a broken machine) does not move or erase the hold.</summary>
+        public long BlockedByTick = -1;
         public long CreatedTick;
         public long DeadlineTick = -1;
         public long CompletedTick = -1;

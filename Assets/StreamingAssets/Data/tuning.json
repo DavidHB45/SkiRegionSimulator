@@ -1874,6 +1874,20 @@
       "unit": "min",
       "comment": "How long an auto-generated job stays blocked after a machine gave it back before the foreman offers it again."
     },
+    "blockRetrySameMachineHours": {
+      "value": 8,
+      "min": 1,
+      "max": 48,
+      "unit": "h",
+      "comment": "A machine that gave a job back (stalled on a pitch, refused a slope) is not offered the same job again for this long: it would drive to the same spot and stall there again. Another machine may take it at once; by the next shift the snow has settled or the job has been reposted. Refuel, repair and rescue calls are exempt: a stranded machine does not wait a shift."
+    },
+    "dispatchWearPenaltyM": {
+      "value": 300,
+      "min": 0,
+      "max": 2000,
+      "unit": "m",
+      "comment": "Distance handicap per unit of a machine's worst subsystem wear when the foreman picks the nearest machine for a job: the sound machine goes out first, a worn one only when it is much nearer (grip and power both fall with wear)."
+    },
     "autoDispatch": {
       "value": 1,
       "min": 0,

@@ -6,9 +6,10 @@ namespace AlpineSim.Core.Save
     /// v2: rng stored as object {S0, S1}; Log list; ScenarioId required.
     /// v3: LiftState.PlayerClosed, EconomyState.LastCloseTick.
     /// v4: VehicleAiState.LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer, JobMode, LaneAbandoned, ParkedStuckTick, TopDown, ServiceCall; WorkTask.BlockedTick; SurfaceZone.SnowScore; FuelDepotState.AutoOrder.
+    /// v5: WorkTask.BlockedByVehicleId and BlockedByTick (the machine that handed a job back and when, so the foreman does not offer it straight back).
     /// </summary>
     public static class SaveSchema
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
     }
 }

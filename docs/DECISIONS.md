@@ -282,3 +282,45 @@ whose deadline passes is unassigned before it is cancelled, and when nobody free
 licence a service call needs, the foreman takes a qualified driver out of a machine that is
 parked with no job. The Act IV trap then shows its real mechanism: both resorts groom the same
 runs with the same two cats, and the one with the detachable moves more skiers onto them.
+
+## D-037 The foreman staffs only the machine he picks, plans transfers on grip, and does not re-offer a job to the machine that gave it back
+Three things found by tracing the Act IV probe hour by hour. (1) The dispatcher staffed every
+candidate machine before checking whether it could do the job, so with one cat driver on the
+roster the scan moved her from cat to cat and the machine finally picked had lost her again by
+the time it was assigned: three grooming jobs sat open for six nights with a licensed driver
+parked fifty metres from the depot. The scan now checks capability first, asks the fleet whether
+a machine *could* be staffed, and staffs only the one it picks. (2) A job a machine gave back
+(stalled on a pitch, refused a slope) was offered to the same machine again ninety minutes later,
+eleven times a night, and the old cat burned a quarter of a tank driving to the same pitch. The
+task remembers who gave it back and that machine is not offered it again within
+`tasks.blockRetrySameMachineHours`; another machine may take it at once. (3) A transfer to the
+top of a run by track was planned against the operator's rating, but a worn light cat that climbs
+an eighteen-degree track on corduroy stalls on the same track under thirty centimetres of fresh
+snow. `VehicleSystem.ClimbLimitDeg` derives the grade a machine can hold from the driving model
+(traction by surface density, track wear, sinkage, rolling resistance) and transfers and the route
+home after a give-up are planned under it, using the machine's LOADED ground pressure (blade,
+tiller and a full tank all make it sink), so the estimate matches the model that will actually
+drive it. With two cats at the base the sound one now goes out first
+(`tasks.dispatchWearPenaltyM`), which is what a foreman does with a worn machine.
+
+A traction-limited search must be checked before it is used. `RouteGraph.Find` answers a query it
+cannot satisfy with a straight line from A to B, and that line honours no grade limit at all; slope
+refusal is switched off on the way home, so an unchecked answer would have driven a cat that stalled
+in fresh snow straight at the nearest headwall until it parked itself stuck. `FindRouteWithinTraction`
+therefore validates what comes back and falls back to the rated route the machine would have driven
+before. Each lane's transfer to the top is planned and checked on its own for the same reason: the
+lane tops sit up to half the run's width apart and the snow along the track changes through the
+night. A lane the cat can no longer reach by track ends the top-down pattern instead of sending it
+at a pitch it cannot hold.
+
+Refuel, repair and rescue calls are exempt from the same-machine hold: a job that exists because
+a machine is already stranded goes to anyone who can reach it, including the truck that turned
+back once, because the alternative is a cat on the hill all night.
+
+`WorkTask` gains a public field, so the save schema goes to v5 with a stamp-only migration: a v4
+save has no `BlockedByVehicleId` and defaults to -1, which reads as "no machine handed this job
+in" and is exactly the pre-v5 behaviour.
+
+Measured on the Act IV probe, thirty simulated days, seed 91: before, the second cat never turned
+a track all month (its driver was shuffled away during every scan) and the old cat gave three
+grooming jobs back eleven times a night; after, both cats work every night and the give-ups stop.
