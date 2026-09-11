@@ -152,7 +152,7 @@ class _Artic:
         front_axle = cab_z1 + self.wr + gap
         rear_axle = -(self.wr + gap)
         tail = rear_axle - self._rear_reach(gap)
-        nose = front_axle + self.wr * 0.85
+        nose = front_axle + self.wr * 1.0
 
         # BodyL is the length the machine is allowed to be. When the cab and the front
         # tyres will not fit end to end the axle slides back under the cab, which is
@@ -162,7 +162,7 @@ class _Artic:
         if excess > 0.0:
             pull = min(excess, max(0.0, front_axle - (cab_z0 + self.wr * 0.35)))
             front_axle -= pull
-            nose = front_axle + self.wr * 0.85
+            nose = front_axle + self.wr * 1.0
             over = (nose - tail) - self.L
             if over > 0.0:
                 nose -= min(over, self.wr * 0.45)
@@ -480,7 +480,7 @@ class _Artic:
         # Up the outside of the cab's front pillar, clear of the bonnet it would
         # otherwise run inside, and far enough back to miss the front tyre.
         x = max(self.hood_x + radius * 1.15, self.cw * 0.5 + radius * 1.1)
-        z = self.cab_z - self.cl * 0.20
+        z = self.cab_z + self.cl * (-0.20 if self.straddle else 0.42)
         base = self.hood_y0 + 0.05
         top = self.cab_y + self.ch * 0.96
         self.m.cylinder((x, (base + top) * 0.5, z), radius, top - base, axis=1,
@@ -529,9 +529,14 @@ class _Artic:
                        mat=BODY, parent="cab")
             self.seams.append(((side * cw * 0.46, cy + 0.04, zr + 0.09),
                                (side * cw * 0.46, cy + 0.04, zf - 0.09), 0, "cab"))
-        roof = [self._ring(cw * 0.5 * top_scale, y1 - 0.03, y1 + 0.11,
-                           zr + rake * 0.35, cw * 0.10, 0.93),
-                self._ring(cw * 0.5 * top_scale, y1 - 0.03, y1 + 0.11, zf - rake,
+        # A raked cab has a roof much shorter than its floor, and the work lights have
+        # to land on the roof it actually has rather than where the cab centre is.
+        self.roof_z0 = zr + rake * 0.35
+        self.roof_z1 = zf - rake
+        self.roof_y = y1 + 0.11
+        roof = [self._ring(cw * 0.5 * top_scale, y1 - 0.03, self.roof_y,
+                           self.roof_z0, cw * 0.10, 0.93),
+                self._ring(cw * 0.5 * top_scale, y1 - 0.03, self.roof_y, self.roof_z1,
                            cw * 0.10, 0.93)]
         self.m.loft(roof, mat=BODY, parent="cab")
         self._cab_glass(zr, zf, cy, cw, ch, rake, top_scale)
@@ -641,10 +646,10 @@ class _Artic:
                                (side * width * 0.46, self.deck_y + 0.09, z1 - 0.1),
                                1, "pivot_center"))
         # A locker on the deck: ballast, chains and the spreader's controls live there.
-        box_l = _clamp(length * 0.42, 0.3, 0.9)
-        self.m.box((0.0, self.deck_y + 0.08 + self.rail_h * 0.6,
-                    z1 - box_l * 0.6),
-                   (width * 0.78, self.rail_h * 1.2, box_l), mat=BODY,
+        box_l = _clamp(length * 0.45, 0.3, 1.1)
+        self.m.box((0.0, self.deck_y + 0.08 + self.rail_h * 0.75,
+                    _clamp(self.rear_z, z0 + box_l * 0.5, z1 - box_l * 0.5)),
+                   (width * 0.82, self.rail_h * 1.5, box_l), mat=BODY,
                    parent="pivot_center")
         self._three_point()
 
@@ -764,13 +769,13 @@ class _Artic:
             # this outgrows the bonnet and becomes the widest thing on the machine.
             outer = self.wr * 1.12
             inner = self.wr * 1.045
-            span = 0.82 if forward else 0.92
+            start, span = 0.20, (0.56 if forward else 0.64)
             points, steps = [], 7
             for k in range(steps + 1):
-                a = math.pi * (0.09 + span * k / steps)
+                a = math.pi * (start + span * k / steps)
                 points.append((math.sin(a) * outer, math.cos(a) * outer))
             for k in range(steps, -1, -1):
-                a = math.pi * (0.09 + span * k / steps)
+                a = math.pi * (start + span * k / steps)
                 points.append((math.sin(a) * inner, math.cos(a) * inner))
             for side in (-1.0, 1.0):
                 self.m.prism(points, (side * self.hub_x, self.wr, z), self.tw * 1.22,
@@ -792,17 +797,18 @@ class _Artic:
             self.m.socket(tag, point)
             self.m.box(point, (lamp_w, lamp_w * 0.62, 0.07), mat=GLASS, bevel=False)
         count = int(_clamp(round(self.lumens / 6000.0), 2, 8))
-        roof_y = self.cab_y + self.ch + 0.12
+        roof_y = self.roof_y + 0.04
+        inset = min(0.12, (self.roof_z1 - self.roof_z0) * 0.25)
         for k in range(count):
             x = ((k % 2) * 2.0 - 1.0) * self.cw * (0.17 + 0.14 * (k // 2))
-            z = self.cab_z + self.cl * (0.40 if k < 2 else -0.38)
+            z = self.roof_z1 - inset if k < 2 else self.roof_z0 + inset
             self.m.box((x, roof_y, z), (0.17, 0.13, 0.10), mat=BODY, parent="cab")
             self.m.box((x, roof_y, z + (0.06 if k < 2 else -0.06)),
                        (0.14, 0.10, 0.03), mat=GLASS, parent="cab", bevel=False)
             if k < 2:
                 self.m.socket("light_work_" + ("L" if k % 2 == 0 else "R"),
                               (x, roof_y, z + 0.09))
-        self.m.cylinder((self.cw * 0.30, roof_y + 0.10, self.cab_z - self.cl * 0.42),
+        self.m.cylinder((self.cw * 0.30, roof_y + 0.10, self.roof_z0 + inset * 1.6),
                         0.08, 0.13, axis=1, segments=8, mat=GLASS, parent="cab")
         self._mirrors()
 
@@ -863,7 +869,7 @@ class _Artic:
     def _steps(self, gap, ceiling):
         if self.cab_y < 0.5:
             return
-        z = self.cab_z - self.cl * 0.20
+        z = self.cab_z + self.cl * (-0.20 if self.straddle else 0.42)
         count = int(_clamp(round(self.cab_y / 0.35), 1, 4))
         for side in (-1.0, 1.0):
             x = side * (self.cw * 0.5 + 0.05)

@@ -19,6 +19,7 @@ REQUIRED_NODES = {
     "lift_terminal": ("bullwheel",),
     "lift_tower": (),
     "lift_carrier": (),
+    "attachment": (),          # an implement's transforms depend on its Kind, not the family
 }
 
 
@@ -93,9 +94,25 @@ def _check_scale(name, record):
 
 
 def _check_pivot(name, record):
-    """The pivot sits at ground contact centre: y_min ~= 0 and x centred."""
+    """The pivot sits at ground contact centre: y_min ~= 0 and x centred.
+
+    An attachment is the exception: its origin is the mount point it bolts to, not a
+    contact patch, so a blade's cutting edge legitimately hangs below y = 0 and a light
+    tower's mast legitimately stands well above it.
+    """
     lo = record.get("boundsMin") or [0, 0, 0]
     hi = record.get("boundsMax") or [0, 0, 0]
+    if record.get("kind") == "attachment":
+        # The ground rule does not apply, but something still has to: an implement whose
+        # origin sits away from its own geometry would bolt to the socket and then float
+        # alongside the machine. Check the mount point is on the implement instead.
+        for axis, label in ((0, "X"), (1, "Y"), (2, "Z")):
+            slack = max(0.5, hi[axis] - lo[axis])
+            if lo[axis] - slack > 0.0 or hi[axis] + slack < 0.0:
+                _fail(name, "mount point is outside the implement in %s (it spans %.2f to "
+                            "%.2f m); the origin must sit where it bolts on"
+                      % (label, lo[axis], hi[axis]))
+        return
     if abs(lo[1]) > 0.25:
         _fail(name, "pivot is %.2f m off the ground; it must sit at the contact patch"
               % lo[1])

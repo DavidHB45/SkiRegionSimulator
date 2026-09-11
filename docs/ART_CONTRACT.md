@@ -21,6 +21,7 @@ If you change a name here, change it in both places in the same commit.
 | Export | FBX, `axis_forward='-Z'`, `axis_up='Y'`, `global_scale=1`, `use_file_scale` on |
 | Result | the FBX holds **literal Unity coordinates**. Nothing is rotated or rescaled on import. |
 | Root pivot | ground contact centre: X centred on the machine's centreline, Y at the contact patch (`y_min ≈ 0`), Z at the chassis centre |
+| Implement pivot | an attachment is the exception: its origin is its **mount point**, because it is parented to a machine's `mount_<Position>` socket, so it hangs below `y = 0`. The validator checks instead that the mount point lies on the implement. |
 | Root rotation | identity. A machine's rest pose faces +Z. |
 
 `tools/assetgen/selftest.py` exports a landmark model, re-reads the FBX with Blender's
@@ -227,7 +228,8 @@ For lifts the override may be a folder; the registry looks for `tower`, `termina
 
 - LOD0 over its triangle ceiling, or an LOD heavier than the one above it
 - a model that is not in metres (under 5 cm or over 400 m across)
-- a pivot more than 25 cm off the ground
+- a pivot more than 25 cm off the ground (machines and props), or a mount point that
+  does not lie on the implement (attachments)
 - non-manifold edges or zero-area faces
 - a convex collider over 250 polygons
 - a missing required articulation transform
