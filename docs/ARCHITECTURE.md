@@ -53,7 +53,7 @@ the debug HUD.
 ## Save format
 
 ```
-{ "schemaVersion": 4, "gameVersion": "0.1.0", "savedAtTick": 1234, "world": { ...WorldState... } }
+{ "schemaVersion": 5, "gameVersion": "0.1.0", "savedAtTick": 1234, "world": { ...WorldState... } }
 ```
 
 Saves live in `Application.persistentDataPath/saves/<slot>.arsave.json`. Loading parses the
