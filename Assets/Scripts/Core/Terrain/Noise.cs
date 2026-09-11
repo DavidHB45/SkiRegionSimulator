@@ -2,7 +2,7 @@ using System;
 
 namespace AlpineSim.Core.Terrain
 {
-    /// <summary>Deterministic hash-based value noise with fBm. No System.Random, no UnityEngine.</summary>
+    /// <summary>Deterministic hash-based value noise with fBm. No System.Random, no engine calls.</summary>
     public static class Noise
     {
         private static uint Hash(int x, int y, uint seed)

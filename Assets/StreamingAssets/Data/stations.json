@@ -1,0 +1,210 @@
+{
+  "Comment": "Stationary support infrastructure: workshop tiers, fuel depot, parts, garage, wash bay, reservoir, pump and compressor stations, hydrants, utility prices. All figures 2020s European resort practice.",
+  "WorkshopTiers": [
+    {
+      "Tier": 1,
+      "DisplayName": "Lean-to shop",
+      "Bays": 1,
+      "UpgradeCost": 0,
+      "MonthlyCost": 1800,
+      "RepairSpeed": 0.8,
+      "PmSpeed": 0.9,
+      "CanRepair": [
+        "tracksOrTires",
+        "attachment"
+      ],
+      "CanRebuild": false,
+      "SendOutDaysMultiplier": 1.0,
+      "Comment": "One heated bay, hand tools, a chain hoist. Filters, track pads and blade edges; everything else goes to the dealer."
+    },
+    {
+      "Tier": 2,
+      "DisplayName": "Resort workshop",
+      "Bays": 2,
+      "UpgradeCost": 180000,
+      "MonthlyCost": 4200,
+      "RepairSpeed": 1.0,
+      "PmSpeed": 1.0,
+      "CanRepair": [
+        "tracksOrTires",
+        "attachment",
+        "hydraulics"
+      ],
+      "CanRebuild": false,
+      "SendOutDaysMultiplier": 0.9,
+      "Comment": "Two bays, a 5 t hoist, hydraulic hose crimper and a parts room: hydraulic pumps and cylinders in-house."
+    },
+    {
+      "Tier": 3,
+      "DisplayName": "Full service shop",
+      "Bays": 3,
+      "UpgradeCost": 420000,
+      "MonthlyCost": 7800,
+      "RepairSpeed": 1.25,
+      "PmSpeed": 1.2,
+      "CanRepair": [
+        "tracksOrTires",
+        "attachment",
+        "hydraulics",
+        "engine",
+        "drivetrain"
+      ],
+      "CanRebuild": false,
+      "SendOutDaysMultiplier": 0.75,
+      "Comment": "Three bays, engine crane, diagnostic laptop licences for every make: engine and drivetrain repairs without the dealer truck."
+    },
+    {
+      "Tier": 4,
+      "DisplayName": "Rebuild centre",
+      "Bays": 5,
+      "UpgradeCost": 900000,
+      "MonthlyCost": 13500,
+      "RepairSpeed": 1.5,
+      "PmSpeed": 1.4,
+      "CanRepair": [
+        "tracksOrTires",
+        "attachment",
+        "hydraulics",
+        "engine",
+        "drivetrain"
+      ],
+      "CanRebuild": true,
+      "SendOutDaysMultiplier": 0.6,
+      "Comment": "Five bays, wash-down pit, machining and a dyno: mid-life rebuilds in-house, the fleet keeps its resale value."
+    }
+  ],
+  "FuelDepot": {
+    "DieselCapacityL": 20000,
+    "GasolineCapacityL": 2000,
+    "UpgradeCostPer10000L": 32000,
+    "DeliveryLeadHours": 24,
+    "DeliveryMinL": 5000,
+    "BasePricePerL": 1.28,
+    "PriceVolatility": 0.12,
+    "ContractDiscountPct": 6,
+    "ContractVolumeL": 40000,
+    "SpotSurchargePct": 15,
+    "Comment": "Double-walled above-ground diesel tank with a dispenser; a tanker delivery takes a day to arrange. Contract pricing indexes the spot price minus 6 %; a spot order in a cold snap pays 15 % over."
+  },
+  "PartsKinds": [
+    {
+      "Id": "filters",
+      "DisplayName": "Service kit (filters, fluids)",
+      "UnitCost": 850,
+      "LeadDays": 2,
+      "Comment": "Oil, fuel, hydraulic and air filters plus fluids for one preventive service."
+    },
+    {
+      "Id": "engineKit",
+      "DisplayName": "Engine repair kit",
+      "UnitCost": 9800,
+      "LeadDays": 5,
+      "Comment": "Injectors, turbo, gaskets: the parts behind most engine failures."
+    },
+    {
+      "Id": "drivetrainKit",
+      "DisplayName": "Drivetrain kit",
+      "UnitCost": 7400,
+      "LeadDays": 5,
+      "Comment": "Final drive seals, planetary set, sprocket."
+    },
+    {
+      "Id": "hydraulicPump",
+      "DisplayName": "Hydraulic pump",
+      "UnitCost": 6200,
+      "LeadDays": 4,
+      "Comment": "Variable-displacement pump or motor for the implement or track circuit."
+    },
+    {
+      "Id": "trackPads",
+      "DisplayName": "Track pads and belts",
+      "UnitCost": 4100,
+      "LeadDays": 3,
+      "Comment": "A set of rubber belts, grousers and guide wheels."
+    },
+    {
+      "Id": "tracksOrTires",
+      "DisplayName": "Tyres / track set",
+      "UnitCost": 5200,
+      "LeadDays": 3,
+      "Comment": "Four wheeled-machine tyres or a full snowmobile track."
+    },
+    {
+      "Id": "battery",
+      "DisplayName": "Battery and electrics",
+      "UnitCost": 1300,
+      "LeadDays": 2,
+      "Comment": "Starter battery, alternator, cold-weather harness parts."
+    }
+  ],
+  "Garage": {
+    "BaysPerUpgrade": 2,
+    "CostPerBay": 28000,
+    "UnshelteredWearMultiplier": 1.3,
+    "UnshelteredColdStartPenalty": 1.6,
+    "Comment": "A heated bay per machine keeps hydraulics warm and the cold-start lottery away; a cat left outside at -20 C wears 30 % faster."
+  },
+  "WashBay": {
+    "Cost": 48000,
+    "WearReductionPct": 8,
+    "Comment": "Heated wash bay with an oil separator: salt and grit off the undercarriage every night cuts wear about 8 %."
+  },
+  "Reservoir": {
+    "CapacityM3": 60000,
+    "InitialM3": 45000,
+    "InflowM3PerHour": 8,
+    "ExpansionCostPer10000M3": 420000,
+    "Comment": "Lined storage pond fed by a stream right: 60,000 m3 makes about 130,000 m3 of snow; the creek refills it at 8 m3/h in winter."
+  },
+  "PumpStations": [
+    {
+      "Id": "pump_main_60lps",
+      "DisplayName": "Main pump house 60 L/s",
+      "FlowLps": 60,
+      "HeadM": 300,
+      "PowerKw": 260,
+      "Cost": 360000,
+      "Comment": "Two 130 kW multistage pumps: 60 L/s at 300 m head, enough for eight fan guns."
+    },
+    {
+      "Id": "pump_booster_120lps",
+      "DisplayName": "Booster station 120 L/s",
+      "FlowLps": 120,
+      "HeadM": 420,
+      "PowerKw": 640,
+      "Cost": 720000,
+      "Comment": "Mid-mountain booster: doubles the flow and pushes water to the shoulder."
+    },
+    {
+      "Id": "pump_highhead_200lps",
+      "DisplayName": "High-head station 200 L/s",
+      "FlowLps": 200,
+      "HeadM": 600,
+      "PowerKw": 1450,
+      "Cost": 1550000,
+      "Comment": "Destination-resort plant: 200 L/s to the ridge, feeds forty guns."
+    }
+  ],
+  "CompressorStations": [
+    {
+      "Id": "compressor_40",
+      "DisplayName": "Compressor house 40 m3/min",
+      "AirM3PerMin": 40,
+      "PowerKw": 270,
+      "Cost": 230000,
+      "Comment": "Two screw compressors for a bank of lance guns."
+    },
+    {
+      "Id": "compressor_90",
+      "DisplayName": "Compressor house 90 m3/min",
+      "AirM3PerMin": 90,
+      "PowerKw": 590,
+      "Cost": 470000,
+      "Comment": "Air for a full lance-gun run."
+    }
+  ],
+  "HydrantInstallCost": 12500,
+  "HydrantSpacingM": 80,
+  "ElectricityPricePerKwh": 0.14,
+  "WaterPricePerM3": 0.6
+}

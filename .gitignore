@@ -49,3 +49,7 @@ crashlytics-build.properties
 /sim/TestResults/
 .DS_Store
 Thumbs.db
+
+# agent worktrees
+.claude/worktrees/
+!/sim/UnityStubs/UnityStubs.csproj

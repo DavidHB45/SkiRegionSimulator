@@ -25,6 +25,18 @@ namespace AlpineSim.Core.Data
         public GorgeParams Gorge = new GorgeParams();
         public List<FlatArea> FlatAreas = new List<FlatArea>();
         public float NoBuildSlopeDeg = 42f;
+        /// <summary>Steepest bank a graded corridor leaves at its edge, whatever the depth of cut or fill.</summary>
+        public float CorridorBankDeg = 26f;
+        /// <summary>Deepest cut or fill a run's grading may make; beyond that the run follows the mountain.</summary>
+        public float PisteEarthworkM = 5f;
+        /// <summary>Deepest cut or fill for a cat track.</summary>
+        public float TrackEarthworkM = 8f;
+        /// <summary>Deepest cut or fill for an access road.</summary>
+        public float RoadEarthworkM = 12f;
+        /// <summary>The base pad keeps this fraction of the ground's mean gradient instead of being dead level.</summary>
+        public float BaseAreaTiltFrac = 0.35f;
+        /// <summary>Bank angle around parking lots: cars and pickups have to be able to drive off the edge of a lot.</summary>
+        public float LotBankDeg = 12f;
     }
 
     [Serializable]
@@ -67,9 +79,34 @@ namespace AlpineSim.Core.Data
     /// starting fleet, hydrants and so on; unknown JSON members are ignored so the data file may be
     /// complete before every consumer exists.
     /// </summary>
+    /// <summary>A corridor (or disc) the terrain generator benches so machines and guests get legible surfaces.</summary>
+    public sealed class TerrainCorridor
+    {
+        public Vec2[] Points;
+        public float HalfWidthM;
+        public float BlendM;
+        public bool IsDisc;
+        /// <summary>Cut-and-fill grade limit along the centreline (0 = natural profile).</summary>
+        public float MaxGradeDeg;
+        /// <summary>Vertices that tie into another corridor (run bottoms, the base): grading never moves them.</summary>
+        public bool[] Pinned;
+        /// <summary>Deepest cut or fill grading may make (0 = unbounded): the profile follows the ground within this.</summary>
+        public float MaxEarthworkM;
+    }
+
     [Serializable]
     public sealed partial class ScenarioData
     {
+        /// <summary>Corridors contributed by milestone partials (pistes, roads, lots) in a fixed order.</summary>
+        public List<TerrainCorridor> GetCorridors()
+        {
+            var list = new List<TerrainCorridor>();
+            CollectCorridorsM1(list);
+            return list;
+        }
+
+        partial void CollectCorridorsM1(List<TerrainCorridor> into);
+
         public string Id = "default";
         public string DisplayName = "";
         public string Description = "";

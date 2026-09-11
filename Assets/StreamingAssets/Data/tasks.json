@@ -1,0 +1,397 @@
+{
+  "Comment": "What each job kind needs: the roles a machine must have, the licence its operator must hold, the work rate in units per hour, how close to the site counts as working, and the weather it cannot be done in.",
+  "Kinds": [
+    {
+      "Kind": "Groom",
+      "DisplayName": "Groom run",
+      "RequiredRoles": [
+        "Groom"
+      ],
+      "RequiredLicense": "Groomer",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.0,
+      "Comment": "One unit = the whole run tilled; completes by coverage."
+    },
+    {
+      "Kind": "PlowRoad",
+      "DisplayName": "Plow road",
+      "RequiredRoles": [
+        "Plow"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.5,
+      "Comment": "Clear the access road; completes when the zone is clear."
+    },
+    {
+      "Kind": "ClearLot",
+      "DisplayName": "Clear parking lot",
+      "RequiredRoles": [
+        "Plow"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.2,
+      "Comment": "Push the lot clear before the guests arrive."
+    },
+    {
+      "Kind": "Spread",
+      "DisplayName": "Spread salt / brine",
+      "RequiredRoles": [
+        "Spread"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.3,
+      "Comment": "Salt or brine a road or lot zone."
+    },
+    {
+      "Kind": "BlowRamp",
+      "DisplayName": "Blow lift ramp",
+      "RequiredRoles": [
+        "Blow"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 100,
+      "PriorityDefault": 1.4,
+      "Comment": "Clear a lift ramp with a blower."
+    },
+    {
+      "Kind": "HaulSnow",
+      "DisplayName": "Haul snow",
+      "RequiredRoles": [
+        "Haul"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 8.0,
+      "SiteRadiusM": 25,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 0.8,
+      "Comment": "Units are cubic metres moved from the load point to the dump."
+    },
+    {
+      "Kind": "HaulMaterial",
+      "DisplayName": "Haul material",
+      "RequiredRoles": [
+        "Haul"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 8.0,
+      "SiteRadiusM": 25,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.0,
+      "Comment": "Aggregate, salt, tower sections: units are tonnes delivered."
+    },
+    {
+      "Kind": "Refuel",
+      "DisplayName": "Field refuel",
+      "RequiredRoles": [
+        "Refuel"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 4.0,
+      "SiteRadiusM": 15,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 3.0,
+      "Comment": "Service truck refuels a stranded machine (about a quarter hour on site)."
+    },
+    {
+      "Kind": "Repair",
+      "DisplayName": "Field repair",
+      "RequiredRoles": [
+        "Service"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 15,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 100,
+      "PriorityDefault": 2.5,
+      "Comment": "Mechanic on site; hours from the failure."
+    },
+    {
+      "Kind": "Rescue",
+      "DisplayName": "Rescue",
+      "RequiredRoles": [
+        "Rescue"
+      ],
+      "RequiredLicense": "Sled",
+      "BaseRatePerHour": 2.0,
+      "SiteRadiusM": 15,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 5.0,
+      "Comment": "Toboggan evacuation."
+    },
+    {
+      "Kind": "Survey",
+      "DisplayName": "Survey line",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 80,
+      "PriorityDefault": 1.0,
+      "Comment": "Walk the line with the surveyor; sets tower sites."
+    },
+    {
+      "Kind": "Clear",
+      "DisplayName": "Clear corridor",
+      "RequiredRoles": [
+        "Construct"
+      ],
+      "RequiredLicense": "Heavy",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 70,
+      "PriorityDefault": 1.0,
+      "Comment": "Mulch and clear the lift corridor."
+    },
+    {
+      "Kind": "Excavate",
+      "DisplayName": "Excavate footing",
+      "RequiredRoles": [
+        "Construct"
+      ],
+      "RequiredLicense": "Heavy",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 20,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 70,
+      "PriorityDefault": 1.0,
+      "Comment": "One footing per unit."
+    },
+    {
+      "Kind": "PourConcrete",
+      "DisplayName": "Pour concrete",
+      "RequiredRoles": [
+        "Haul"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 10.0,
+      "SiteRadiusM": 20,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 60,
+      "PriorityDefault": 1.2,
+      "Comment": "Units are m3 delivered by mixer; pours stop below -8 C and in high wind."
+    },
+    {
+      "Kind": "SetTower",
+      "DisplayName": "Set tower",
+      "RequiredRoles": [
+        "Lift"
+      ],
+      "RequiredLicense": "Crane",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 25,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 45,
+      "PriorityDefault": 1.2,
+      "Comment": "Crane sets one tower per unit; a helicopter mission replaces the crane."
+    },
+    {
+      "Kind": "PlaceTerminal",
+      "DisplayName": "Place terminal",
+      "RequiredRoles": [
+        "Lift"
+      ],
+      "RequiredLicense": "Crane",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 45,
+      "PriorityDefault": 1.2,
+      "Comment": "Drive and return terminals."
+    },
+    {
+      "Kind": "StringRope",
+      "DisplayName": "String haul rope",
+      "RequiredRoles": [
+        "Tow"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 40,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 60,
+      "PriorityDefault": 1.0,
+      "Comment": "Pay out and tension the haul rope along the line."
+    },
+    {
+      "Kind": "PullTrackRopes",
+      "DisplayName": "Pull track ropes",
+      "RequiredRoles": [
+        "Tow"
+      ],
+      "RequiredLicense": "Cdl",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 40,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 60,
+      "PriorityDefault": 1.0,
+      "Comment": "Track ropes for bicable, tricable and reversible systems."
+    },
+    {
+      "Kind": "HangCarriers",
+      "DisplayName": "Hang carriers",
+      "RequiredRoles": [
+        "Load"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 25,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 70,
+      "PriorityDefault": 1.0,
+      "Comment": "Carriers lifted onto the rope at the terminal."
+    },
+    {
+      "Kind": "BuildBarn",
+      "DisplayName": "Build cabin barn",
+      "RequiredRoles": [
+        "Construct"
+      ],
+      "RequiredLicense": "Heavy",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 70,
+      "PriorityDefault": 0.9,
+      "Comment": "Cabin storage building at the drive terminal."
+    },
+    {
+      "Kind": "Commission",
+      "DisplayName": "Commission lift",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 80,
+      "PriorityDefault": 1.0,
+      "Comment": "Drive tests and evacuation drills."
+    },
+    {
+      "Kind": "LoadTest",
+      "DisplayName": "Load test",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 60,
+      "PriorityDefault": 1.0,
+      "Comment": "Water-barrel load test of every carrier."
+    },
+    {
+      "Kind": "Inspect",
+      "DisplayName": "Inspection",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 30,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 80,
+      "PriorityDefault": 1.0,
+      "Comment": "Authority inspection before opening."
+    },
+    {
+      "Kind": "MakeSnow",
+      "DisplayName": "Make snow",
+      "RequiredRoles": [
+        "MakeSnow"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 60,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 60,
+      "PriorityDefault": 1.0,
+      "Comment": "Gun work at a site (used by automated snowmaking plans)."
+    },
+    {
+      "Kind": "RelocateGun",
+      "DisplayName": "Relocate gun",
+      "RequiredRoles": [
+        "Tow"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 20,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 80,
+      "PriorityDefault": 1.0,
+      "Comment": "Tow a mobile gun to a new pad."
+    },
+    {
+      "Kind": "Transport",
+      "DisplayName": "Transport",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 20,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 0.8,
+      "Comment": "Move people or parts between two points."
+    },
+    {
+      "Kind": "GradeRun",
+      "DisplayName": "Grade run",
+      "RequiredRoles": [
+        "Construct"
+      ],
+      "RequiredLicense": "Heavy",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 400,
+      "NeedsDaylight": true,
+      "MaxWindKmh": 70,
+      "PriorityDefault": 1.0,
+      "Comment": "Dozer or grader shapes the run corridor; hours scale with hectares."
+    },
+    {
+      "Kind": "Custom",
+      "DisplayName": "Custom job",
+      "RequiredRoles": [
+        "Transport"
+      ],
+      "RequiredLicense": "Basic",
+      "BaseRatePerHour": 1.0,
+      "SiteRadiusM": 20,
+      "NeedsDaylight": false,
+      "MaxWindKmh": 120,
+      "PriorityDefault": 1.0,
+      "Comment": "Player-defined site work."
+    }
+  ]
+}

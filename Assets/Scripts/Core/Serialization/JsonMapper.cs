@@ -31,6 +31,32 @@ namespace AlpineSim.Core.Serialization
     public static class JsonMapper
     {
         private static readonly Dictionary<Type, FieldInfo[]> FieldCache = new Dictionary<Type, FieldInfo[]>();
+        private static readonly Dictionary<Type, Dictionary<string, FieldInfo>> LookupCache = new Dictionary<Type, Dictionary<string, FieldInfo>>();
+
+        /// <summary>
+        /// Data files use the camelCase keys of the design brief (id, displayName, massKg) while C#
+        /// fields are PascalCase. Reads match exact name first, then case-insensitively.
+        /// </summary>
+        private static bool TryFindMember(JsonNode node, Type t, FieldInfo f, out JsonNode child)
+        {
+            if (node.TryGet(f.Name, out child)) return true;
+            Dictionary<string, FieldInfo> lookup;
+            lock (LookupCache)
+            {
+                if (!LookupCache.TryGetValue(t, out lookup))
+                {
+                    lookup = new Dictionary<string, FieldInfo>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var fi in Fields(t)) lookup[fi.Name] = fi;
+                    LookupCache[t] = lookup;
+                }
+            }
+            foreach (var key in node.Keys)
+            {
+                if (lookup.TryGetValue(key, out var match) && match == f) { child = node[key]; return true; }
+            }
+            child = null;
+            return false;
+        }
 
         public static T FromJson<T>(JsonNode node) => (T)FromJson(node, typeof(T));
         public static T FromJson<T>(string text) => FromJson<T>(JsonParser.Parse(text));
@@ -41,9 +67,10 @@ namespace AlpineSim.Core.Serialization
         public static void Populate(object target, JsonNode node)
         {
             if (target == null || node == null || !node.IsObject) return;
-            foreach (var f in Fields(target.GetType()))
+            var tt = target.GetType();
+            foreach (var f in Fields(tt))
             {
-                if (!node.TryGet(f.Name, out var child)) continue;
+                if (!TryFindMember(node, tt, f, out var child)) continue;
                 f.SetValue(target, FromJson(child, f.FieldType, f.GetValue(target)));
             }
         }
@@ -213,7 +240,7 @@ namespace AlpineSim.Core.Serialization
             object target = existing ?? Activator.CreateInstance(t);
             foreach (var f in Fields(t))
             {
-                if (!node.TryGet(f.Name, out var child)) continue;
+                if (!TryFindMember(node, t, f, out var child)) continue;
                 object cur = f.GetValue(target);
                 f.SetValue(target, FromJson(child, f.FieldType, f.FieldType.IsValueType ? null : cur));
             }

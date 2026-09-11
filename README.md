@@ -32,13 +32,23 @@ Windows and macOS build support modules, Python 3 (for `tools/gen_meta.py`).
 | C | Cycle camera (free / chase / cockpit when in a vehicle) |
 | P or Space | Pause |
 | 1 2 3 4 / Tab | Time compression 1x / 4x / 16x / 60x (cycle) |
-| F1..F4, F6..F8, F10, F11 | Open panels (listed in the HUD legend) |
-| O | Cycle the snow debug overlay (depth / density / roughness / PQI) |
+| F1 Runs & Snow | Every run with PQI, traffic, open/close; post grooming jobs |
+| F2 Job Board | Tasks with status and progress; dispatch machines with operators |
+| F3 Lifts | Status, queue and wait, loads, condition; open/close, singles line |
+| F4 Books | Cash, net worth, act, reputation, ticket price, loans, daily close, ledger |
+| F6 Weather | Base/summit conditions, wet-bulb, next 24 h, five-day outlook |
+| F7 Snowmaking | Reservoir, pumps, air, guns, hydrants, stations; place guns and hydrants |
+| F8 Fleet & Garage | Machines, market, attachments, workshop, parts, fuel depot |
+| F10 Staff | Operators, licences, training, assignment; candidates to hire |
+| F11 Construction | Stake lifts and runs, commit, follow the driven stage chain |
+| O | Cycle the snow debug overlay (depth / density / roughness / PQI / groom age / surface) |
 | F5 / F9 | Quick save / quick load |
-| Enter | Enter or leave the nearest vehicle; confirm placement |
+| Enter | Enter or leave the nearest vehicle |
+| Left / right mouse, Backspace, Enter, scroll | While staking: place point / cancel / undo / finish / aim |
 
 Vehicle controls (in a machine): W/S throttle, A/D steer, Space brake, R/F blade up/down,
-Q/E blade angle, T tiller, X implement (blower / spreader / PTO), L lights, Enter exit.
+Q/E blade angle, Z/X blade tilt, T tiller, V implement (blower / spreader / PTO), G work at a
+site (hold), L lights, I engine, C camera (chase / cockpit), Enter exit.
 
 ## Repository layout
 
@@ -102,6 +112,27 @@ To obtain `UNITY_LICENSE` for a Personal licence:
 
 For Plus/Pro licences you can instead set `UNITY_SERIAL` and pass it to the game-ci actions; see
 <https://game.ci/docs/github/activation>.
+
+## Tests
+
+`dotnet test sim/AlpineSim.Core.Tests.csproj` runs the whole suite (about ten minutes; the two
+thirty-day economy fixtures take most of it). Filter with `--filter FullyQualifiedName~Snow` for a
+subsystem. The suite pins the design pillars, not just the code:
+
+| Fixture | What it proves |
+| --- | --- |
+| `Snow/SnowGridTests` | mass conservation under blade, tiller and skier traffic; compaction curve (corduroy, then ice); PQI never rises under traffic without grooming; hourly PQI publish is cheap; grid survives save/load exactly |
+| `Sim/DeterminismTests` | identical hash after 10,000 ticks; different seeds differ; save/load mid-run stays on trajectory; canonical tick order |
+| `Foundation/*` | JSON round trips, RNG, calendar, clock consumes ticks not dt, v1 → v5 save migration |
+| `Weather/WetBulbTests` | psychrometric wet-bulb against tables, monotonicity, altitude, snowmaking window edges |
+| `Data/FleetDataTests`, `Data/LiftDataTests`, `Data/EconomyDataTests` | 58 machines across 10 categories and 5 tiers, no two within 5 % on every key figure; 26 lift types; every enum has data |
+| `Vehicles/AttachmentEffectsTests` | a 6.0 m tiller covers 40 % more run per metre than a 4.3 m one; the heavy tiller needs a heavy cat |
+| `Fleet/FuelLogisticsTests` | a dry tank halts the machine and raises a service call; the service truck refuels it; an empty depot blocks until the delivery lands; AI machines head for the depot at the reserve |
+| `Tasks/ForemanDispatchTests` | one driver and two cats still gets the job out; a job handed in is not offered straight back to the same machine, but a rescue call always is; the climb a machine can hold falls with fresh snow and worn tracks |
+| `Lifts/LiftThroughputTests`, `Lifts/WindHoldTests` | every lift type moves its rated capacity through a saturated queue within 5 %; holds come in wind-limit order |
+| `Construction/TerrainGatingTests` | T-bar length, fixed-grip span, surface-lift grade; only the 3S and trams cross the valley; runs must descend |
+| `Guests/LapRateTests` | starving uphill capacity cuts laps and lengthens queues |
+| `Economy/ThirtyDayTests`, `Economy/ActFourTrapTests` | thirty closed books reconcile to the cent; a detachable without added grooming nets less by day 30 |
 
 ## Documentation
 

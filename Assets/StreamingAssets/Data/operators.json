@@ -1,0 +1,176 @@
+{
+  "Comment": "Operator hiring and licensing. Competence 0.6-0.95 sets the slope an operator will take a cat onto, the work rate and the accident odds; licences gate machine classes.",
+  "Licenses": [
+    {
+      "License": "Basic",
+      "DisplayName": "Basic operator",
+      "TrainingCost": 0,
+      "TrainingDays": 0,
+      "WagePremiumPerHour": 0,
+      "Requires": [],
+      "Comment": "Trucks under 3.5 t, UTVs, loaders in the yard. Everyone starts here."
+    },
+    {
+      "License": "Groomer",
+      "DisplayName": "Piste machine licence",
+      "TrainingCost": 3800,
+      "TrainingDays": 5,
+      "WagePremiumPerHour": 4.0,
+      "Requires": [
+        "Basic"
+      ],
+      "Comment": "Snowcat operation on open runs: blade, tiller, slope reading. One week with a trainer."
+    },
+    {
+      "License": "WinchCat",
+      "DisplayName": "Winch cat endorsement",
+      "TrainingCost": 6500,
+      "TrainingDays": 6,
+      "WagePremiumPerHour": 6.5,
+      "Requires": [
+        "Groomer"
+      ],
+      "Comment": "Anchoring, rope management and winch grooming on steep faces."
+    },
+    {
+      "License": "Cdl",
+      "DisplayName": "Commercial driving licence",
+      "TrainingCost": 4200,
+      "TrainingDays": 10,
+      "WagePremiumPerHour": 3.0,
+      "Requires": [
+        "Basic"
+      ],
+      "Comment": "Plow trucks, dumpers, tankers and the lowboy on public roads."
+    },
+    {
+      "License": "Heavy",
+      "DisplayName": "Heavy equipment licence",
+      "TrainingCost": 5200,
+      "TrainingDays": 8,
+      "WagePremiumPerHour": 4.5,
+      "Requires": [
+        "Basic"
+      ],
+      "Comment": "Excavators, dozers, graders and large loaders."
+    },
+    {
+      "License": "Crane",
+      "DisplayName": "Crane operator licence",
+      "TrainingCost": 9800,
+      "TrainingDays": 15,
+      "WagePremiumPerHour": 8.0,
+      "Requires": [
+        "Heavy"
+      ],
+      "Comment": "Mobile and crawler cranes; tower lifts."
+    },
+    {
+      "License": "Sled",
+      "DisplayName": "Snowmobile and rescue",
+      "TrainingCost": 900,
+      "TrainingDays": 2,
+      "WagePremiumPerHour": 1.0,
+      "Requires": [
+        "Basic"
+      ],
+      "Comment": "Patrol and rescue sled operation, toboggan handling."
+    }
+  ],
+  "FirstNames": [
+    "Lena",
+    "Tobias",
+    "Marta",
+    "Jonas",
+    "Elin",
+    "Matteo",
+    "Sofie",
+    "Lukas",
+    "Anouk",
+    "Felix",
+    "Greta",
+    "Nils",
+    "Chiara",
+    "Aron",
+    "Ida",
+    "Sepp",
+    "Maja",
+    "Kilian",
+    "Rosa",
+    "Beat",
+    "Hanna",
+    "Jakob",
+    "Livia",
+    "Remo",
+    "Nora",
+    "Elias",
+    "Petra",
+    "Tim",
+    "Claire",
+    "Owen",
+    "Mika",
+    "Jules",
+    "Wren",
+    "Cody",
+    "Tessa",
+    "Gabe",
+    "Ines",
+    "Rory",
+    "Sam",
+    "Yara"
+  ],
+  "LastNames": [
+    "Marchetti",
+    "Kerr",
+    "Oberholzer",
+    "Lindqvist",
+    "Brunner",
+    "Hofer",
+    "Delacroix",
+    "Steiner",
+    "Vogt",
+    "Amstutz",
+    "Berger",
+    "Fontana",
+    "Gasser",
+    "Huber",
+    "Imhof",
+    "Jenni",
+    "Koller",
+    "Lanz",
+    "Meier",
+    "Nussbaum",
+    "Ott",
+    "Pfister",
+    "Rey",
+    "Schmid",
+    "Tanner",
+    "Ulrich",
+    "Vetter",
+    "Wyss",
+    "Zurbriggen",
+    "Aebischer",
+    "Callahan",
+    "Dawson",
+    "Ferris",
+    "Grady",
+    "Holt",
+    "Ingram",
+    "Kowalski",
+    "Nakamura",
+    "Quinn",
+    "Reyes"
+  ],
+  "CompetenceMin": 0.55,
+  "CompetenceMax": 0.95,
+  "BaseWagePerHour": 26,
+  "WagePerCompetencePoint": 38,
+  "MaxSlopeDegAtMinCompetence": 18,
+  "MaxSlopeDegAtMaxCompetence": 34,
+  "ShiftHours": 8,
+  "CandidatesPerWeek": 4,
+  "UnlicensedAccidentProbabilityPerHour": 0.04,
+  "LicensedAccidentProbabilityPerHour": 0.002,
+  "AccidentCostMean": 9000,
+  "CompetenceGainPerHour": 0.0004
+}

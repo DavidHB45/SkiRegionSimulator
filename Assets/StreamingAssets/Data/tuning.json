@@ -1,14 +1,1913 @@
 {
   "comment": "Every balance number in Alpine Resort Simulator. Leaf = {value, min, max, unit, comment}. Curves = {xs, ys, comment}. Code reads by dotted key (e.g. snow.freshDensityKgM3) and never embeds a number. min/max are the real-world anchor range the value was chosen from; the value is designer-editable without recompiling.",
   "simulation": {
-    "resortOpenHour": { "value": 9, "min": 8, "max": 10, "unit": "h", "comment": "Lifts open; day mode begins. Typical alpine resort 8:30-9:00." },
-    "resortCloseHour": { "value": 16, "min": 15, "max": 17, "unit": "h", "comment": "Lifts close; night mode (vehicle operation) begins after sweep." },
-    "nightShiftStartHour": { "value": 17, "min": 16, "max": 19, "unit": "h", "comment": "Grooming may start once patrol sweep is done." },
-    "guestsPerAgent": { "value": 4, "min": 1, "max": 50, "unit": "guests", "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed." },
-    "aiVehicleTickDivisor": { "value": 1, "min": 1, "max": 20, "unit": "ticks", "comment": "AI-driven vehicles integrate every N ticks with dt*N (LOD). Player vehicle always 1." }
+    "resortOpenHour": {
+      "value": 9,
+      "min": 8,
+      "max": 10,
+      "unit": "h",
+      "comment": "Lifts open; day mode begins. Typical alpine resort 8:30-9:00."
+    },
+    "resortCloseHour": {
+      "value": 16,
+      "min": 15,
+      "max": 17,
+      "unit": "h",
+      "comment": "Lifts close; night mode (vehicle operation) begins after sweep."
+    },
+    "nightShiftStartHour": {
+      "value": 17,
+      "min": 16,
+      "max": 19,
+      "unit": "h",
+      "comment": "Grooming may start once patrol sweep is done."
+    },
+    "guestsPerAgent": {
+      "value": 4,
+      "min": 1,
+      "max": 50,
+      "unit": "guests",
+      "comment": "Cohort size: one simulated agent represents this many guests. 1 = every guest individual. Tests raise it for speed."
+    },
+    "guestTickDivisor": {
+      "value": 4,
+      "min": 1,
+      "max": 10,
+      "unit": "ticks",
+      "comment": "Guest cohorts step every Nth tick with N times the step: skiing, walking and queueing at 5 Hz is indistinguishable from 20 Hz and costs a quarter as much; the snow, lifts and machines still tick at 20 Hz."
+    },
+    "aiVehicleTickDivisor": {
+      "value": 1,
+      "min": 1,
+      "max": 20,
+      "unit": "ticks",
+      "comment": "AI-driven vehicles integrate every N ticks with dt*N (LOD). Player vehicle always 1."
+    }
   },
   "terrain": {
-    "mapSizeM": { "value": 2048, "min": 2048, "max": 5000, "unit": "m", "comment": "Heightmap edge at 1 m; 2048 = 4.2 km2. Region expansion to 12-20 km2 is M8." },
-    "snowCellSizeM": { "value": 0.5, "min": 0.25, "max": 1, "unit": "m", "comment": "Snow grid cell edge over the skiable envelope." }
+    "mapSizeM": {
+      "value": 2048,
+      "min": 2048,
+      "max": 5000,
+      "unit": "m",
+      "comment": "Heightmap edge at 1 m; 2048 = 4.2 km2. Region expansion to 12-20 km2 is M8."
+    },
+    "snowCellSizeM": {
+      "value": 0.5,
+      "min": 0.25,
+      "max": 1,
+      "unit": "m",
+      "comment": "Snow grid cell edge over the skiable envelope."
+    }
+  },
+  "snow": {
+    "freshDensityKgM3": {
+      "value": 100,
+      "min": 70,
+      "max": 150,
+      "unit": "kg/m3",
+      "comment": "Density of the loose layer as tracked; fresh cold snowfall 70-150 kg/m3 (Judson & Doesken 2000)."
+    },
+    "snowfallDensityKgM3": {
+      "value": 100,
+      "min": 60,
+      "max": 200,
+      "unit": "kg/m3",
+      "comment": "Density at which snowfall is deposited; converted to loose depth at freshDensity."
+    },
+    "compactedLooseDensity": {
+      "value": 330,
+      "min": 250,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Density of loose snow after one track pass folds it into the pack."
+    },
+    "settledLooseDensity": {
+      "value": 200,
+      "min": 150,
+      "max": 260,
+      "unit": "kg/m3",
+      "comment": "Density of loose snow that settles under its own weight."
+    },
+    "settleFracPerHour": {
+      "value": 0.03,
+      "min": 0.01,
+      "max": 0.08,
+      "unit": "1/h",
+      "comment": "Fraction of the loose layer that settles into the pack per hour (fresh snow settles ~50% in a day)."
+    },
+    "compactionReferenceKpa": {
+      "value": 6,
+      "min": 4,
+      "max": 8,
+      "unit": "kPa",
+      "comment": "Ground pressure that gives full compaction effect; groomer tracks 4-8 kPa."
+    },
+    "compactLooseFractionPerPass": {
+      "value": 0.7,
+      "min": 0.4,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Fraction of the loose layer folded into the pack by one full track pass at reference pressure."
+    },
+    "compactionTargetDensityByKpa": {
+      "xs": [
+        0,
+        2,
+        4,
+        8,
+        20,
+        60,
+        200
+      ],
+      "ys": [
+        200,
+        300,
+        400,
+        480,
+        520,
+        560,
+        600
+      ],
+      "comment": "Packed density a track/tyre pressure drives toward (kPa -> kg/m3). Tracks 4-8 kPa, wheel loaders 60+, trucks 200+."
+    },
+    "compactionRatePerPass": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "How far one pass moves density toward its pressure target."
+    },
+    "rutPerVehiclePass": {
+      "value": 0.12,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "0-1",
+      "comment": "Roughness added by one track/tyre pass on soft snow."
+    },
+    "rutSoftDensityLo": {
+      "value": 300,
+      "min": 200,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Below this density snow ruts fully."
+    },
+    "rutSoftDensityRange": {
+      "value": 300,
+      "min": 200,
+      "max": 400,
+      "unit": "kg/m3",
+      "comment": "Above rutSoftDensityLo + this, snow stops rutting."
+    },
+    "corduroyDensityLo": {
+      "value": 480,
+      "min": 420,
+      "max": 520,
+      "unit": "kg/m3",
+      "comment": "Lower edge of the groomed corduroy density band (measured groomed piste 450-550)."
+    },
+    "corduroyDensityHi": {
+      "value": 600,
+      "min": 550,
+      "max": 650,
+      "unit": "kg/m3",
+      "comment": "Upper edge of the band; above it the pack reads as hard/icy."
+    },
+    "tillerHardeningRange": {
+      "value": 120,
+      "min": 60,
+      "max": 200,
+      "unit": "kg/m3",
+      "comment": "Work hardening per pass fades to zero this far above corduroyDensityHi, so ice (700) is an asymptote, not a wall."
+    },
+    "tillerTargetDensity": {
+      "value": 540,
+      "min": 480,
+      "max": 580,
+      "unit": "kg/m3",
+      "comment": "Density a full-width tiller re-lays the pack at (before the compaction bar)."
+    },
+    "tillerCompactionPerPass": {
+      "value": 12,
+      "min": 10,
+      "max": 40,
+      "unit": "kg/m3",
+      "comment": "Compaction-bar / work-hardening increment per pass. From fresh snow ~3 passes reach the band; ~9 passes with no new snow push past 600 into ice."
+    },
+    "tillerMoistureRetain": {
+      "value": 0.7,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "frac",
+      "comment": "Moisture kept after tilling (aeration dries the surface)."
+    },
+    "roughnessPerSkierPass": {
+      "value": 0.012,
+      "min": 0.001,
+      "max": 0.02,
+      "unit": "0-1",
+      "comment": "Roughness added per skier crossing a cell (x0.4 on hard pack, x1 on soft). ~200 passes on a groomed centre lane build moguls; a busy day puts 150-300 passes on the centre lane."
+    },
+    "skierIceRoughnessFactor": {
+      "value": 0.4,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Roughness multiplier on icy snow (skiers scrape rather than rut)."
+    },
+    "scrapeKgPerSkierPass": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 2.0,
+      "unit": "kg/m2",
+      "comment": "Snow mass a skier scrapes off a cell per pass on soft snow, moved downhill and to the edge."
+    },
+    "scrapeEdgeShare": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Share of scraped mass pushed toward the run edge rather than downhill."
+    },
+    "scrapeSlopeRefDeg": {
+      "value": 25,
+      "min": 15,
+      "max": 35,
+      "unit": "deg",
+      "comment": "Slope at which scraping is fully effective."
+    },
+    "scrapeMaxFractionPerPass": {
+      "value": 0.1,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Never scrape more than this fraction of a cell's mass in one pass."
+    },
+    "meltMmPerHourPerDegC": {
+      "value": 1.6,
+      "min": 1.0,
+      "max": 3.0,
+      "unit": "mm/h/C",
+      "comment": "Degree-hour melt factor (snow water equivalent 2-4 mm/day/C \u2248 0.1-0.17 mm/h/C of water; expressed as snow depth of runoff density)."
+    },
+    "meltRunoffDensity": {
+      "value": 400,
+      "min": 300,
+      "max": 500,
+      "unit": "kg/m3",
+      "comment": "Density used to convert melt depth into mass removed."
+    },
+    "sunMeltMmPerHour": {
+      "value": 2.5,
+      "min": 0,
+      "max": 6,
+      "unit": "mm/h",
+      "comment": "Additional melt on a fully sun-exposed cell under clear sky near 0 C."
+    },
+    "sunWarmingC": {
+      "value": 3,
+      "min": 0,
+      "max": 6,
+      "unit": "C",
+      "comment": "How much full sun warms the snow surface above air temperature."
+    },
+    "rainMeltFactor": {
+      "value": 2.0,
+      "min": 1.0,
+      "max": 4.0,
+      "unit": "mm snow / mm rain",
+      "comment": "Snow depth removed per mm of rain."
+    },
+    "windScourFracPerHourAt50kmh": {
+      "value": 0.06,
+      "min": 0.01,
+      "max": 0.2,
+      "unit": "frac/h",
+      "comment": "Loose snow lost per hour at 50 km/h wind (scales with wind squared)."
+    },
+    "moisturePerMeltMm": {
+      "value": 0.02,
+      "min": 0.005,
+      "max": 0.1,
+      "unit": "1/mm",
+      "comment": "Moisture gained per mm of melt."
+    },
+    "moistureFreezePerHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "1/h",
+      "comment": "Moisture removed per hour by refreezing."
+    },
+    "refreezeBelowC": {
+      "value": -2,
+      "min": -6,
+      "max": 0,
+      "unit": "C",
+      "comment": "Snow temperature below which wet snow refreezes."
+    },
+    "refreezeDensityPerHour": {
+      "value": 40,
+      "min": 10,
+      "max": 100,
+      "unit": "kg/m3/h",
+      "comment": "Density gain per hour at full moisture while refreezing."
+    },
+    "cellTempRelaxPerHour": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.9,
+      "unit": "frac/h",
+      "comment": "How fast a cell's snow temperature follows air + sun."
+    },
+    "skierLoosenKgPerPass": {
+      "value": 0.12,
+      "min": 0.02,
+      "max": 0.5,
+      "unit": "kg/m2",
+      "comment": "Pack chopped into loose granular snow per skier pass; the next tiller pass re-mixes it and pulls density back down, which keeps nightly grooming sustainable."
+    }
+  },
+  "pqi": {
+    "minCoverageMm": {
+      "value": 150,
+      "min": 100,
+      "max": 250,
+      "unit": "mm",
+      "comment": "Depth below which a cell counts as not covered (thin cover, rocks show)."
+    },
+    "densityBandLo": {
+      "value": 450,
+      "min": 400,
+      "max": 500,
+      "unit": "kg/m3",
+      "comment": "PQI density window low edge (softer than this is slow and ruts)."
+    },
+    "densityBandHi": {
+      "value": 600,
+      "min": 550,
+      "max": 650,
+      "unit": "kg/m3",
+      "comment": "PQI density window high edge (harder is icy)."
+    },
+    "densitySoftLo": {
+      "value": 250,
+      "min": 150,
+      "max": 350,
+      "unit": "kg/m3",
+      "comment": "Score falls to 0 this far below the band."
+    },
+    "densitySoftHi": {
+      "value": 110,
+      "min": 60,
+      "max": 150,
+      "unit": "kg/m3",
+      "comment": "Score falls to 0 this far above the band (ice at ~700)."
+    },
+    "groomHalfLifeHours": {
+      "value": 10,
+      "min": 6,
+      "max": 18,
+      "unit": "h",
+      "comment": "Freshness half-life since last groom."
+    },
+    "wCoverage": {
+      "value": 0.3,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: coverage"
+    },
+    "wDensity": {
+      "value": 0.2,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: density band"
+    },
+    "wRoughness": {
+      "value": 0.35,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: smoothness"
+    },
+    "wFreshness": {
+      "value": 0.15,
+      "min": 0,
+      "max": 1,
+      "unit": "weight",
+      "comment": "PQI weight: freshness"
+    },
+    "bareCapFactor": {
+      "value": 0.3,
+      "min": 0,
+      "max": 1,
+      "unit": "x",
+      "comment": "PQI multiplier at zero coverage (a bare run is never good)."
+    }
+  },
+  "roads": {
+    "saltMeltMmPerHourPerKgM2": {
+      "value": 20,
+      "min": 5,
+      "max": 60,
+      "unit": "mm/h per kg/m2",
+      "comment": "Snow melt on salted pavement per kg/m2 of salt."
+    },
+    "saltEffectiveMinC": {
+      "value": -9,
+      "min": -15,
+      "max": -3,
+      "unit": "C",
+      "comment": "Rock salt stops working below about -9 C."
+    },
+    "saltDecayFracPerHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "frac/h",
+      "comment": "Salt lost per hour to traffic and runoff."
+    },
+    "brineEquivalentKgPerL": {
+      "value": 0.23,
+      "min": 0.15,
+      "max": 0.3,
+      "unit": "kg NaCl / L",
+      "comment": "23% brine."
+    },
+    "plowClearanceMmPerPass": {
+      "value": 400,
+      "min": 200,
+      "max": 600,
+      "unit": "mm",
+      "comment": "Depth a road plow removes per pass (to within a residual)."
+    },
+    "roadClearMm": {
+      "value": 20,
+      "min": 5,
+      "max": 50,
+      "unit": "mm",
+      "comment": "Mean snow depth on a road that still scores 100 (hardpack residue)."
+    },
+    "roadBlockedMm": {
+      "value": 220,
+      "min": 100,
+      "max": 400,
+      "unit": "mm",
+      "comment": "Mean depth at which the access road scores 0 (cars cannot get up)."
+    },
+    "lotClearMm": {
+      "value": 30,
+      "min": 10,
+      "max": 60,
+      "unit": "mm",
+      "comment": "Lot depth for a full score."
+    },
+    "lotBlockedMm": {
+      "value": 280,
+      "min": 100,
+      "max": 500,
+      "unit": "mm",
+      "comment": "Lot depth at score 0."
+    },
+    "rampClearMm": {
+      "value": 150,
+      "min": 50,
+      "max": 300,
+      "unit": "mm",
+      "comment": "Ramp snow depth for full score (ramps are snow, shaped)."
+    },
+    "rampBlockedMm": {
+      "value": 700,
+      "min": 400,
+      "max": 1200,
+      "unit": "mm",
+      "comment": "Ramp depth at which a lift cannot load (drifted in)."
+    },
+    "rampBlockedClearance": {
+      "value": 25,
+      "min": 5,
+      "max": 50,
+      "unit": "score",
+      "comment": "Ramp clearance score below which the lift cannot open."
+    },
+    "iceDensity": {
+      "value": 620,
+      "min": 550,
+      "max": 700,
+      "unit": "kg/m3",
+      "comment": "Column density counted as ice on pavement."
+    },
+    "icePenalty": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Score lost when the whole surface is unsalted ice."
+    },
+    "saltFullKgM2": {
+      "value": 0.03,
+      "min": 0.01,
+      "max": 0.08,
+      "unit": "kg/m2",
+      "comment": "Salt load that fully neutralises ice (20-30 g/m2 typical application)."
+    },
+    "autoTaskClearanceBelow": {
+      "value": 55,
+      "min": 30,
+      "max": 80,
+      "unit": "score",
+      "comment": "Below this clearance the road system posts a plow/clear/blow job automatically."
+    },
+    "spreadWhenBelowC": {
+      "value": -1,
+      "min": -4,
+      "max": 2,
+      "unit": "C",
+      "comment": "Post a salting job for the road when the air is below this."
+    },
+    "clearanceUpdateMinutes": {
+      "value": 10,
+      "min": 5,
+      "max": 30,
+      "unit": "min",
+      "comment": "How often clearance scores are recomputed."
+    },
+    "accessByClearance": {
+      "xs": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100
+      ],
+      "ys": [
+        0.15,
+        0.35,
+        0.7,
+        0.9,
+        1.0,
+        1.0
+      ],
+      "comment": "Fraction of demand that reaches the resort by road clearance score."
+    },
+    "parkingByClearance": {
+      "xs": [
+        0,
+        30,
+        60,
+        100
+      ],
+      "ys": [
+        0.4,
+        0.7,
+        0.9,
+        1.0
+      ],
+      "comment": "Parking satisfaction factor by lot clearance score."
+    }
+  },
+  "vehicles": {
+    "gravity": {
+      "value": 9.81,
+      "min": 9.81,
+      "max": 9.81,
+      "unit": "m/s2",
+      "comment": "Standard gravity."
+    },
+    "shearStrengthByDensity": {
+      "xs": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700
+      ],
+      "ys": [
+        3,
+        6,
+        10,
+        18,
+        30,
+        45,
+        60
+      ],
+      "comment": "Snow shear strength (kPa) by column density; Shapiro et al. snow mechanics ranges. Ground pressure above this means slip and sinkage."
+    },
+    "tractionByDensity": {
+      "xs": [
+        100,
+        250,
+        400,
+        520,
+        600,
+        650,
+        700
+      ],
+      "ys": [
+        0.35,
+        0.55,
+        0.72,
+        0.85,
+        0.75,
+        0.5,
+        0.3
+      ],
+      "comment": "Track/tyre traction coefficient by surface density. Grouser tracks on packed snow (450-550 kg/m3) reach 0.8-0.9, enough for a 30-degree unassisted climb with a tiller down; powder and ice both fall away."
+    },
+    "tireTractionFactor": {
+      "value": 0.7,
+      "min": 0.5,
+      "max": 0.9,
+      "unit": "x",
+      "comment": "Wheeled machines get this fraction of tracked traction on snow (chains restore part of it)."
+    },
+    "chainsTractionBonus": {
+      "value": 0.2,
+      "min": 0.1,
+      "max": 0.35,
+      "unit": "x",
+      "comment": "Added to tireTractionFactor when the tyre spec has chains."
+    },
+    "sinkageFactor": {
+      "value": 0.65,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Track sinkage as a fraction of loose depth scaled by pressure/shear ratio."
+    },
+    "sinkageMaxM": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 0.8,
+      "unit": "m",
+      "comment": "Cap on sinkage."
+    },
+    "sinkageTractionLoss": {
+      "value": 0.45,
+      "min": 0,
+      "max": 0.9,
+      "unit": "fraction",
+      "comment": "Fraction of traction lost when the tracks sink to sinkageMaxM in loose snow (grousers churn instead of gripping). Packed snow has no sinkage and keeps the full density coefficient."
+    },
+    "rollingResistanceBase": {
+      "value": 0.05,
+      "min": 0.02,
+      "max": 0.1,
+      "unit": "coeff",
+      "comment": "Rolling resistance of tracks on groomed snow."
+    },
+    "rollingResistancePerSinkageM": {
+      "value": 0.9,
+      "min": 0.3,
+      "max": 2.0,
+      "unit": "coeff/m",
+      "comment": "Extra rolling resistance per metre of sinkage (deep fresh snow is hard work)."
+    },
+    "driveEfficiency": {
+      "value": 0.82,
+      "min": 0.7,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Hydrostatic/powershift drivetrain efficiency engine to track."
+    },
+    "maxTractiveEffortG": {
+      "value": 0.75,
+      "min": 0.3,
+      "max": 1.2,
+      "unit": "g",
+      "comment": "Drive force cap as a fraction of weight before the traction limit applies. Hydrostatic snowcats deliver about 0.7-0.8 g of tractive effort at stall; the density traction curve then decides how much of it the snow can take."
+    },
+    "brakeDecelMs2": {
+      "value": 4.0,
+      "min": 2.0,
+      "max": 6.0,
+      "unit": "m/s2",
+      "comment": "Service brake deceleration."
+    },
+    "coastDecelMs2": {
+      "value": 0.8,
+      "min": 0.3,
+      "max": 1.5,
+      "unit": "m/s2",
+      "comment": "Deceleration with throttle released (hydrostatic braking)."
+    },
+    "spinInPlaceYawRadS": {
+      "value": 0.55,
+      "min": 0.3,
+      "max": 0.9,
+      "unit": "rad/s",
+      "comment": "Skid-steer counter-rotation yaw rate at standstill."
+    },
+    "maxYawRadS": {
+      "value": 1.1,
+      "min": 0.6,
+      "max": 1.6,
+      "unit": "rad/s",
+      "comment": "Yaw rate cap for any chassis."
+    },
+    "sideSlipDamping": {
+      "value": 2.5,
+      "min": 1.0,
+      "max": 5.0,
+      "unit": "1/s",
+      "comment": "Damping of lateral sliding on side slopes."
+    },
+    "walkBehindSpeedMs": {
+      "value": 1.2,
+      "min": 0.8,
+      "max": 1.6,
+      "unit": "m/s",
+      "comment": "Walk-behind blower pace."
+    },
+    "walkBehindYawRadS": {
+      "value": 1.0,
+      "min": 0.5,
+      "max": 1.5,
+      "unit": "rad/s",
+      "comment": "Walk-behind turn rate."
+    },
+    "articulationMaxDeg": {
+      "value": 40,
+      "min": 30,
+      "max": 45,
+      "unit": "deg",
+      "comment": "Centre-pivot steering limit for artic haulers and loaders."
+    },
+    "wheelbaseFracOfBody": {
+      "value": 0.6,
+      "min": 0.5,
+      "max": 0.75,
+      "unit": "frac",
+      "comment": "Wheelbase as a fraction of body length (Ackermann yaw)."
+    },
+    "bladeFrictionCoeff": {
+      "value": 0.45,
+      "min": 0.3,
+      "max": 0.7,
+      "unit": "coeff",
+      "comment": "Resistance coefficient of snow sliding along a blade."
+    },
+    "bladeSpillFracPerM": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.15,
+      "unit": "frac/m",
+      "comment": "Fraction of the blade load shed to the windrows per metre travelled."
+    },
+    "bladeLoadDensity": {
+      "value": 380,
+      "min": 300,
+      "max": 450,
+      "unit": "kg/m3",
+      "comment": "Density of snow rolling in front of a blade."
+    },
+    "tillerDragNPerM": {
+      "value": 2200,
+      "min": 1000,
+      "max": 4000,
+      "unit": "N/m",
+      "comment": "Tiller drag per metre of working width at full depth."
+    },
+    "tillerHydraulicLoadKw": {
+      "value": 45,
+      "min": 20,
+      "max": 90,
+      "unit": "kW",
+      "comment": "Hydraulic power a full-width tiller draws at rated speed (adds engine load)."
+    },
+    "bladeLiftRatePerS": {
+      "value": 0.9,
+      "min": 0.5,
+      "max": 1.5,
+      "unit": "1/s",
+      "comment": "Blade lift travel per second at full hydraulic warm-up."
+    },
+    "bladeAngleRateRadS": {
+      "value": 0.5,
+      "min": 0.3,
+      "max": 0.8,
+      "unit": "rad/s",
+      "comment": "12-way blade rotation rate."
+    },
+    "bladeMaxAngleRad": {
+      "value": 0.5,
+      "min": 0.3,
+      "max": 0.7,
+      "unit": "rad",
+      "comment": "Maximum blade angle either way."
+    },
+    "blowerIntakeDepthMm": {
+      "value": 600,
+      "min": 300,
+      "max": 1200,
+      "unit": "mm",
+      "comment": "Depth a rotary blower head clears in one pass."
+    },
+    "bucketScoopSeconds": {
+      "value": 4,
+      "min": 2,
+      "max": 8,
+      "unit": "s",
+      "comment": "Seconds a bucket takes to fill when scooping."
+    },
+    "bucketDumpSeconds": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "s",
+      "comment": "Seconds to dump a bucket or a truck bed."
+    },
+    "truckLoadTransferRadiusM": {
+      "value": 6,
+      "min": 3,
+      "max": 10,
+      "unit": "m",
+      "comment": "A loader dumping within this distance of a haul truck's bed loads the truck instead of the ground."
+    },
+    "spreadLaneWidthM": {
+      "value": 3.5,
+      "min": 3.0,
+      "max": 4.0,
+      "unit": "m",
+      "comment": "Lane width used to convert kg per lane-km to kg/m2."
+    },
+    "wearHoursToFailureAtFullLoad": {
+      "value": 6000,
+      "min": 3000,
+      "max": 10000,
+      "unit": "h",
+      "comment": "Hours of full-load work that take a subsystem from new to failure at wear rate 1.0 (cat rebuild interval 6,000-8,000 h)."
+    },
+    "wearIdleFraction": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Wear at idle as a fraction of full-load wear."
+    },
+    "trackWearPerSlipHour": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.2,
+      "unit": "wear/h",
+      "comment": "Extra track wear per hour of full slip."
+    },
+    "attachmentWearPerWorkHour": {
+      "value": 0.00035,
+      "min": 0.0001,
+      "max": 0.001,
+      "unit": "wear/h",
+      "comment": "Attachment wear per hour of work (blade edges, tiller teeth)."
+    },
+    "failureRateByWear": {
+      "xs": [
+        0,
+        0.3,
+        0.5,
+        0.7,
+        0.85,
+        1.0
+      ],
+      "ys": [
+        0.15,
+        0.5,
+        1.0,
+        2.5,
+        6,
+        20
+      ],
+      "comment": "Multiplier on 1/MTBF failure rate by subsystem wear."
+    },
+    "repairCostFracByWear": {
+      "xs": [
+        0,
+        0.5,
+        1.0
+      ],
+      "ys": [
+        0.02,
+        0.05,
+        0.12
+      ],
+      "comment": "Repair cost as a fraction of purchase price by wear at failure."
+    },
+    "repairHoursBase": {
+      "value": 6,
+      "min": 2,
+      "max": 24,
+      "unit": "h",
+      "comment": "Base workshop hours for an unscheduled repair."
+    },
+    "enginePowerLossAtFullWear": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Power lost at wear 1.0 (linear)."
+    },
+    "burnIncreaseAtFullWear": {
+      "value": 0.3,
+      "min": 0.1,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Fuel burn increase at wear 1.0."
+    },
+    "hydraulicResponseLossAtFullWear": {
+      "value": 0.6,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "frac",
+      "comment": "Implement speed lost at hydraulic wear 1.0."
+    },
+    "trackGripLossAtFullWear": {
+      "value": 0.4,
+      "min": 0.1,
+      "max": 0.7,
+      "unit": "frac",
+      "comment": "Traction lost at track/tyre wear 1.0."
+    },
+    "coldStartBelowC": {
+      "value": -15,
+      "min": -25,
+      "max": -5,
+      "unit": "C",
+      "comment": "Below this ambient temperature unsheltered machines cold-start."
+    },
+    "coldStartFailProbByTier": {
+      "xs": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "ys": [
+        0.5,
+        0.25,
+        0.08,
+        0.03,
+        0.01
+      ],
+      "comment": "Probability a cold start fails outright, by tier."
+    },
+    "coldStartDelayS": {
+      "value": 25,
+      "min": 5,
+      "max": 60,
+      "unit": "s",
+      "comment": "Cranking time added on a cold start."
+    },
+    "warmupMinutes": {
+      "value": 8,
+      "min": 3,
+      "max": 20,
+      "unit": "min",
+      "comment": "Minutes until hydraulics reach full performance from cold."
+    },
+    "unshelteredWarmupMultiplier": {
+      "value": 1.6,
+      "min": 1.0,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Warm-up time multiplier for machines left outside."
+    },
+    "shelteredTempBonusC": {
+      "value": 12,
+      "min": 5,
+      "max": 20,
+      "unit": "C",
+      "comment": "How much warmer a garaged machine starts than ambient."
+    },
+    "idleRpm": {
+      "value": 800,
+      "min": 600,
+      "max": 1000,
+      "unit": "rpm",
+      "comment": "Idle."
+    },
+    "ratedRpm": {
+      "value": 2100,
+      "min": 1800,
+      "max": 2400,
+      "unit": "rpm",
+      "comment": "Rated engine speed."
+    },
+    "fuelReserveWarningFrac": {
+      "value": 0.12,
+      "min": 0.05,
+      "max": 0.25,
+      "unit": "frac",
+      "comment": "Low-fuel warning and AI return-to-depot threshold."
+    },
+    "playerReachM": {
+      "value": 8,
+      "min": 3,
+      "max": 15,
+      "unit": "m",
+      "comment": "Distance within which Enter takes the nearest machine."
+    },
+    "aiWaypointReachM": {
+      "value": 3.0,
+      "min": 1.5,
+      "max": 6.0,
+      "unit": "m",
+      "comment": "Waypoint acceptance radius."
+    },
+    "aiLaneOverlapFrac": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.3,
+      "unit": "frac",
+      "comment": "Tiller lane overlap fraction when grooming."
+    },
+    "aiStuckSeconds": {
+      "value": 5,
+      "min": 2,
+      "max": 12,
+      "unit": "s",
+      "comment": "Seconds at near-zero speed under throttle before reversing."
+    },
+    "aiReverseSeconds": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "s",
+      "comment": "Reverse time when stuck."
+    },
+    "routeTractionMarginDeg": {
+      "value": 3,
+      "min": 0,
+      "max": 15,
+      "unit": "deg",
+      "comment": "Margin a planned route keeps under the grade the machine can actually hold in the snow along it. The estimate is made of snow that is still falling, settling and being tracked, and the cost of being wrong is a machine stopped on a pitch, so the planner keeps the same few degrees in hand an operator does."
+    },
+    "aiTransferGradeMarginDeg": {
+      "value": 8,
+      "min": 0,
+      "max": 20,
+      "unit": "deg",
+      "comment": "A groomer transferring to the top of a run by track plans the climb this far under its operator's rating: off the groomed runs the snow is untracked, and a pitch a cat climbs on corduroy stalls it in fresh snow."
+    },
+    "aiServiceCallExtraGradeDeg": {
+      "value": 10,
+      "min": 0,
+      "max": 20,
+      "unit": "deg",
+      "comment": "How far past its rating a machine on a refuel, repair or rescue call will take a pitch to reach the stranded machine: the service truck goes up the run in low range with chains on, slowly, because the alternative is a cat stranded all night."
+    },
+    "aiTransitMaxKmh": {
+      "value": 40,
+      "min": 15,
+      "max": 80,
+      "unit": "km/h",
+      "comment": "Fastest an AI operator drives between jobs on resort roads and tracks; 40 km/h is the posted limit on most resort access roads and well under what a pickup could do."
+    },
+    "aiGiveUpAfterStucks": {
+      "value": 3,
+      "min": 1,
+      "max": 10,
+      "unit": "count",
+      "comment": "Stuck-and-reverse attempts an AI operator makes on one pitch before giving the lane (or the job) up. Three tries is what a real operator does before radioing in."
+    },
+    "aiDryDepotRetrySeconds": {
+      "value": 1800,
+      "min": 300,
+      "max": 7200,
+      "unit": "s",
+      "comment": "How long an AI operator who found the depot dry keeps working on what is in the tank before trying the depot again. Half an hour: a fuel delivery or a service truck is the fix, not queueing at an empty pump."
+    },
+    "aiGroomBladeFloat": {
+      "value": 0.28,
+      "min": 0.1,
+      "max": 0.35,
+      "unit": "pose",
+      "comment": "Blade pose (0 down, 1 raised) an AI groomer holds on its downhill lanes: 0.28 shaves about a fifth of the blade's rated cut, 50-70 mm, which knocks the tops off moguls without stripping the pack."
+    },
+    "aiLookaheadM": {
+      "value": 6,
+      "min": 3,
+      "max": 12,
+      "unit": "m",
+      "comment": "Pure-pursuit lookahead."
+    },
+    "aiSlopeMarginDeg": {
+      "value": 3,
+      "min": 0,
+      "max": 8,
+      "unit": "deg",
+      "comment": "Operators refuse slopes steeper than their rating minus this margin."
+    },
+    "routeSnapRadiusM": {
+      "value": 60,
+      "min": 20,
+      "max": 150,
+      "unit": "m",
+      "comment": "Max distance to snap a route endpoint to the road/piste graph."
+    },
+    "routeStraightMaxM": {
+      "value": 80,
+      "min": 20,
+      "max": 200,
+      "unit": "m",
+      "comment": "Below this distance vehicles drive straight instead of routing."
+    },
+    "routeMaxGradeDeg": {
+      "value": 24,
+      "min": 10,
+      "max": 40,
+      "unit": "deg",
+      "comment": "Steepest ground the AI router treats as normal driving; steeper edges cost routeSteepCostFactor times more. A groomer climbs 30 degrees on firm snow, but the router keeps a margin for soft conditions."
+    },
+    "routeLinkRadiusM": {
+      "value": 80,
+      "min": 40,
+      "max": 500,
+      "unit": "m",
+      "comment": "Straight cross-country links join graph nodes this far apart where the ground stays under the routing grade: enough to tie a lot to the road at its rim, too short to bridge a run to a cat track through untracked snow."
+    },
+    "routeSteepCostFactor": {
+      "value": 20,
+      "min": 2,
+      "max": 100,
+      "unit": "x",
+      "comment": "Cost multiplier on route edges steeper than routeMaxGradeDeg: still usable when nothing else exists, never chosen when a gentler way exists."
+    }
+  },
+  "fuel": {
+    "dieselPricePerL": {
+      "value": 1.25,
+      "min": 1.0,
+      "max": 1.6,
+      "unit": "USD/L",
+      "comment": "Diesel delivered in bulk, brief 1.00-1.60 with seasonal volatility (fleet system varies it)."
+    },
+    "autoOrderBelowFrac": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.8,
+      "unit": "fraction",
+      "comment": "The fuel office reorders diesel to fill the depot when stock plus deliveries on the way fall under this fraction of capacity; a day's lead time at 20,000 L means a third is about a week of two cats and a truck."
+    },
+    "gasolinePricePerL": {
+      "value": 1.45,
+      "min": 1.1,
+      "max": 1.9,
+      "unit": "USD/L",
+      "comment": "Gasoline for snowmobiles and walk-behind machines."
+    },
+    "electricityPricePerKwh": {
+      "value": 0.14,
+      "min": 0.08,
+      "max": 0.3,
+      "unit": "USD/kWh",
+      "comment": "Resort electricity tariff."
+    },
+    "depotRefuelLPerMin": {
+      "value": 120,
+      "min": 60,
+      "max": 250,
+      "unit": "L/min",
+      "comment": "Pump rate at the depot."
+    },
+    "serviceTruckRefuelLPerMin": {
+      "value": 60,
+      "min": 30,
+      "max": 120,
+      "unit": "L/min",
+      "comment": "Field refuel rate from the service truck."
+    }
+  },
+  "lifts": {
+    "windExposurePer100m": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.12,
+      "unit": "frac/100m",
+      "comment": "Wind at the top terminal rises this fraction per 100 m above the base (ridge exposure)."
+    },
+    "singlesLineCapacityFactor": {
+      "value": 1.08,
+      "min": 1.0,
+      "max": 1.15,
+      "unit": "x",
+      "comment": "Singles line fills empty seats: +5-10% effective capacity."
+    },
+    "noMazeCapacityFactor": {
+      "value": 0.85,
+      "min": 0.7,
+      "max": 0.95,
+      "unit": "x",
+      "comment": "Without a loading maze the load zone runs ragged."
+    },
+    "capacityAtZeroCondition": {
+      "value": 0.6,
+      "min": 0.3,
+      "max": 0.9,
+      "unit": "x",
+      "comment": "Capacity factor of a worn-out lift (slowed for safety)."
+    },
+    "breakdownRateAtZeroCondition": {
+      "value": 6,
+      "min": 2,
+      "max": 12,
+      "unit": "x",
+      "comment": "Breakdown rate multiplier at condition 0 (1x at new)."
+    },
+    "breakdownRepairHoursMean": {
+      "value": 2.5,
+      "min": 0.5,
+      "max": 8,
+      "unit": "h",
+      "comment": "Mean downtime of an unscheduled stop (drive fault, rope position sensor, grip test)."
+    },
+    "breakdownCostFracOfCapex": {
+      "value": 0.0006,
+      "min": 0.0001,
+      "max": 0.003,
+      "unit": "frac",
+      "comment": "Repair cost of a breakdown as a fraction of capex."
+    },
+    "inspectionHours": {
+      "value": 3,
+      "min": 1,
+      "max": 8,
+      "unit": "h",
+      "comment": "Lift closed for a periodic inspection."
+    },
+    "inspectionCostFracOfCapex": {
+      "value": 0.0015,
+      "min": 0.0005,
+      "max": 0.005,
+      "unit": "frac",
+      "comment": "Periodic inspection fee as a fraction of capex."
+    },
+    "inspectionConditionGain": {
+      "value": 0.08,
+      "min": 0.02,
+      "max": 0.2,
+      "unit": "0-1",
+      "comment": "Condition restored by an inspection with adjustments."
+    },
+    "conditionLossPerOperatingHour": {
+      "value": 0.0012,
+      "min": 0.0004,
+      "max": 0.004,
+      "unit": "0-1/h",
+      "comment": "Condition lost per operating hour (annual maintenance keeps it up)."
+    },
+    "conditionRecoveryPerDay": {
+      "value": 0.006,
+      "min": 0,
+      "max": 0.02,
+      "unit": "0-1/day",
+      "comment": "Daily maintenance crew recovery."
+    },
+    "depreciationYears": {
+      "value": 25,
+      "min": 15,
+      "max": 35,
+      "unit": "years",
+      "comment": "Straight-line book depreciation of a lift."
+    }
+  },
+  "guests": {
+    "walkSpeedMs": {
+      "value": 1.3,
+      "min": 1.0,
+      "max": 1.6,
+      "unit": "m/s",
+      "comment": "Walking in ski boots."
+    },
+    "snowReportReferencePqi": {
+      "value": 70,
+      "min": 50,
+      "max": 85,
+      "unit": "PQI",
+      "comment": "Snow report score at which PQI neither helps nor hurts demand."
+    },
+    "freshSnowBonusPqi": {
+      "value": 80,
+      "min": 70,
+      "max": 95,
+      "unit": "PQI",
+      "comment": "Above this snow-report score a fresh-snow buzz adds demand."
+    },
+    "stormWindKmh": {
+      "value": 50,
+      "min": 30,
+      "max": 80,
+      "unit": "km/h",
+      "comment": "Wind above which the forecast keeps guests home."
+    },
+    "stormSnowCmPerHour": {
+      "value": 3,
+      "min": 1,
+      "max": 6,
+      "unit": "cm/h",
+      "comment": "Snowfall rate above which driving up is a deterrent."
+    },
+    "bitterColdC": {
+      "value": -18,
+      "min": -25,
+      "max": -10,
+      "unit": "C",
+      "comment": "Below this, demand drops."
+    },
+    "guestsPerCar": {
+      "value": 2.6,
+      "min": 1.5,
+      "max": 4,
+      "unit": "guests",
+      "comment": "Occupancy per car for parking revenue."
+    },
+    "halfDayFromHour": {
+      "value": 12.5,
+      "min": 11.5,
+      "max": 13.5,
+      "unit": "h",
+      "comment": "Arrivals after this pay the half-day rate."
+    },
+    "lunchFromHour": {
+      "value": 11.5,
+      "min": 11,
+      "max": 12.5,
+      "unit": "h",
+      "comment": "Lunch window start."
+    },
+    "lunchToHour": {
+      "value": 14.0,
+      "min": 13,
+      "max": 15,
+      "unit": "h",
+      "comment": "Lunch window end."
+    },
+    "lunchProbPerVisit": {
+      "value": 0.55,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "prob",
+      "comment": "Chance a cohort at the base in the lunch window eats."
+    },
+    "lunchMinutes": {
+      "value": 40,
+      "min": 20,
+      "max": 70,
+      "unit": "min",
+      "comment": "Time spent eating."
+    },
+    "leaveMinutes": {
+      "value": 15,
+      "min": 5,
+      "max": 30,
+      "unit": "min",
+      "comment": "Time from deciding to leave until gone."
+    },
+    "noLiftPatienceMin": {
+      "value": 25,
+      "min": 10,
+      "max": 60,
+      "unit": "min",
+      "comment": "Minutes a cohort waits at the base with nothing to ride before leaving."
+    },
+    "leaveAfterGiveUpProb": {
+      "value": 0.25,
+      "min": 0,
+      "max": 0.6,
+      "unit": "prob",
+      "comment": "Chance a cohort that gives up on a queue leaves the resort."
+    },
+    "queueRefMin": {
+      "value": 20,
+      "min": 10,
+      "max": 40,
+      "unit": "min",
+      "comment": "Queue wait that costs a full queue-weight of satisfaction."
+    },
+    "speedFactorAtPqi0": {
+      "value": 0.45,
+      "min": 0.2,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Skiing speed factor on a PQI-0 surface (moguls, ice, bare)."
+    },
+    "speedRefGradeDeg": {
+      "value": 14,
+      "min": 8,
+      "max": 20,
+      "unit": "deg",
+      "comment": "Grade at which archetype ski speed applies."
+    },
+    "fatiguePerLap": {
+      "value": 0.09,
+      "min": 0.03,
+      "max": 0.2,
+      "unit": "0-1",
+      "comment": "Fatigue per run for an 8-lap-a-day guest."
+    },
+    "referenceLapVerticalM": {
+      "value": 300,
+      "min": 100,
+      "max": 800,
+      "unit": "m",
+      "comment": "Vertical drop of the lap that fatiguePerLap refers to. A typical mid-mountain run is 250-350 m vertical; an 8-lap day on such runs is about 2,400 m skied."
+    },
+    "comfortColdStartC": {
+      "value": -8,
+      "min": -15,
+      "max": 0,
+      "unit": "C",
+      "comment": "Below this open chairs get uncomfortable."
+    },
+    "comfortColdRangeC": {
+      "value": 14,
+      "min": 8,
+      "max": 25,
+      "unit": "C",
+      "comment": "Degrees below comfortColdStartC for full discomfort."
+    },
+    "comfortWindRefKmh": {
+      "value": 45,
+      "min": 25,
+      "max": 70,
+      "unit": "km/h",
+      "comment": "Wind for full discomfort on an exposed chair."
+    },
+    "satStart": {
+      "value": 0.65,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "Satisfaction a cohort arrives with."
+    },
+    "satNeutral": {
+      "value": 0.6,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "Score of an unremarkable experience (a lap on decent snow, a short queue). Every term in the satisfaction model is a delta from here."
+    },
+    "satBlend": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "How far satisfaction moves toward each new experience score (exponential moving average). 0.3 means the last five or six experiences dominate the mood."
+    },
+    "satPqiWeight": {
+      "value": 1.2,
+      "min": 0.2,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Snow quality is the pillar: a lap on PQI 46 snow scores 0.19 below neutral, a lap on PQI 80 corduroy 0.22 above. Survey basis: surface quality is the top-cited driver of return visits."
+    },
+    "satPqiNeutral": {
+      "value": 0.62,
+      "min": 0.4,
+      "max": 0.8,
+      "unit": "0-1",
+      "comment": "PQI/100 that neither pleases nor annoys."
+    },
+    "satQueueWeight": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty scale for queues."
+    },
+    "satTerrainWeight": {
+      "value": 0.25,
+      "min": 0.05,
+      "max": 0.6,
+      "unit": "x",
+      "comment": "Satisfaction scale for terrain match."
+    },
+    "satComfortWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.6,
+      "unit": "x",
+      "comment": "Satisfaction scale for ride comfort/weather exposure."
+    },
+    "satFoodWeight": {
+      "value": 0.15,
+      "min": 0.05,
+      "max": 0.4,
+      "unit": "x",
+      "comment": "Satisfaction from a meal."
+    },
+    "satPriceWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty per +100% ticket price over the act base."
+    },
+    "satParkingWeight": {
+      "value": 0.3,
+      "min": 0.05,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Satisfaction penalty for unplowed lots."
+    }
+  },
+  "weather": {
+    "windExposurePer100m": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.12,
+      "unit": "frac/100m",
+      "comment": "Wind increase per 100 m of elevation above the base for SampleAt."
+    }
+  },
+  "snowmaking": {
+    "snowPerWaterM3": {
+      "value": 2.2,
+      "min": 2.0,
+      "max": 2.5,
+      "unit": "m3 snow / m3 water",
+      "comment": "Brief: 1 m3 water -> 2-2.5 m3 machine snow."
+    },
+    "machineSnowDensityKgM3": {
+      "value": 400,
+      "min": 350,
+      "max": 450,
+      "unit": "kg/m3",
+      "comment": "Density of machine-made snow when the gun def gives none."
+    },
+    "hoseMaxM": {
+      "value": 120,
+      "min": 60,
+      "max": 200,
+      "unit": "m",
+      "comment": "Longest hose run from a hydrant to a gun."
+    },
+    "blowbackFactor": {
+      "value": 0.55,
+      "min": 0.3,
+      "max": 0.8,
+      "unit": "x",
+      "comment": "Output factor when a gun aims into the wind above 8 km/h."
+    },
+    "windDriftMPerKmh": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 1.2,
+      "unit": "m per km/h",
+      "comment": "Downwind drift of the plume per km/h of wind at full reach."
+    },
+    "pumpKwhPerM3Water": {
+      "value": 1.1,
+      "min": 0.6,
+      "max": 2.0,
+      "unit": "kWh/m3",
+      "comment": "Pumping energy per m3 of water at ~300 m head (brief: 1.5-4 kWh per m3 of snow total)."
+    },
+    "compressorKwPerM3Min": {
+      "value": 6.5,
+      "min": 4,
+      "max": 9,
+      "unit": "kW per m3/min",
+      "comment": "Compressor power per m3/min of air for lance guns."
+    },
+    "nozzleLifeHours": {
+      "value": 1500,
+      "min": 500,
+      "max": 4000,
+      "unit": "h",
+      "comment": "Nozzle set life before output drops 30%."
+    },
+    "wetBulbMaxC": {
+      "value": -2.5,
+      "min": -6,
+      "max": 0,
+      "unit": "degC wet-bulb",
+      "comment": "Marginal snowmaking threshold shown to the player: fan guns start producing usable snow at about -2.5 C wet-bulb (real practice quotes -2 to -3 C). Each gun's own output curve decides actual production."
+    }
+  },
+  "construction": {
+    "minLiftLengthM": {
+      "value": 30,
+      "min": 20,
+      "max": 60,
+      "unit": "m",
+      "comment": "Shortest buildable line (a beginner carpet)."
+    },
+    "minLiftVerticalM": {
+      "value": 5,
+      "min": 2,
+      "max": 15,
+      "unit": "m",
+      "comment": "A lift must gain at least this much height."
+    },
+    "terminalConcreteM3": {
+      "value": 60,
+      "min": 30,
+      "max": 150,
+      "unit": "m3",
+      "comment": "Concrete per terminal foundation."
+    },
+    "concreteKgPerM3": {
+      "value": 2400,
+      "min": 2300,
+      "max": 2500,
+      "unit": "kg/m3",
+      "comment": "Density of concrete hauled by mixer trucks."
+    },
+    "workHoursPerDay": {
+      "value": 9,
+      "min": 6,
+      "max": 12,
+      "unit": "h",
+      "comment": "Construction crew working day, for build-time estimates."
+    },
+    "depositFrac": {
+      "value": 0.4,
+      "min": 0.2,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Equipment order deposit paid at commit."
+    },
+    "deliveryFrac": {
+      "value": 0.4,
+      "min": 0.2,
+      "max": 0.6,
+      "unit": "frac",
+      "comment": "Instalment paid when terminals are placed (equipment delivered)."
+    },
+    "liftCorridorWidthM": {
+      "value": 12,
+      "min": 8,
+      "max": 20,
+      "unit": "m",
+      "comment": "Cleared corridor width under a lift line."
+    },
+    "minRunWidthM": {
+      "value": 15,
+      "min": 10,
+      "max": 25,
+      "unit": "m",
+      "comment": "Narrowest run that can be cut."
+    },
+    "maxRunWidthM": {
+      "value": 90,
+      "min": 60,
+      "max": 150,
+      "unit": "m",
+      "comment": "Widest run that can be cut in one project."
+    },
+    "maxRunGradeDeg": {
+      "value": 40,
+      "min": 30,
+      "max": 50,
+      "unit": "deg",
+      "comment": "Steepest segment a run may have (black runs 25-35 deg)."
+    },
+    "minRunLengthM": {
+      "value": 80,
+      "min": 40,
+      "max": 200,
+      "unit": "m",
+      "comment": "Shortest run worth cutting."
+    }
+  },
+  "fleet": {
+    "marketRefreshDays": {
+      "value": 7,
+      "min": 3,
+      "max": 14,
+      "unit": "days",
+      "comment": "Used market turns over weekly."
+    },
+    "candidateRefreshDays": {
+      "value": 7,
+      "min": 3,
+      "max": 14,
+      "unit": "days",
+      "comment": "New operator candidates weekly."
+    },
+    "usedListingsPerDefMax": {
+      "value": 2,
+      "min": 0,
+      "max": 4,
+      "unit": "count",
+      "comment": "Max used listings per machine class at a refresh."
+    },
+    "usedHoursFracMin": {
+      "value": 0.25,
+      "min": 0.05,
+      "max": 0.5,
+      "unit": "frac",
+      "comment": "Used machines: hour meter as a fraction of the rebuild interval, low end."
+    },
+    "usedHoursFracMax": {
+      "value": 1.2,
+      "min": 0.8,
+      "max": 1.6,
+      "unit": "frac",
+      "comment": "High end (past rebuild = cheap and risky)."
+    },
+    "hiddenDefectProbPerThousandHours": {
+      "value": 0.12,
+      "min": 0.02,
+      "max": 0.3,
+      "unit": "prob",
+      "comment": "Chance per 1,000 h that a used listing hides a defect."
+    },
+    "inspectionFee": {
+      "value": 1200,
+      "min": 300,
+      "max": 3000,
+      "unit": "USD",
+      "comment": "Pre-purchase inspection by an independent mechanic."
+    },
+    "leaseMonthlyFracOfPrice": {
+      "value": 0.028,
+      "min": 0.02,
+      "max": 0.04,
+      "unit": "frac",
+      "comment": "Monthly lease when the def gives no leaseMonthly (36-month lease ~ price)."
+    },
+    "rentDailyFracOfPrice": {
+      "value": 0.0065,
+      "min": 0.004,
+      "max": 0.01,
+      "unit": "frac",
+      "comment": "Daily rental rate (a peak week costs ~5% of the machine)."
+    },
+    "rentDefaultDays": {
+      "value": 7,
+      "min": 1,
+      "max": 30,
+      "unit": "days",
+      "comment": "Default rental length."
+    },
+    "tradeInFactor": {
+      "value": 0.9,
+      "min": 0.7,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Dealer trade-in credit as a fraction of resale value."
+    },
+    "pmHours": {
+      "value": 4,
+      "min": 2,
+      "max": 8,
+      "unit": "h",
+      "comment": "Shop hours for a 250 h service."
+    },
+    "pmCostFracOfPrice": {
+      "value": 0.0035,
+      "min": 0.001,
+      "max": 0.008,
+      "unit": "frac",
+      "comment": "PM service cost (fluids, filters, labour) as a fraction of price."
+    },
+    "pmWearRecovery": {
+      "value": 0.06,
+      "min": 0.02,
+      "max": 0.15,
+      "unit": "wear",
+      "comment": "Wear removed from each subsystem by a PM service (adjustments, fluids)."
+    },
+    "repairWearRecovery": {
+      "value": 0.5,
+      "min": 0.2,
+      "max": 0.9,
+      "unit": "wear",
+      "comment": "Wear removed from the repaired subsystem."
+    },
+    "rebuildHours": {
+      "value": 120,
+      "min": 60,
+      "max": 240,
+      "unit": "h",
+      "comment": "Shop hours for a rebuild."
+    },
+    "rebuildCostFracOfPrice": {
+      "value": 0.28,
+      "min": 0.15,
+      "max": 0.4,
+      "unit": "frac",
+      "comment": "Rebuild cost as a fraction of the new price."
+    },
+    "sendOutDays": {
+      "value": 6,
+      "min": 2,
+      "max": 14,
+      "unit": "days",
+      "comment": "Days a sent-out repair takes at multiplier 1."
+    },
+    "sendOutCostMultiplier": {
+      "value": 1.5,
+      "min": 1.1,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Cost multiplier for repairs sent to a dealer."
+    },
+    "fieldRepairMultiplier": {
+      "value": 1.4,
+      "min": 1.0,
+      "max": 2.5,
+      "unit": "x",
+      "comment": "Field repair cost vs shop."
+    },
+    "expressPartsMultiplier": {
+      "value": 2.0,
+      "min": 1.2,
+      "max": 3.0,
+      "unit": "x",
+      "comment": "Cost multiplier when parts are not in stock and must be expressed."
+    },
+    "fieldRefuelWorkHours": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "h",
+      "comment": "Service truck time at a stranded machine to refuel it."
+    },
+    "fieldRepairWorkHours": {
+      "value": 3,
+      "min": 1,
+      "max": 8,
+      "unit": "h",
+      "comment": "Service truck time for a field repair."
+    },
+    "fieldRefuelFrac": {
+      "value": 0.6,
+      "min": 0.3,
+      "max": 1.0,
+      "unit": "frac",
+      "comment": "Tank fraction a field refuel brings the machine to."
+    },
+    "shiftMinHoursPaid": {
+      "value": 4,
+      "min": 0,
+      "max": 8,
+      "unit": "h",
+      "comment": "Hired operators are paid at least this many hours a day even when idle (half rate)."
+    },
+    "fuelPriceDailyVolatilityScale": {
+      "value": 0.35,
+      "min": 0.1,
+      "max": 1.0,
+      "unit": "x",
+      "comment": "Daily random-walk scale on the depot's price volatility."
+    }
+  },
+  "tasks": {
+    "autoGroomJobs": {
+      "value": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "bool",
+      "comment": "Post one grooming job per open piste at resort close. Resorts run a nightly groom plan; 1 = on, 0 = player posts jobs manually."
+    },
+    "groomJobPqiBelow": {
+      "value": 92,
+      "min": 0,
+      "max": 100,
+      "unit": "PQI",
+      "comment": "Pistes at or above this PQI at close are skipped for the night (a run skied lightly on a cold day keeps its corduroy)."
+    },
+    "blockRetryMinutes": {
+      "value": 90,
+      "min": 15,
+      "max": 720,
+      "unit": "min",
+      "comment": "How long an auto-generated job stays blocked after a machine gave it back before the foreman offers it again."
+    },
+    "rescueRetryAttempts": {
+      "value": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "count",
+      "comment": "Times a machine is sent back to a refuel, repair or rescue call it has already turned back from before the ordinary same-machine hold applies to it too. A stranded machine must not wait out a shift for fuel, but it does not move either, so the pitch up to it never gets easier and a third identical attempt only burns the truck's own fuel."
+    },
+    "blockRetrySameMachineHours": {
+      "value": 8,
+      "min": 1,
+      "max": 48,
+      "unit": "h",
+      "comment": "A machine that gave a job back (stalled on a pitch, refused a slope) is not offered the same job again for this long: it would drive to the same spot and stall there again. Held per machine, so one machine handing a job in does not release another's hold. Any machine that has not handed this job in may take it on the next dispatch; by the next shift the snow has settled or the job has been reposted. Two exceptions: when every machine that could go is held out the best of them is sent anyway rather than leave the job standing, and refuel, repair and rescue calls are never held at first because a stranded machine must not wait a shift."
+    },
+    "dispatchWearPenaltyM": {
+      "value": 300,
+      "min": 0,
+      "max": 2000,
+      "unit": "m",
+      "comment": "Distance handicap per unit of a machine's worst subsystem wear when the foreman picks the nearest machine for a job: the sound machine goes out first, a worn one only when it is much nearer (grip and power both fall with wear)."
+    },
+    "autoDispatch": {
+      "value": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "bool",
+      "comment": "Night foreman: idle machines with a free licensed operator take open jobs by priority without the player. 0 = the player dispatches every job from the board."
+    }
   }
 }
