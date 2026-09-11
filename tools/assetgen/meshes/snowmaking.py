@@ -33,8 +33,8 @@ _FAN_MOTOR_KW = 5.0
 _AUTOMATION_TIER = 3
 
 # BoomLengthM is the record's mast figure, but a lance and a fan gun spend it
-# differently: a lance *is* the mast and carries its nozzle head at the very top, where a
-# tower only has to lift a fan barrel clear of the piste and the groomers.
+# differently: a lance is the mast itself and carries its nozzle head at the very top,
+# where a tower only has to lift a fan barrel clear of the piste and the groomers.
 _LANCE_MAST_FACTOR = 1.7
 _FAN_TOWER_FACTOR = 0.65
 
@@ -396,8 +396,8 @@ def _build_fan_gun(m, record, vis):
         _control_cabinet(m, (0.0, deck_y + 0.34, -_num(vis.get("BodyL"), 2.2) * 0.3),
                          (0.62, 0.62, 0.34), auto)
         if auto:
-            _weather_head(m, (_num(vis.get("BodyW"), 1.4) * 0.34, deck_y,
-                              -_num(vis.get("BodyL"), 2.2) * 0.12), 2.0)
+            _weather_head(m, (_num(vis.get("BodyW"), 1.4) * 0.38, deck_y,
+                              -_num(vis.get("BodyL"), 2.2) * 0.46), 2.0)
         base_half = (_num(vis.get("BodyW"), 1.4) * 0.5, _num(vis.get("BodyL"), 2.2) * 0.5)
         colliders = [("base_col", (0.0, deck_y * 0.5, 0.0),
                       (base_half[0] * 2.0, deck_y, base_half[1] * 2.0))]
@@ -463,10 +463,10 @@ def _build_fan_gun(m, record, vis):
         m.beam((s * r_out * 0.55, body_y + 0.30, rear + barrel * 0.10),
                (s * r_out * 0.78, pitch_y - r_out * 0.72, rear + barrel * 0.10),
                0.05, mat=METAL, parent="gun_pitch")
-    m.cylinder((r_out * 0.55, body_y + 0.05, rear - 0.02), 0.045, barrel * 0.7, axis=2,
-               segments=6, mat=METAL, parent="gun_pitch")
-    m.cylinder((-r_out * 0.55, body_y + 0.05, rear - 0.02), 0.032, barrel * 0.7, axis=2,
-               segments=6, mat=METAL, parent="gun_pitch")
+    for side, pipe_r in ((1.0, 0.045), (-1.0, 0.032)):
+        m.cylinder((side * (r_out * 0.78 + pipe_r), body_y + 0.05,
+                    rear + barrel * 0.36), pipe_r, barrel * 0.74, axis=2, segments=6,
+                   mat=METAL, parent="gun_pitch")
 
     ring_r = r_in * 0.80
     m.tube((0.0, pitch_y, front - 0.16), ring_r + 0.035, ring_r, 0.07, axis=2,
@@ -574,19 +574,21 @@ def _build_lance_gun(m, record, vis):
 
     # The head is where the water meets the air, and it tilts to set the throw.
     m.node("gun_pitch", pivot=(0.0, top, 0.0), parent="gun_yaw")
-    head_r = mast_r * 2.3
-    m.cylinder((0.0, top + 0.10, 0.0), head_r, 0.22, axis=1, segments=12, mat=BODY,
+    head_r = mast_r * 3.1
+    m.cylinder((0.0, top + 0.14, 0.0), head_r, 0.30, axis=1, segments=12, mat=BODY,
                parent="gun_pitch")
-    m.lathe([(0.0, 0.0), (head_r * 0.9, 0.03), (head_r * 0.55, 0.16), (0.0, 0.20)],
-            (0.0, top + 0.21, 0.0), segments=12, mat=METAL, parent="gun_pitch")
+    m.tube((0.0, top + 0.06, 0.0), head_r * 1.35, head_r * 0.95, 0.09, axis=1,
+           segments=12, mat=METAL, parent="gun_pitch")
+    m.lathe([(0.0, 0.0), (head_r * 0.9, 0.04), (head_r * 0.5, 0.18), (0.0, 0.24)],
+            (0.0, top + 0.29, 0.0), segments=12, mat=METAL, parent="gun_pitch")
     ports = int(_clamp(6.0 + air, 8.0, 16.0))
     for i in range(ports):
         a = 2.0 * math.pi * i / ports
-        c, s = math.cos(a) * head_r, math.sin(a) * head_r
-        m.cylinder((c * 1.18, top + 0.06, s * 1.18), 0.017, 0.10, axis=1, segments=5,
-                   mat=METAL, parent="gun_pitch")
-        m.cylinder((c * 1.18, top + 0.13, s * 1.18), 0.026, 0.05, axis=1, segments=5,
-                   mat=METAL, parent="gun_pitch")
+        c, s = math.cos(a) * head_r * 1.22, math.sin(a) * head_r * 1.22
+        m.cylinder((c, top + 0.04, s), 0.02, 0.16, axis=1, segments=5, mat=METAL,
+                   parent="gun_pitch")
+        m.cylinder((c, top + 0.15, s), 0.032, 0.06, axis=1, segments=5, mat=METAL,
+                   parent="gun_pitch")
     m.cylinder((0.0, top - 0.10, 0.0), mast_r * 1.5, 0.2, axis=1, segments=10,
                mat=METAL, parent="gun_pitch")
     m.box((head_r * 1.5, top - 0.06, 0.0), (0.12, 0.16, 0.14), mat=BODY,
@@ -600,7 +602,15 @@ def _build_lance_gun(m, record, vis):
         _handwheel(m, (s * 0.14, manifold_y + 0.26, mast_r + 0.22), 0.10, axis=1)
         _coupler(m, (s * 0.14, manifold_y - 0.02, mast_r + 0.36), (0.0, 0.0, 1.0),
                  radius * 0.8)
-    m.box((-0.42, manifold_y + 0.08, mast_r + 0.16), (0.22, 0.3, 0.18), mat=BODY)
+    if tier > 1:
+        # A later lance is opened from the control room rather than by a crew walking the
+        # line, so it carries a solenoid cabinet where the first generation had a
+        # junction box and two hand valves.
+        m.box((-0.42, manifold_y + 0.12, mast_r + 0.20), (0.30, 0.44, 0.24), mat=BODY)
+        m.box((-0.42, manifold_y + 0.20, mast_r + 0.33), (0.18, 0.14, 0.02), mat=GLASS,
+              bevel=False)
+    else:
+        m.box((-0.42, manifold_y + 0.08, mast_r + 0.16), (0.22, 0.3, 0.18), mat=BODY)
 
     _hose_reel(m, (0.0, base_y + 0.42, -0.55), 0.30, 0.26)
     return colliders
@@ -905,29 +915,32 @@ def _build_snow_factory(m, record, vis):
 
     # The ice drum: the one part of a snow factory a visitor can point at.
     drum_r = height * 0.34
+    drum_y = plinth + drum_r + 0.35
+    drum_z = -(length * 0.5 + drum_r * 0.45)
     m.lathe([(0.0, -width * 0.42), (drum_r * 0.8, -width * 0.44),
              (drum_r, -width * 0.40), (drum_r, width * 0.40),
              (drum_r * 0.8, width * 0.44), (0.0, width * 0.42)],
-            (0.0, plinth + drum_r + 0.35, -length * 0.28), segments=16, mat=METAL,
-            axis=0)
+            (0.0, drum_y, drum_z), segments=16, mat=METAL, axis=0)
     for s in (-1.0, 1.0):
-        m.cylinder((s * width * 0.46, plinth + drum_r + 0.35, -length * 0.28),
-                   drum_r * 0.3, 0.16, axis=0, segments=10, mat=BODY)
-        leg = plinth + drum_r + 0.35
-        m.box((s * width * 0.46, leg * 0.5 + 0.02, -length * 0.28),
-              (0.14, leg - 0.04, drum_r * 1.2), mat=BODY)
+        m.cylinder((s * width * 0.46, drum_y, drum_z), drum_r * 0.3, 0.16, axis=0,
+                   segments=10, mat=BODY)
+        m.box((s * width * 0.46, drum_y * 0.5 + 0.02, drum_z),
+              (0.14, drum_y - 0.04, drum_r * 1.2), mat=BODY)
+        m.beam((s * width * 0.46, drum_y * 0.35, drum_z - drum_r * 0.9),
+               (s * width * 0.46, drum_y * 0.9, -length * 0.5 + 0.1), 0.09, mat=METAL)
+    m.box((width * 0.30, drum_y + drum_r * 0.75, drum_z), (0.5, 0.44, 0.5), mat=BODY)
 
     # Discharge conveyor: it has to throw the snow clear of the plant, and the record
     # says how far.
-    conv_l = _clamp(reach * 0.6, 4.0, 10.0)
+    conv_l = _clamp(reach * 0.5, 3.5, 8.0)
     conv_w = width * 0.34
-    rise = _clamp(conv_l * 0.42, 1.4, 3.6)
-    z0 = length * 0.5 - 0.3
-    y0 = plinth + height * 0.34
+    rise = _clamp(conv_l * 0.42, 1.4, 3.3)
+    z0 = length * 0.5 - 0.55
+    y0 = plinth + height * 0.44
     zt = z0 + conv_l * 0.92
     yt = y0 + rise
     deg = math.degrees(math.atan2(rise, conv_l * 0.92))
-    rot = mk.unity_euler(-deg, 0.0, 0.0)
+    rot = mk.unity_euler(deg, 0.0, 0.0)
     mid = ((z0 + zt) * 0.5, (y0 + yt) * 0.5)
     m.box((0.0, mid[1], mid[0]), (conv_w, 0.12, conv_l), mat=METAL, rot=rot)
     for s in (-1.0, 1.0):
@@ -936,9 +949,17 @@ def _build_snow_factory(m, record, vis):
     for zz, yy in ((z0, y0), (zt, yt)):
         m.cylinder((0.0, yy + 0.06, zz), 0.16, conv_w * 0.98, axis=0, segments=10,
                    mat=METAL)
-    m.beam((0.0, plinth, zt - conv_l * 0.3), (0.0, yt - 0.24, zt - 0.4), 0.12,
-           mat=METAL)
+    # The trestle stands under the head end, its legs running a little into the frame so
+    # the two never read as separate pieces.
+    leg_z = zt - conv_l * 0.22
+    leg_y = y0 + (leg_z - z0) * rise / (conv_l * 0.92)
+    for s in (-1.0, 1.0):
+        m.beam((s * conv_w * 0.70, 0.0, leg_z - 0.85),
+               (s * conv_w * 0.42, leg_y + 0.1, leg_z), 0.11, mat=METAL)
+    m.beam((-conv_w * 0.6, leg_y * 0.45, leg_z - 0.45),
+           (conv_w * 0.6, leg_y * 0.45, leg_z - 0.45), 0.07, mat=METAL)
     m.box((0.0, yt + 0.2, zt - 0.1), (conv_w * 1.1, 0.4, 0.5), mat=BODY)
+    m.box((0.0, y0 + 0.42, length * 0.5), (conv_w * 1.45, 0.95, 1.0), mat=BODY)
 
     # Pipework: the chilled water loop out to the drum and back.
     d = _pipe_diameter(water / 60000.0, _WATER_VELOCITY_MS)
@@ -1021,8 +1042,8 @@ def _build_pump_house(m, station):
 
     # The manifold outside the wall is the part that says how much water this house
     # moves, so its diameter is the real one for the duty.
-    man_y = _clamp(d * 3.0, 0.8, 1.6)
-    x = -width * 0.5 - d * 1.4
+    man_y = _clamp(d * 4.5, 1.0, 2.1)
+    x = -width * 0.5 - d * 1.4 - 0.35
     m.cylinder((x, man_y, 0.0), d * 0.5, length * 0.86, axis=2, segments=12, mat=METAL)
     for z in (-length * 0.3, length * 0.3):
         m.cylinder((x, man_y, z), d * 0.78, 0.06, axis=2, segments=12, mat=METAL)
@@ -1036,6 +1057,8 @@ def _build_pump_house(m, station):
         m.box((x, man_y * 0.5, z), (d * 1.4, man_y, 0.16), mat=METAL)
     m.cylinder((x - d * 1.2, man_y * 0.6, -length * 0.42), d * 0.34, man_y * 1.2,
                axis=1, segments=8, mat=METAL)
+    m.cylinder((x * 0.55, man_y, length * 0.42), d * 0.44, abs(x) * 0.9, axis=0,
+               segments=10, mat=METAL)
 
     m.box((width * 0.5 + 0.55, 0.9, length * 0.28), (1.0, 1.8, 1.2), mat=BODY)
     m.cylinder((width * 0.5 + 0.55, 1.86, length * 0.28), 0.08, 0.16, axis=1,
@@ -1091,13 +1114,13 @@ def _build_compressor_house(m, station):
         x = side * (width * 0.5 + r * 1.5)
         m.lathe([(0.0, 0.0), (r * 0.6, 0.1), (r, 0.32), (r, vessel - 0.32),
                  (r * 0.6, vessel - 0.1), (0.0, vessel)],
-                (x, 0.5, length * 0.16), segments=12, mat=BODY, axis=1)
-        m.box((x, 0.25, length * 0.16), (r * 1.8, 0.5, r * 1.8), mat=METAL)
-        m.cylinder((x, vessel + 0.62, length * 0.16), 0.05, 0.16, axis=1, segments=6,
+                (x, 0.5, length * 0.40), segments=12, mat=BODY, axis=1)
+        m.box((x, 0.25, length * 0.40), (r * 1.8, 0.5, r * 1.8), mat=METAL)
+        m.cylinder((x, vessel + 0.62, length * 0.40), 0.05, 0.16, axis=1, segments=6,
                    mat=METAL)
-        m.cylinder((side * (width * 0.5 + r * 0.72), 1.9, length * 0.16 - 0.85),
+        m.cylinder((side * (width * 0.5 + r * 0.72), 1.9, length * 0.40 - 0.85),
                    max(0.05, d * 0.5), r * 1.7, axis=0, segments=8, mat=METAL)
-        m.cylinder((x, 1.45, length * 0.16 - 0.85), max(0.05, d * 0.5), 0.95, axis=1,
+        m.cylinder((x, 1.45, length * 0.40 - 0.85), max(0.05, d * 0.5), 0.95, axis=1,
                    segments=8, mat=METAL)
     m.cylinder((-width * 0.5 - 0.3, 1.4, 0.0), max(0.05, d * 0.5), length * 0.7,
                axis=2, segments=8, mat=METAL)
