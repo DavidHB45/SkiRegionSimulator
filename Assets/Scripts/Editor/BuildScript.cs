@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace AlpineSim.Editor
 
             if (target == BuildTarget.StandaloneOSX)
             {
-                UnityEditor.OSXStandalone.UserBuildSettings.architecture = UnityEditor.Build.OSArchitecture.x64ARM64;
+                SetMacArchitectureUniversal();
                 if (!outPath.EndsWith(".app", StringComparison.OrdinalIgnoreCase)) outPath += ".app";
             }
             else if (target == BuildTarget.StandaloneWindows64)
@@ -52,6 +53,30 @@ namespace AlpineSim.Editor
                 throw new Exception("Build failed: " + summary.result);
             }
             if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        /// <summary>
+        /// Sets <c>UnityEditor.OSXStandalone.UserBuildSettings.architecture</c> to Universal (x64 + ARM64).
+        /// That type lives in the macOS Build Support module's editor assembly, which is only present
+        /// when the module is installed, so it is resolved by reflection: an Editor without the module
+        /// (a Windows-only install) still compiles this script, and CI's macOS image still gets the
+        /// Universal setting.
+        /// </summary>
+        private static void SetMacArchitectureUniversal()
+        {
+            Type settings = null;
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                settings = asm.GetType("UnityEditor.OSXStandalone.UserBuildSettings", false);
+                if (settings != null) break;
+            }
+            var prop = settings != null ? settings.GetProperty("architecture", BindingFlags.Public | BindingFlags.Static) : null;
+            if (prop == null)
+            {
+                Debug.LogWarning("[BuildScript] macOS Build Support module not found; cannot force Universal architecture.");
+                return;
+            }
+            prop.SetValue(null, Enum.Parse(prop.PropertyType, "x64ARM64"));
         }
 
         private static Dictionary<string, string> ParseArgs()
