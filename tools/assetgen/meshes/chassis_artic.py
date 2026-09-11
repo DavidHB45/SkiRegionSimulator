@@ -115,7 +115,10 @@ class _Artic:
         self.body_m3 = bucket if bucket > 0.0 else cargo / _AGGREGATE_KG_M3
         self.rear_kind = "dump" if self.body_m3 > 0.3 else "deck"
 
-        self.budget = "machine_hero" if datasrc.is_hero(record) else "machine_small"
+        # Hero budget whatever the record weighs. An articulated machine is four big
+        # wheels, a glazed cab and a joint modelled well enough to watch it fold, and
+        # that does not fit under the small class's 8 000 ceiling even on a light one.
+        self.budget = "machine_hero"
         self.m = mk.Model(record["Id"], budget_key=self.budget,
                           seed=datasrc.seed_for(record["Id"]))
 
@@ -362,7 +365,8 @@ class _Artic:
         # says how big a reservoir the machine needs to keep it cool.
         tank_r = _clamp(0.10 + self.flow / 2400.0, 0.11, 0.26)
         tank_l = _clamp(self.flow / 260.0, 0.4, 1.1)
-        self.m.cylinder((self.rail_x + tank_r * 0.7, self.deck_y + tank_r * 0.7,
+        self.m.cylinder((min(self.rail_x + tank_r * 0.7, self.inner_x - tank_r),
+                         self.deck_y + tank_r * 0.7,
                          (self.hood_z0 + self.hood_z1) * 0.5),
                         tank_r, min(tank_l, abs(self.hood_z1 - self.hood_z0) * 0.8),
                         axis=2, segments=10, mat=METAL)
@@ -496,8 +500,8 @@ class _Artic:
         if self.power < 1.0:
             return
         radius = _clamp(0.035 + self.power / 7000.0, 0.04, 0.13)
-        # Up the outside of the cab's front pillar, clear of the bonnet it would
-        # otherwise run inside, and far enough back to miss the front tyre.
+        # Up the outside of whichever cab pillar faces the engine, clear of the bonnet
+        # it would otherwise run inside and of the front tyre it would otherwise cross.
         x = max(self.hood_x + radius * 1.15, self.cw * 0.5 + radius * 1.1)
         z = self.cab_z + self.cl * (-0.42 if self.forward_cab else 0.42)
         base = self.hood_y0 + 0.05
@@ -805,8 +809,9 @@ class _Artic:
                                     z + outer * 0.5), 0, parent))
 
     def _lamps(self):
-        """Headlights in the hood nose, work lights on the roof. LightingLumens says how
-        many the machine carries, so the 30 kW-lumen tractor bristles with them."""
+        """Headlights where the machine leads from - the grille of a bonnet-first one,
+        the cab corners of a cab-first one - and work lights on the roof. LightingLumens
+        says how many it carries, so the 30 kW-lumen tractor bristles with them."""
         if self.forward_cab:
             lamp_w = self.cw * 0.26
             y = self.cab_y + self.ch * 0.08

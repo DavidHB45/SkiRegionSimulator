@@ -478,13 +478,23 @@ def _build_blade(m, record):
         m.cylinder((0.0, y0 + height * 0.5, hinge_z), thick * 1.5, height,
                    axis=1, segments=10, mat=METAL, parent=board_node)
 
+    # Where each board segment ends is where its skid shoe and its marker pole go, and a
+    # swept wing does not end where a straight board would - so the ends are collected as
+    # the segments are placed rather than assumed to sit at half the working width.
+    ends = []
+    if wing_w < 0.2:
+        ends = [(-centre_w * 0.5, reach, board_node), (centre_w * 0.5, reach, board_node)]
+
     for side, node in ((-1.0, "blade_angle_L"), (1.0, "blade_angle_R")):
         if wing_w < 0.2:
             break
         hinge = (side * centre_w * 0.5, y0, hinge_z)
         yaw = side * sweep
         dx, dz = _yaw_dir(yaw)
-        anchor = (hinge[0] + side * dx * wing_w * 0.5, y0, hinge[2] + side * dz * wing_w * 0.5)
+        anchor = (hinge[0] + side * dx * wing_w * 0.5, y0,
+                  hinge[2] + side * dz * wing_w * 0.5)
+        tip_x = hinge[0] + side * dx * wing_w
+        tip_z = hinge[2] + side * dz * wing_w
         if hinged:
             m.node(node, pivot=(hinge[0], y0 + height * 0.5, hinge[2]), parent=board_node)
             _board(m, node, anchor, yaw, wing_w, height, thick)
@@ -492,12 +502,15 @@ def _build_blade(m, record):
                  axis=1, parent=node)
             # The angle ram lives on the wing it swings: at the angles a blade works
             # through, a ram that follows its wing reads better than one that detaches.
-            tip = (anchor[0] + side * dx * wing_w * 0.34,
-                   y0 + height * 0.66, anchor[2] + side * dz * wing_w * 0.34 - thick * 2.0)
-            _ram(m, (side * centre_w * 0.18, y0 + height * 0.62, reach - thick * 5.0), tip,
+            ram_tip = (anchor[0] + side * dx * wing_w * 0.3, y0 + height * 0.66,
+                       anchor[2] + side * dz * wing_w * 0.3 - thick * 2.2)
+            _ram(m, (side * max(centre_w * 0.18, thick * 2.0), y0 + height * 0.62,
+                     hinge_z - thick * 4.0), ram_tip,
                  _clamp(height * 0.09, 0.05, 0.1), parent=node)
+            ends.append((tip_x, tip_z, node))
         else:
             _board(m, board_node, anchor, yaw, wing_w, height, thick)
+            ends.append((tip_x, tip_z, board_node))
 
     if kind == "BoxPusher":
         # End plates are what make a box pusher a box: they stop the windrow escaping.
@@ -509,14 +522,19 @@ def _build_blade(m, record):
             m.box((side * (width * 0.5 + 0.03), y0 + 0.05, reach - height * 0.4),
                   (thick * 1.4, 0.14, height * 0.8), mat=METAL, parent=board_node)
 
-    if kind in ("PlowStraight", "VPlow", "PlowWings"):
-        # Marker poles: a truck plough runs blind on its corners without them.
-        for side in (-1.0, 1.0):
-            x = side * width * 0.5
-            m.cylinder((x, y0 + height + 0.3, reach), 0.016, 0.62, axis=1, segments=6,
-                       mat=METAL, parent=board_node)
-            m.sphere((x, y0 + height + 0.62, reach), 0.04, segments=6, rings=4, mat=BODY,
-                     parent=board_node)
+    marked = kind in ("PlowStraight", "VPlow", "PlowWings")
+    for x, z, node in ends:
+        # Skid shoes carry the board when the operator floats it; marker poles are how a
+        # truck plough driver knows where its corners are in a whiteout.
+        m.prism([(y0 - 0.02, z - thick * 3.0), (y0 + height * 0.2, z - thick * 3.4),
+                 (y0 + height * 0.22, z - thick * 0.6), (y0 - 0.02, z - thick * 0.4)],
+                (x - math.copysign(thick, x), 0.0, 0.0), thick * 0.9, mat=METAL,
+                parent=node, axis=0)
+        if marked:
+            m.cylinder((x, y0 + height + 0.3, z - thick), 0.016, 0.62, axis=1, segments=6,
+                       mat=METAL, parent=node)
+            m.sphere((x, y0 + height + 0.62, z - thick), 0.04, segments=6, rings=4,
+                     mat=BODY, parent=node)
 
     _blade_frame(m, board_node, width, height, thick, reach, y0)
     return [("att_col", (0.0, y0 + height * 0.5, reach * 0.9),
@@ -543,13 +561,9 @@ def _blade_frame(m, board_node, width, height, thick, reach, y0):
          _clamp(height * 0.15, 0.08, 0.16), parent="blade_lift")
     m.box((0.0, frame_y + height * 0.1, reach * 0.45),
           (frame_x * 1.4, height * 0.2, reach * 0.5), mat=METAL, parent="blade_lift")
-    # Skid shoes carry the board when the operator floats it, and the hose pair is what
-    # actually feeds the rams - both are half of what a blade looks like from the side.
+    # The hose pair that actually feeds the rams: half of what a blade looks like from
+    # the side is its plumbing.
     for side in (-1.0, 1.0):
-        m.prism([(y0 - 0.02, reach - thick * 3.0), (y0 + height * 0.2, reach - thick * 3.4),
-                 (y0 + height * 0.22, reach - thick * 0.6), (y0 - 0.02, reach - thick * 0.4)],
-                (side * (width * 0.5 - thick), 0.0, 0.0), thick * 0.9, mat=METAL,
-                parent="blade_lift", axis=0)
         _bar(m, (side * frame_x * 0.5, 0.16, 0.02),
              (side * frame_x * 1.0, frame_y + height * 0.22, reach * 0.55), 0.035,
              parent="blade_lift", square=False)
@@ -689,13 +703,15 @@ def _build_blower(m, record):
     axis_y = GROUND + auger_r + 0.1
 
     _mount_plate(m, _clamp(width * 0.3, 0.5, 0.9), 0.7)
-    # The housing: an open-fronted box with a curved back that the augers sweep.
-    profile = [(GROUND, -auger_r * 1.35), (GROUND, auger_r * 1.35),
-               (GROUND + house_h * 0.35, auger_r * 1.5),
-               (GROUND + house_h, auger_r * 1.45),
-               (GROUND + house_h, -auger_r * 1.2), (GROUND + house_h * 0.4, -auger_r * 1.5)]
-    m.prism(profile, (0.0, 0.0, house_z), width, mat=BODY, axis=0)
-    m.box((0.0, GROUND + 0.04, house_z + auger_r * 1.42), (width * 0.99, 0.13, 0.05),
+    # The housing is a C section open at the front: that mouth is where the snow goes in,
+    # and closing it would bury the augers inside a box nobody can see into.
+    front, back, wall = auger_r * 1.5, auger_r * 1.4, 0.055
+    top = GROUND + house_h
+    m.prism([(GROUND, front), (GROUND, -back), (top, -back), (top, front * 0.45),
+             (top - wall, front * 0.45), (top - wall, -back + wall),
+             (GROUND + wall, -back + wall), (GROUND + wall, front)],
+            (0.0, 0.0, house_z), width, mat=BODY, axis=0)
+    m.box((0.0, GROUND + 0.04, house_z + front * 0.97), (width * 0.99, 0.13, 0.05),
           mat=METAL)
     for side in (-1.0, 1.0):
         m.box((side * width * 0.5, GROUND + house_h * 0.5, house_z),
@@ -706,7 +722,7 @@ def _build_blower(m, record):
                    axis=0, segments=10, mat=METAL)
 
     imp_r = _clamp(0.3 + throw / 90.0, 0.34, 0.62)
-    imp_z = house_z - auger_r * 1.1
+    imp_z = house_z - back - imp_r * 0.4          # the volute sits behind the auger wall
     m.node("blower_impeller", pivot=(0.0, axis_y + imp_r * 0.15, imp_z))
     m.tube((0.0, axis_y + imp_r * 0.15, imp_z), imp_r * 1.14, imp_r * 1.0, 0.3, axis=2,
            segments=_segments(imp_r) + 4, mat=BODY)
@@ -817,7 +833,8 @@ def _build_bucket(m, record):
     m.box((0.0, GROUND + height * 0.06, 0.15), (width * 0.99, 0.09, 0.06), mat=METAL,
           parent="bucket")
     for side in (-1.0, 1.0):
-        m.prism([(GROUND + 0.02, 0.16 + depth * 0.72), (GROUND + height * 0.3, 0.16 + depth * 0.86),
+        m.prism([(GROUND + 0.02, 0.16 + depth * 0.72),
+                 (GROUND + height * 0.3, 0.16 + depth * 0.86),
                  (GROUND + height * 0.32, 0.16 + depth * 0.99),
                  (GROUND + 0.02, 0.16 + depth * 0.99)],
                 (side * (width * 0.5 + 0.03), 0.0, 0.0), 0.04, mat=METAL, parent="bucket",
@@ -846,8 +863,8 @@ def _build_forks(m, record):
     for y in rail_y:
         _bar(m, (-spread * 0.75, y, 0.09), (spread * 0.75, y, 0.09), 0.075, mat=METAL)
     for side in (-1.0, 1.0):
-        _bar(m, (side * spread * 0.72, rail_y[0], 0.09), (side * spread * 0.72, rail_y[1], 0.09),
-             0.07, mat=METAL)
+        _bar(m, (side * spread * 0.72, rail_y[0], 0.09),
+             (side * spread * 0.72, rail_y[1], 0.09), 0.07, mat=METAL)
         m.box((side * spread * 0.3, GROUND + height * 0.5, 0.05),
               (0.06, height * 0.7, 0.06), mat=METAL)
 
@@ -969,8 +986,8 @@ def _build_broom(m, record):
         end = (side * dx * width * 0.5, axis_y, drum_z + side * dz * width * 0.5)
         m.box((end[0], end[1] + radius * 0.1, end[2]), (0.06, radius * 2.2, radius * 2.2),
               mat=BODY, rot=mk.unity_euler(0.0, yaw, 0.0))
-        _bar(m, (side * 0.22, 0.02, 0.06), (end[0] * 0.92, axis_y + radius * 1.2, end[2] * 0.94),
-             0.09)
+        _bar(m, (side * 0.22, 0.02, 0.06),
+             (end[0] * 0.92, axis_y + radius * 1.2, end[2] * 0.94), 0.09)
         m.cylinder((end[0] * 1.06, axis_y, end[2] * 1.06), radius * 0.3, 0.2, axis=0,
                    segments=10, mat=METAL, rot=mk.unity_euler(0.0, yaw, 0.0))
     _bar(m, (-0.28, 0.02, 0.06), (0.28, 0.02, 0.06), 0.1)
@@ -1010,7 +1027,8 @@ def _build_auger(m, record):
     for side in (-1.0, 1.0):
         m.box((side * bore * 0.34, top - length + 0.02, 0.62), (0.05, 0.07, 0.05),
               mat=METAL, parent="auger_bit", bevel=False)
-    return [("att_col", (0.0, top - length * 0.4, 0.62), (bore + 0.1, length + 0.4, bore + 0.1))]
+    return [("att_col", (0.0, top - length * 0.4, 0.62),
+             (bore + 0.1, length + 0.4, bore + 0.1))]
 
 
 def _build_mulcher(m, record):
@@ -1035,8 +1053,8 @@ def _build_mulcher(m, record):
           (width * 0.98, radius * 0.5, 0.07), mat=METAL,
           rot=mk.unity_euler(18.0, 0.0, 0.0))
     for side in (-1.0, 1.0):
-        m.box((side * width * 0.5, GROUND + house_h * 0.5, drum_z), (0.06, house_h, radius * 3.0),
-              mat=BODY)
+        m.box((side * width * 0.5, GROUND + house_h * 0.5, drum_z),
+              (0.06, house_h, radius * 3.0), mat=BODY)
         # Skid shoes carry the housing on the ground and set the cutting height.
         m.prism([(0.0, -radius * 1.4), (0.0, radius * 1.4), (0.1, radius * 1.55),
                  (0.14, -radius * 1.5)],
@@ -1050,8 +1068,8 @@ def _build_mulcher(m, record):
     # Drive motor and belt guard on one end, which is where the power actually arrives.
     m.cylinder((width * 0.5 + 0.13, axis_y, drum_z), radius * 0.42, 0.26, axis=0,
                segments=12, mat=METAL)
-    m.box((width * 0.5 + 0.16, axis_y + radius * 0.4, drum_z), (0.1, radius * 1.6, radius * 2.2),
-          mat=BODY)
+    m.box((width * 0.5 + 0.16, axis_y + radius * 0.4, drum_z),
+          (0.1, radius * 1.6, radius * 2.2), mat=BODY)
     return [("att_col", (0.0, GROUND + house_h * 0.5, drum_z),
              (width + 0.2, house_h, radius * 3.2))]
 
@@ -1072,12 +1090,10 @@ def _build_spreader(m, record):
     _mount_plate(m, _clamp(body_w * 0.7, 0.5, 1.0), 0.8)
     # Hopper shell: a wide mouth narrowing to the conveyor slot along the bottom.
     top = height + floor_y
-    sections = [
-        [(-body_w * 0.5, top, mid_z - length * 0.5), (body_w * 0.5, top, mid_z - length * 0.5),
-         (body_w * 0.16, floor_y, mid_z - length * 0.5), (-body_w * 0.16, floor_y, mid_z - length * 0.5)],
-        [(-body_w * 0.5, top, mid_z + length * 0.5), (body_w * 0.5, top, mid_z + length * 0.5),
-         (body_w * 0.16, floor_y, mid_z + length * 0.5), (-body_w * 0.16, floor_y, mid_z + length * 0.5)],
-    ]
+    sections = []
+    for z in (mid_z - length * 0.5, mid_z + length * 0.5):
+        sections.append([(-body_w * 0.5, top, z), (body_w * 0.5, top, z),
+                         (body_w * 0.16, floor_y, z), (-body_w * 0.16, floor_y, z)])
     m.loft(sections, mat=BODY)
     m.box((0.0, floor_y - 0.04, mid_z), (body_w * 0.34, 0.08, length * 0.98), mat=METAL)
     # A grate over the mouth and a frame under the belly: both are structure, both read.
@@ -1128,7 +1144,8 @@ def _build_spreader(m, record):
         m.array(rung, rungs, (0.0, height * 0.3, 0.0))
         _bar(m, (side * body_w * 0.56, floor_y + 0.06, mid_z + length * 0.3),
              (side * body_w * 0.56, floor_y + height * 0.8, mid_z + length * 0.3), 0.04)
-    return [("att_col", (0.0, floor_y + height * 0.4, mid_z), (body_w, height + 0.6, length + 0.4))]
+    return [("att_col", (0.0, floor_y + height * 0.4, mid_z),
+             (body_w, height + 0.6, length + 0.4))]
 
 
 def _build_tank(m, record):
@@ -1144,7 +1161,8 @@ def _build_tank(m, record):
 
     _mount_plate(m, _clamp(body_w * 0.7, 0.5, 1.0), 0.8)
     # A real tank is a lathe: dished ends, not a cut-off cylinder.
-    m.lathe([(0.0, -length * 0.5 - radius * 0.3), (radius * 0.7, -length * 0.5 - radius * 0.12),
+    m.lathe([(0.0, -length * 0.5 - radius * 0.3),
+             (radius * 0.7, -length * 0.5 - radius * 0.12),
              (radius, -length * 0.5), (radius, length * 0.5),
              (radius * 0.7, length * 0.5 + radius * 0.12),
              (0.0, length * 0.5 + radius * 0.3)],
@@ -1195,7 +1213,7 @@ def _build_tank(m, record):
 
 
 def _build_pump(m, record):
-    """A towed pump skid: engine, pump volute, suction and discharge manifolds on a trailer."""
+    """A towed pump skid: engine, pump volute and manifolds on a trailer frame."""
     width = max(0.9, _width(record, 2.0))
     mass = _mass(record, 1800.0)
     length = _clamp(1.1 + mass / 1400.0, 1.6, 3.2)
@@ -1234,18 +1252,22 @@ def _build_pump(m, record):
 
 
 # --------------------------------------------------------------------------- rope
-def _rope_drum(m, node, centre, rope_m, pull_kn, drum_len, hub_r, mat=METAL):
-    """A drum wound with `rope_m` of rope, flanged to hold it.
+def _rope_wound(rope_m, pull_kn, drum_len, hub_r):
+    """How far out the rope winds on a drum, and the flange that has to contain it.
 
     Rope diameter follows the pull the record rates it for, the wound volume follows the
-    length, and the flange radius is solved from both - so a 1,200 m winch drum really is
-    bigger than a 1,000 m one.
+    length, and the radius is solved from both - so a 1,200 m winch drum really is bigger
+    than a 1,000 m one, and a 2,500 m haul rope reel is the size it has to be.
     """
     rope_d = _clamp(0.0018 * math.sqrt(max(1.0, pull_kn)) * 4.0, 0.010, 0.032)
     volume = rope_m * math.pi * (rope_d * 0.5) ** 2 * ROPE_PACKING
     wound = math.sqrt(volume / max(0.1, math.pi * drum_len) + hub_r * hub_r)
     wound = _clamp(wound, hub_r * 1.15, hub_r * 4.5)
-    flange = wound * 1.22
+    return wound, wound * 1.22
+
+
+def _rope_drum(m, node, centre, wound, flange, drum_len, hub_r, mat=METAL):
+    """The drum itself: hub, the wound rope on it and a flange each end."""
     m.cylinder(centre, hub_r, drum_len, axis=0, segments=_segments(hub_r) + 2, mat=mat,
                parent=node)
     m.cylinder(centre, wound, drum_len * 0.92, axis=0, segments=_segments(wound) + 4,
@@ -1256,7 +1278,6 @@ def _rope_drum(m, node, centre, rope_m, pull_kn, drum_len, hub_r, mat=METAL):
                 segments=_segments(flange) + 4, mat=mat, parent=node, axis=0)
         _bolts(m, (centre[0] + side * (drum_len * 0.5 + 0.04), centre[1], centre[2]),
                flange * 0.55, 6, 0.022, axis=0, parent=node)
-    return flange
 
 
 def _build_winch(m, record):
@@ -1276,7 +1297,9 @@ def _build_winch(m, record):
               (0.1, 0.3, 0.24), mat=METAL)
 
     m.node("winch_boom", pivot=(0.0, base_y + 0.26, 0.0))
-    tower = 0.9 * scale
+    # The drum has to stand clear of the cab roof for the rope to run to the anchor, so
+    # the post grows with the pull it is rated for rather than with the drum.
+    tower = _clamp(1.0 + pull / 120.0, 1.0, 1.7) * scale
     m.lathe([(0.3 * scale, 0.0), (0.28 * scale, 0.08), (0.22 * scale, 0.1)],
             (0.0, base_y + 0.26, 0.0), segments=16, mat=METAL, parent="winch_boom")
     head = (0.0, base_y + 0.26 + tower, 0.0)
@@ -1287,7 +1310,8 @@ def _build_winch(m, record):
              (side * 0.13 * scale, head[1] - 0.1, 0.02), 0.07, parent="winch_boom")
 
     m.node("winch_drum", pivot=head, parent="winch_boom")
-    flange = _rope_drum(m, "winch_drum", head, rope, pull, drum_len, hub_r)
+    wound, flange = _rope_wound(rope, pull, drum_len, hub_r)
+    _rope_drum(m, "winch_drum", head, wound, flange, drum_len, hub_r)
     # The housing is a cover over the top of the drum between two bearing plates cut to
     # the drum: a closed box would hide the one part of a winch anybody looks at.
     for side in (-1.0, 1.0):
@@ -1329,20 +1353,24 @@ def _build_reel(m, record):
     drum_len = _clamp(body_w * 0.62, 0.6, 1.4)
     hub_r = _clamp(0.18 + rope / 26000.0, 0.2, 0.36)
 
+    # The reel is rated in rope, not in steel, so its flanges follow the wound volume and
+    # the axle then has to sit high enough that a full reel clears the frame it hangs in.
+    wound, flange = _rope_wound(rope, 90.0, drum_len, hub_r)
+    axle_y = deck_y + flange * 0.78
+    axle_z = length * 0.58
+
     _mount_plate(m, 0.45, 0.5)
     _trailer(m, length, body_w, deck_y, mass)
-    axle_y = deck_y + hub_r * 2.3
-    axle_z = length * 0.58
     m.node("winch_drum", pivot=(0.0, axle_y, axle_z))
-    # The reel is rated in rope, not in steel: its flanges follow the wound volume.
-    flange = _rope_drum(m, "winch_drum", (0.0, axle_y, axle_z), rope, 90.0, drum_len,
-                        hub_r, mat=BODY)
+    _rope_drum(m, "winch_drum", (0.0, axle_y, axle_z), wound, flange, drum_len, hub_r,
+               mat=BODY)
     spokes = 6
     for side in (-1.0, 1.0):
         x = side * drum_len * 0.5
         for i in range(spokes):
             a = 2.0 * math.pi * i / spokes
-            m.box((x, axle_y + math.cos(a) * flange * 0.6, axle_z + math.sin(a) * flange * 0.6),
+            m.box((x, axle_y + math.cos(a) * flange * 0.6,
+                   axle_z + math.sin(a) * flange * 0.6),
                   (0.05, flange * 0.9, 0.05), mat=BODY,
                   rot=mk.unity_euler(math.degrees(a), 0.0, 0.0), bevel=False)
         # Stands, bearing blocks and the brake band on one side.
@@ -1410,7 +1438,8 @@ def _build_hitch(m, record):
         m.cylinder((head[0], head[1] - bar * 0.4, head[2]), bar * 0.28, bar * 3.2, axis=0,
                    segments=8, mat=METAL)
         m.socket("hitch", (head[0], head[1] + bar * 1.7, head[2]))
-    return [("att_col", (0.0, -drop * 0.5, length * 0.6), (width, drop + bar * 4.0, length * 1.3))]
+    return [("att_col", (0.0, -drop * 0.5, length * 0.6),
+             (width, drop + bar * 4.0, length * 1.3))]
 
 
 # --------------------------------------------------------------------------- structures
