@@ -354,15 +354,21 @@ def _rotor(m, node, centre, width, radius, rows=3, mat=METAL):
 
 
 def _hood(m, node, centre, width, radius, mat=BODY):
-    """The shell over a rotor: a C section open at the bottom and trailing at the back."""
+    """The shell over a rotor: a C section covering the front and top, open behind.
+
+    A tiller hood stops at the top of its arc. What comes out from under the back of it is
+    the corduroy the rotor and the comb just made, so closing the shell round the back
+    would both hide the working parts and be wrong.
+    """
     outer = radius * 1.28
     profile = []
     steps = 7
+    start, end = math.radians(-28.0), math.radians(148.0)
     for i in range(steps + 1):
-        a = _lerp(math.radians(-15.0), math.radians(205.0), i / steps)
+        a = _lerp(start, end, i / steps)
         profile.append((math.sin(a) * outer, math.cos(a) * outer))
     for i in range(steps + 1):
-        a = _lerp(math.radians(205.0), math.radians(-15.0), i / steps)
+        a = _lerp(end, start, i / steps)
         inner = outer - _clamp(radius * 0.12, 0.03, 0.07)
         profile.append((math.sin(a) * inner, math.cos(a) * inner))
     m.prism(profile, centre, width, mat=mat, parent=node, axis=0)
@@ -537,6 +543,19 @@ def _blade_frame(m, board_node, width, height, thick, reach, y0):
          _clamp(height * 0.15, 0.08, 0.16), parent="blade_lift")
     m.box((0.0, frame_y + height * 0.1, reach * 0.45),
           (frame_x * 1.4, height * 0.2, reach * 0.5), mat=METAL, parent="blade_lift")
+    # Skid shoes carry the board when the operator floats it, and the hose pair is what
+    # actually feeds the rams - both are half of what a blade looks like from the side.
+    for side in (-1.0, 1.0):
+        m.prism([(y0 - 0.02, reach - thick * 3.0), (y0 + height * 0.2, reach - thick * 3.4),
+                 (y0 + height * 0.22, reach - thick * 0.6), (y0 - 0.02, reach - thick * 0.4)],
+                (side * (width * 0.5 - thick), 0.0, 0.0), thick * 0.9, mat=METAL,
+                parent="blade_lift", axis=0)
+        _bar(m, (side * frame_x * 0.5, 0.16, 0.02),
+             (side * frame_x * 1.0, frame_y + height * 0.22, reach * 0.55), 0.035,
+             parent="blade_lift", square=False)
+        _bar(m, (side * frame_x * 1.0, frame_y + height * 0.22, reach * 0.55),
+             (side * frame_x * 1.2, y0 + height * 0.7, reach - thick * 3.0), 0.035,
+             parent="blade_lift", square=False)
 
 
 # --------------------------------------------------------------------------- tillers
@@ -724,11 +743,11 @@ def _build_blower(m, record):
 # bottom, a curved floor sweeping back to the heel, then up the back plate. The straight
 # line that closes it from the top of the back plate to the lip is the open mouth, so the
 # polygon it encloses is the struck capacity.
-_BUCKET_UNIT = ((0.0, 1.0), (0.04, 0.58), (0.16, 0.26), (0.44, 0.07), (0.8, 0.0),
-                (1.0, 0.0))
+_BUCKET_UNIT = ((0.0, 1.0), (0.02, 0.70), (0.09, 0.40), (0.22, 0.17), (0.42, 0.04),
+                (0.66, 0.0), (0.88, 0.05), (1.0, 0.14))
 
 
-def _bucket_profile(area, wall, aspect=0.82):
+def _bucket_profile(area, wall, aspect=0.78):
     """A bucket shell whose mouth encloses exactly `area` square metres, as (y, z) points.
 
     The bucket is the attachment whose art has to agree with a simulation number:
@@ -788,8 +807,28 @@ def _build_bucket(m, record):
              (side * rib_x * 0.7, 0.02, 0.06), 0.08, parent="bucket")
     _bar(m, (-rib_x, GROUND + height * 0.8, 0.12), (rib_x, GROUND + height * 0.8, 0.12),
          0.09, parent="bucket")
-    m.box((0.0, GROUND + height * 1.02, 0.16 + depth * 0.2), (width * 0.99, 0.06, depth * 0.3),
-          mat=BODY, parent="bucket")
+    # Spill guard: it sits on the rim at the top of the back plate, which is where the
+    # snow comes over when the bucket is full.
+    m.box((0.0, GROUND + height + 0.03, 0.16 + depth * 0.16),
+          (width * 0.99, 0.06, depth * 0.26), mat=BODY, parent="bucket",
+          rot=mk.unity_euler(-18.0, 0.0, 0.0))
+    # A heel wear bar and corner protectors: the three places a bucket wears out, and the
+    # three bolt-on parts a yard keeps on the shelf for it.
+    m.box((0.0, GROUND + height * 0.06, 0.15), (width * 0.99, 0.09, 0.06), mat=METAL,
+          parent="bucket")
+    for side in (-1.0, 1.0):
+        m.prism([(GROUND + 0.02, 0.16 + depth * 0.72), (GROUND + height * 0.3, 0.16 + depth * 0.86),
+                 (GROUND + height * 0.32, 0.16 + depth * 0.99),
+                 (GROUND + 0.02, 0.16 + depth * 0.99)],
+                (side * (width * 0.5 + 0.03), 0.0, 0.0), 0.04, mat=METAL, parent="bucket",
+                axis=0)
+        m.tube((side * rib_x * 0.55, GROUND + height * 0.92, 0.13), 0.07, 0.035, 0.03,
+               axis=2, segments=10, mat=METAL, parent="bucket")
+    ribs = int(_clamp(width / 0.6, 3.0, 7.0))
+    span = width * 0.8
+    plate = m.box((-span * 0.5, GROUND + height * 0.55, 0.1),
+                  (0.05, height * 0.5, 0.05), mat=BODY, parent="bucket", bevel=False)
+    m.array(plate, ribs, (span / max(1, ribs - 1), 0.0, 0.0), parent="bucket")
     return [("att_col", (0.0, GROUND + height * 0.5, 0.16 + depth * 0.5),
              (width, height, depth))]
 
@@ -827,6 +866,19 @@ def _build_forks(m, record):
         for y in rail_y:
             m.box((x, y, 0.09), (_clamp(0.16 + lift / 30000.0, 0.18, 0.3), 0.14, 0.16),
                   mat=METAL, parent=node)
+    # Load backrest: the grid that stops a pallet coming through the cab window.
+    back_h = height * 0.55
+    bars = int(_clamp(spread / 0.24, 4.0, 9.0))
+    span = spread * 1.3
+    upright = m.box((-span * 0.5, GROUND + height * 0.9 + back_h * 0.5, 0.05),
+                    (0.05, back_h, 0.05), mat=METAL, bevel=False)
+    m.array(upright, bars, (span / max(1, bars - 1), 0.0, 0.0))
+    for t in (0.15, 0.85):
+        _bar(m, (-span * 0.55, GROUND + height * 0.9 + back_h * t, 0.05),
+             (span * 0.55, GROUND + height * 0.9 + back_h * t, 0.05), 0.05)
+    for side in (-1.0, 1.0):
+        _bar(m, (side * span * 0.5, GROUND + height * 0.9 + back_h, 0.05),
+             (side * spread * 0.6, rail_y[1], 0.09), 0.055)
     return [("att_col", (0.0, GROUND + height * 0.4, reach * 0.5),
              (spread * 1.5, height, reach + 0.2))]
 
@@ -842,9 +894,11 @@ def _build_grapple(m, record):
     m.node("bucket", pivot=(0.0, GROUND + 0.24, 0.12))
     jaw = [(0.0, 0.12), (0.0, 0.12 + reach), (0.1, 0.12 + reach),
            (0.34, 0.5), (0.62, 0.16), (0.62, 0.12)]
-    for side in (-1.0, 1.0):
-        m.prism(jaw, (side * width * 0.38, GROUND + 0.02, 0.0), thick * 1.6, mat=METAL,
-                parent="bucket", axis=0)
+    tines = int(_clamp(width / 0.42, 3.0, 6.0))
+    for i in range(tines):
+        x = -width * 0.38 + width * 0.76 * i / max(1, tines - 1)
+        m.prism(jaw, (x, GROUND + 0.02, 0.0), thick * 1.6, mat=METAL, parent="bucket",
+                axis=0)
     m.prism([(0.28, 0.1), (0.62, 0.1), (0.62, 0.02), (0.34, 0.02)],
             (0.0, GROUND, 0.0), width * 0.9, mat=BODY, parent="bucket", axis=0)
     _bar(m, (-width * 0.42, GROUND + 0.1, 0.12 + reach * 0.75),
@@ -856,8 +910,9 @@ def _build_grapple(m, record):
     m.node("grapple_arm", pivot=(0.0, GROUND + 0.72, 0.2), parent="bucket")
     claw = [(0.0, 0.0), (0.0, reach * 0.72), (0.12, reach * 0.78), (0.3, reach * 0.3),
             (0.34, 0.0)]
-    for side in (-1.0, 1.0):
-        m.prism(claw, (side * width * 0.3, GROUND + 0.72, 0.2), thick * 1.4, mat=BODY,
+    for i in range(max(2, tines - 1)):
+        x = -width * 0.3 + width * 0.6 * i / max(1, max(2, tines - 1) - 1)
+        m.prism(claw, (x, GROUND + 0.72, 0.2), thick * 1.4, mat=BODY,
                 parent="grapple_arm", axis=0)
     _bar(m, (-width * 0.34, GROUND + 0.74, 0.24), (width * 0.34, GROUND + 0.74, 0.24),
          0.07, parent="grapple_arm")
@@ -891,7 +946,7 @@ def _build_broom(m, record):
              (radius, width * 0.42), (radius * 0.4, width * 0.46)],
             (0.0, axis_y, drum_z), segments=_segments(radius) + 4, mat=METAL,
             parent="tiller_rotor", axis=0, rot=mk.unity_euler(0.0, yaw, 0.0))
-    rows = 8
+    rows = 12
     for i in range(rows):
         a = 2.0 * math.pi * i / rows
         dy, dzr = math.cos(a), math.sin(a)
@@ -919,6 +974,12 @@ def _build_broom(m, record):
         m.cylinder((end[0] * 1.06, axis_y, end[2] * 1.06), radius * 0.3, 0.2, axis=0,
                    segments=10, mat=METAL, rot=mk.unity_euler(0.0, yaw, 0.0))
     _bar(m, (-0.28, 0.02, 0.06), (0.28, 0.02, 0.06), 0.1)
+    # Castor wheels set the brush height: run a broom on its bristles and it lasts a week.
+    for side in (-1.0, 1.0):
+        x = side * dx * width * 0.42
+        z = drum_z + side * dz * width * 0.42 - radius * 1.45
+        _bar(m, (x, axis_y + radius * 0.5, z + 0.1), (x, GROUND + 0.16, z), 0.06)
+        _wheel(m, (x, GROUND + 0.12, z), 0.12, 0.07)
     return [("att_col", (0.0, axis_y, drum_z), (width, radius * 2.4, radius * 2.6))]
 
 
@@ -1048,6 +1109,25 @@ def _build_spreader(m, record):
               bevel=False)
     _bar(m, (0.0, floor_y - 0.02, disc_z - 0.1), (0.0, disc_y + 0.12, disc_z), 0.07)
     m.box((0.0, disc_y + 0.26, disc_z), (0.24, 0.26, 0.2), mat=BODY)
+    # A shroud round the back of the disc keeps grit off the machine, and the chute drops
+    # the feed onto it; without both, a spreader reads as a box with a plate under it.
+    shroud = _clamp(spread * 0.08, 0.26, 0.45)
+    for i in range(7):
+        a = _lerp(math.radians(120.0), math.radians(300.0), i / 6.0)
+        m.box((math.cos(a) * shroud, disc_y + 0.14, disc_z + math.sin(a) * shroud),
+              (0.06, 0.22, 0.06), mat=BODY, rot=mk.unity_euler(0.0, -math.degrees(a), 0.0),
+              bevel=False)
+    m.prism([(-0.22, floor_y - 0.02), (0.22, floor_y - 0.02), (0.16, disc_y + 0.14),
+             (-0.16, disc_y + 0.14)],
+            (0.0, 0.0, disc_z - 0.04), 0.3, mat=BODY, axis=2)
+    # Access ladder up the side of the hopper, because someone has to get the tarp off.
+    for side in (-1.0, 1.0):
+        rungs = 3
+        rung = m.box((side * body_w * 0.52, floor_y + 0.12, mid_z + length * 0.3),
+                     (0.18, 0.04, 0.04), mat=METAL, bevel=False)
+        m.array(rung, rungs, (0.0, height * 0.3, 0.0))
+        _bar(m, (side * body_w * 0.56, floor_y + 0.06, mid_z + length * 0.3),
+             (side * body_w * 0.56, floor_y + height * 0.8, mid_z + length * 0.3), 0.04)
     return [("att_col", (0.0, floor_y + height * 0.4, mid_z), (body_w, height + 0.6, length + 0.4))]
 
 
@@ -1208,11 +1288,14 @@ def _build_winch(m, record):
 
     m.node("winch_drum", pivot=head, parent="winch_boom")
     flange = _rope_drum(m, "winch_drum", head, rope, pull, drum_len, hub_r)
-    # The housing is a cover over the top of the drum between two cheek plates: a closed
-    # box would hide the one part of a winch anybody looks at.
+    # The housing is a cover over the top of the drum between two bearing plates cut to
+    # the drum: a closed box would hide the one part of a winch anybody looks at.
     for side in (-1.0, 1.0):
-        m.box((head[0] + side * (drum_len * 0.5 + 0.07), head[1], head[2]),
-              (0.05, flange * 2.3, flange * 2.4), mat=BODY, parent="winch_boom")
+        m.lathe([(0.0, 0.0), (flange * 1.16, 0.0), (flange * 1.16, 0.05), (0.0, 0.05)],
+                (head[0] + side * (drum_len * 0.5 + 0.06), head[1], head[2]),
+                segments=10, mat=BODY, parent="winch_boom", axis=0)
+        _bolts(m, (head[0] + side * (drum_len * 0.5 + 0.1), head[1], head[2]),
+               flange * 0.95, 6, 0.024, axis=0, parent="winch_boom")
     m.prism([(flange * 0.9, -flange * 1.3), (flange * 1.25, -flange * 0.5),
              (flange * 1.25, flange * 0.9), (flange * 1.1, flange * 1.15),
              (flange * 1.0, flange * 0.85), (flange * 1.12, -flange * 0.45),
@@ -1297,9 +1380,14 @@ def _build_hitch(m, record):
     for side in (-1.0, 1.0):
         _bar(m, (side * width * 0.42, 0.02, 0.06), (side * bar * 0.6, 0.0, length * 0.8),
              bar * 0.9)
-        # Safety chain eyes, one each side, on every real hitch there has ever been.
+        # Safety chain eyes with a few links hanging off them, on every real hitch there
+        # has ever been. The links alternate their axis, which is what a chain is.
         m.tube((side * bar * 1.3, -drop * 0.2, length * 0.72), bar * 0.62, bar * 0.34,
                bar * 0.5, axis=0, segments=10, mat=METAL)
+        for i in range(3):
+            m.tube((side * bar * 1.3, -drop * 0.2 - bar * (0.7 + i * 0.62),
+                    length * 0.72), bar * 0.4, bar * 0.22, bar * 0.22,
+                   axis=0 if i % 2 else 2, segments=8, mat=METAL)
 
     head = (0.0, -drop, length * 1.02)
     if heavy:
@@ -1411,16 +1499,20 @@ def _build_light_tower(m, record):
     m.node("mast", pivot=(0.0, deck_y + 0.1, mast_z))
     sections = 3
     for i in range(sections):
-        size = _clamp(0.16 - i * 0.035, 0.07, 0.16)
+        size = _clamp(0.24 - i * 0.045, 0.12, 0.24)
         seg_h = height / sections
         m.box((0.0, deck_y + 0.1 + seg_h * (i + 0.5), mast_z), (size, seg_h * 1.02, size),
               mat=BODY if i == 0 else METAL, parent="mast")
+    # The head has to read from the other side of a car park at night, so the lamps are
+    # sized to be seen rather than to scale off the mast.
     top = deck_y + 0.1 + height
-    _bar(m, (-0.5, top, mast_z), (0.5, top, mast_z), 0.07, parent="mast")
+    span = _clamp(lamps * 0.42, 0.9, 2.0)
+    _bar(m, (-span * 0.5, top, mast_z), (span * 0.5, top, mast_z), 0.09, parent="mast")
     for i in range(lamps):
-        x = -0.42 + 0.84 * (i / max(1, lamps - 1))
-        _lamp(m, (x, top + 0.16, mast_z), 0.2, parent="mast", aim=18.0)
-        m.socket("light_work_%02d" % (i + 1), (x, top + 0.16, mast_z + 0.12))
+        x = -span * 0.42 + span * 0.84 * (i / max(1, lamps - 1))
+        _lamp(m, (x, top + 0.26, mast_z), 0.34, parent="mast", aim=20.0)
+        _bar(m, (x, top + 0.04, mast_z), (x, top + 0.22, mast_z), 0.05, parent="mast")
+        m.socket("light_work_%02d" % (i + 1), (x, top + 0.26, mast_z + 0.2))
     _bar(m, (0.0, deck_y + 0.6, mast_z), (0.0, deck_y + 0.2, mast_z + 0.4), 0.05)
     return [("att_col", (0.0, deck_y + height * 0.5, mast_z), (0.4, height, 0.4))]
 

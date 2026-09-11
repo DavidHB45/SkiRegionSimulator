@@ -147,25 +147,42 @@ class _Artic:
 
         clear = self.wr * 0.22 + 0.14           # room for the yoke behind the cab
         gap = 0.10 + 0.03 * self.L              # tyre to bodywork clearance
+        rear_axle = -(self.wr + gap)
+        tail = rear_axle - self._rear_reach(gap)
+
+        # Whether the record is long enough to stand its cab behind the front tyres is
+        # what decides the whole machine, and BodyL is what says so. A long one gets the
+        # big four wheel drive arrangement: bonnet over the front axle, cab behind it
+        # clear of the tyres, so the cab can be full width and ride at tyre-top height.
+        # A short one cannot - the cab and the wheels want the same metre of chassis -
+        # so it gets the compact carrier arrangement instead: cab forward between the
+        # wheels where it has to be narrow, engine in a hood behind it, which is also
+        # the only place on a machine that short where the engine can be tall enough to
+        # see. Same parts either way; the record picks the order they come in.
         cab_z0 = clear
         cab_z1 = cab_z0 + self.cl
         front_axle = cab_z1 + self.wr + gap
-        rear_axle = -(self.wr + gap)
-        tail = rear_axle - self._rear_reach(gap)
-        nose = front_axle + self.wr * 1.0
-
-        # BodyL is the length the machine is allowed to be. When the cab and the front
-        # tyres will not fit end to end the axle slides back under the cab, which is
-        # exactly what a compact carrier does - and why its cab ends up narrow enough to
-        # run between the wheels rather than over them.
-        excess = (nose - tail) - self.L
-        if excess > 0.0:
-            pull = min(excess, max(0.0, front_axle - (cab_z0 + self.wr * 0.35)))
+        nose = front_axle + self.wr
+        over = (nose - tail) - self.L
+        if over > 0.0:
+            # A machine a little longer than its record says can pull its front axle
+            # back under the bonnet and shorten its nose. Only one that overruns by more
+            # than those two together is genuinely too short for the arrangement, and
+            # the margin matters: without it a few centimetres of BodyL would rearrange
+            # the whole machine.
+            pull = min(over, gap * 0.6)
             front_axle -= pull
-            nose = front_axle + self.wr * 1.0
-            over = (nose - tail) - self.L
-            if over > 0.0:
-                nose -= min(over, self.wr * 0.45)
+            nose = front_axle + self.wr - min(over - pull, self.wr * 0.25)
+        self.forward_cab = (nose - tail) > self.L
+        if self.forward_cab:
+            snout = self.wr * 0.35
+            front_len = max(clear + self.cl + snout + 0.35, self.L + tail)
+            hood_z0 = clear
+            hood_z1 = hood_z0 + max(0.35, front_len - clear - self.cl - snout)
+            cab_z0 = hood_z1
+            cab_z1 = cab_z0 + self.cl
+            nose = cab_z1 + snout
+            front_axle = hood_z1
 
         self.pz = -(nose + tail) * 0.5          # the hinge, once the machine is centred
         self.front_z = front_axle + self.pz
@@ -176,21 +193,14 @@ class _Artic:
 
         cw = max(0.7, _num(self.v["CabW"], 1.6)) * (0.86 + 0.09 * min(self.seats, 3))
         cw = _clamp(max(cw, self.W * 0.56), 0.9, self.W * 0.82)
-
-        # Where the cab ends up relative to the front tyres decides the whole machine.
-        # A short record cannot fit a cab behind its front wheels, so the cab drops
-        # between them and has to be narrow enough to run in that channel - a compact
-        # carrier. A long one carries its cab clear behind the tyres, so it can be full
-        # width and ride at tyre-top height with a tall bonnet ahead of it, which is
-        # what a big four wheel drive looks like.
-        self.straddle = (self.front_z - self.wr < self.cab_z + self.cl * 0.5
-                         and self.wr * 2.0 > self.deck_y)
-        if self.straddle:
+        if self.forward_cab:
             cw = min(cw, (self.inner_x - 0.03) * 2.0)
             self.cab_y = self.deck_y + 0.02
-            hood_ceiling = 0.45
+            self.hood_z0, self.hood_z1 = hood_z0 + self.pz, hood_z1 + self.pz
+            hood_ceiling = 0.66
         else:
             self.cab_y = max(self.deck_y + 0.02, self.wr * 2.0 - self.ch * 0.22)
+            self.hood_z0, self.hood_z1 = cab_z1 + self.pz, nose + self.pz
             hood_ceiling = 0.55
         self.cw = max(0.92, cw)
 
@@ -203,7 +213,6 @@ class _Artic:
         self.hood_top = _clamp(self.wr * 2.0 + self.ch * 0.22,
                                self.cab_y + self.ch * 0.28,
                                self.cab_y + self.ch * hood_ceiling)
-        self.hood_z0 = self.cab_z + self.cl * 0.5
 
     def _rear_reach(self, gap):
         """How far behind the rear axle the tail sits, which the load body decides.
@@ -354,8 +363,9 @@ class _Artic:
         tank_r = _clamp(0.10 + self.flow / 2400.0, 0.11, 0.26)
         tank_l = _clamp(self.flow / 260.0, 0.4, 1.1)
         self.m.cylinder((self.rail_x + tank_r * 0.7, self.deck_y + tank_r * 0.7,
-                         self.hood_z0 + tank_l * 0.5),
-                        tank_r, tank_l, axis=2, segments=10, mat=METAL)
+                         (self.hood_z0 + self.hood_z1) * 0.5),
+                        tank_r, min(tank_l, abs(self.hood_z1 - self.hood_z0) * 0.8),
+                        axis=2, segments=10, mat=METAL)
 
     def _rear_frame(self):
         z0 = self.tail_z + 0.03
@@ -444,30 +454,39 @@ class _Artic:
         """The bonnet over the engine. EnginePowerKw is already in BodyH and BodyL by
         the time it gets here; what the number decides directly is the size of the
         exhaust and how much of the grille is radiator."""
-        z0, z1 = self.hood_z0, self.nose_z
-        length = max(0.30, z1 - z0)
+        # The hood is full height where it meets the cab and tapers away at its far end,
+        # wherever that end happens to be: ahead of the cab on a big machine, behind it
+        # on a compact one. The grille goes on the tapered face, which is where the air
+        # is in both arrangements.
+        if self.forward_cab:
+            z_cab, z_far = self.hood_z1, self.hood_z0
+        else:
+            z_cab, z_far = self.hood_z0, self.hood_z1
+        length = max(0.30, abs(z_far - z_cab))
+        step = (z_far - z_cab) / length
         y0, y1 = self.hood_y0, self.hood_top
         chamfer = self.hood_x * 0.22
-        drop = (y1 - y0) * 0.17            # the bonnet slopes away toward the grille
+        drop = (y1 - y0) * 0.17
         sections = [
-            self._ring(self.hood_x, y0, y1, z0 - 0.02, chamfer, 0.94),
+            self._ring(self.hood_x, y0, y1, z_cab - step * 0.02, chamfer, 0.94),
             self._ring(self.hood_x * 0.99, y0, y1 - drop * 0.35,
-                       z0 + length * 0.55, chamfer, 0.90),
-            self._ring(self.hood_x * 0.88, y0, y1 - drop, z1, chamfer, 0.86),
+                       z_cab + step * length * 0.55, chamfer, 0.90),
+            self._ring(self.hood_x * 0.88, y0, y1 - drop, z_far, chamfer, 0.86),
         ]
         self.m.loft(sections, mat=BODY)
-        self.seams.append(((0.0, y1 + 0.01, z0 + 0.08),
-                           (0.0, y1 - drop * 0.9, z1 - 0.08), 1, None))
+        self.seams.append(((0.0, y1 + 0.01, z_cab + step * 0.08),
+                           (0.0, y1 - drop * 0.9, z_far - step * 0.08), 1, None))
         for side in (-1.0, 1.0):
-            self.seams.append(((side * self.hood_x * 0.92, (y0 + y1) * 0.5, z0 + 0.08),
+            self.seams.append(((side * self.hood_x * 0.92, (y0 + y1) * 0.5,
+                                z_cab + step * 0.08),
                                (side * self.hood_x * 0.82, (y0 + y1) * 0.5 - drop * 0.4,
-                                z1 - 0.10), 0, None))
+                                z_far - step * 0.10), 0, None))
         # Radiator grille: a louvre count that grows with the heat the engine rejects.
         face_h = (y1 - drop) - y0
         louvres = int(_clamp(round(2.0 + self.power / 55.0), 3, 8))
         for k in range(louvres):
             y = y0 + face_h * (k + 0.65) / (louvres + 0.5)
-            self.m.box((0.0, y, z1 + 0.005),
+            self.m.box((0.0, y, z_far + step * 0.005),
                        (self.hood_x * 1.45, face_h / (louvres + 1.5) * 0.6, 0.05),
                        mat=METAL, bevel=False)
         self._exhaust()
@@ -480,7 +499,7 @@ class _Artic:
         # Up the outside of the cab's front pillar, clear of the bonnet it would
         # otherwise run inside, and far enough back to miss the front tyre.
         x = max(self.hood_x + radius * 1.15, self.cw * 0.5 + radius * 1.1)
-        z = self.cab_z + self.cl * (-0.20 if self.straddle else 0.42)
+        z = self.cab_z + self.cl * (-0.42 if self.forward_cab else 0.42)
         base = self.hood_y0 + 0.05
         top = self.cab_y + self.ch * 0.96
         self.m.cylinder((x, (base + top) * 0.5, z), radius, top - base, axis=1,
@@ -788,14 +807,22 @@ class _Artic:
     def _lamps(self):
         """Headlights in the hood nose, work lights on the roof. LightingLumens says how
         many the machine carries, so the 30 kW-lumen tractor bristles with them."""
-        lamp_w = self.hood_x * 0.42
+        if self.forward_cab:
+            lamp_w = self.cw * 0.26
+            y = self.cab_y + self.ch * 0.08
+            x_lamp, z_lamp = self.cw * 0.34, self.cab_z + self.cl * 0.5 + 0.02
+            parent = "cab"
+        else:
+            lamp_w = self.hood_x * 0.42
+            y = self.hood_top - (self.hood_top - self.hood_y0) * 0.22
+            x_lamp, z_lamp = self.hood_x * 0.62, self.nose_z - 0.02
+            parent = None
         for side in (-1.0, 1.0):
             tag = "light_" + ("L" if side < 0 else "R")
-            point = (side * self.hood_x * 0.62,
-                     self.hood_top - (self.hood_top - self.hood_y0) * 0.22,
-                     self.nose_z - 0.02)
+            point = (side * x_lamp, y, z_lamp)
             self.m.socket(tag, point)
-            self.m.box(point, (lamp_w, lamp_w * 0.62, 0.07), mat=GLASS, bevel=False)
+            self.m.box(point, (lamp_w, lamp_w * 0.62, 0.07), mat=GLASS, parent=parent,
+                       bevel=False)
         count = int(_clamp(round(self.lumens / 6000.0), 2, 8))
         roof_y = self.roof_y + 0.04
         inset = min(0.12, (self.roof_z1 - self.roof_z0) * 0.25)
@@ -869,7 +896,7 @@ class _Artic:
     def _steps(self, gap, ceiling):
         if self.cab_y < 0.5:
             return
-        z = self.cab_z + self.cl * (-0.20 if self.straddle else 0.42)
+        z = self.cab_z - self.cl * 0.20
         count = int(_clamp(round(self.cab_y / 0.35), 1, 4))
         for side in (-1.0, 1.0):
             x = side * (self.cw * 0.5 + 0.05)
