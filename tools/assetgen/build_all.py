@@ -121,6 +121,11 @@ def build_meshes(log, only_ids=None):
         log("  lift %-28s" % record["Id"])
 
     if not only_ids:
+        # The snowmaking network is not a vehicles.json record: hydrants, pump houses and
+        # compressor houses are what the money in stations.json buys, so the snowmaking
+        # generator builds them from those records instead.
+        records += _as_list(mods["snowmaking"].build_all(config.PROPS_DIR))
+        log("  snowmaking network")
         records += _as_list(mods["props"].build_all(config.PROPS_DIR))
         log("  props")
 
