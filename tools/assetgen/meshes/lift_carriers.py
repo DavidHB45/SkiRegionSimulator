@@ -245,12 +245,17 @@ def _grip(m, s, node, x, y, parent=None):
     for sx in (-1.0, 1.0):
         m.box((x + sx * 0.08, y + 0.02, 0.0), (0.06, 0.20, 0.30), mat=METAL, parent=node)
         for sz in (-0.10, 0.10):
-            m.cylinder((x + sx * 0.08, y + 0.12, sz), 0.022, 0.20, axis=0, segments=6,
+            m.cylinder((x + sx * 0.105, y + 0.12, sz), 0.022, 0.05, axis=0, segments=6,
                        mat=METAL, parent=node)
+            m.cylinder((x + sx * 0.135, y + 0.12, sz), 0.032, 0.03, axis=0, segments=6,
+                       mat=METAL, parent=node)
+    m.cylinder((x, y + 0.12, 0.0), 0.035, 0.34, axis=2, segments=8, mat=METAL,
+               parent=node)
     m.box((x, y - 0.12, 0.0), (0.20, 0.12, 0.24), mat=METAL, parent=node)
+    m.box((x, y - 0.20, 0.0), (0.13, 0.08, 0.16), mat=METAL, parent=node)
 
 
-def _hanger_blade(m, s, node, y0, y1, z0, z1, width, parent=None):
+def _hanger_blade(m, node, y0, y1, z0, z1, width, parent=None):
     """The hanger arm itself: a tapered blade from the grip down to what it carries."""
     profile = [(y0, z0 - width * 0.9), (y0, z0 + width * 0.9),
                (y1, z1 + width * 0.55), (y1, z1 - width * 0.55)]
@@ -316,8 +321,17 @@ def _build_chair(record, bubble, model_name):
 
     _grip(m, s, "grip_arm", 0.0, s["grip_y"])
     m.node("cabin_hanger", pivot=(0.0, hang_y, 0.0))
-    _hanger_blade(m, s, "cabin_hanger", hang_y + 0.06, s["back_top"] - 0.06,
+    _hanger_blade(m, "cabin_hanger", hang_y + 0.06, s["back_top"] - 0.06,
                   -0.02, -0.34, 0.16)
+    # The head casting the arm bolts into, and the damper that stops the chair
+    # oscillating behind it: a faster line swings its chairs harder.
+    m.box((0.0, hang_y + 0.02, -0.02), (0.24, 0.20, 0.26), mat=METAL,
+          parent="cabin_hanger")
+    for sz in (-0.09, 0.09):
+        m.cylinder((0.0, hang_y - 0.05, sz), 0.028, 0.28, axis=0, segments=6,
+                   mat=METAL, parent="cabin_hanger")
+    m.beam((0.0, hang_y - 0.30, 0.02), (0.0, hang_y - 0.30 - 0.22 * s["speed"], -0.20),
+           0.075, mat=METAL, parent="cabin_hanger", square=False, segments=8)
 
     # The seat shell: one prism across the full width carries the contour, so the seats
     # arrayed onto it can stay plain.
@@ -330,6 +344,14 @@ def _build_chair(record, bubble, model_name):
               parent="cabin_hanger")
     m.box((0.0, 0.46, -0.02), (s["frame_w"], 0.10, 0.34), mat=METAL,
           parent="cabin_hanger")
+    for sz in (-0.22, 0.20):
+        m.cylinder((0.0, 0.42, sz), 0.035, s["frame_w"] - 0.04, axis=0, segments=8,
+                   mat=METAL, parent="cabin_hanger")
+    # The plate every carrier on a line is numbered on, and the reflectors beside it.
+    m.box((0.0, 0.40, -0.36), (0.22, 0.15, 0.03), mat=BODY, parent="cabin_hanger")
+    for sx in (-1.0, 1.0):
+        m.box((sx * (half - 0.10), 0.42, -0.36), (0.09, 0.05, 0.03), mat=METAL,
+              parent="cabin_hanger")
     _chair_seats(m, s, "cabin_hanger")
 
     # The restraint bar. Every chair has one; what the auto option buys is the damper
@@ -348,9 +370,23 @@ def _build_chair(record, bubble, model_name):
                    (sx * (half - 0.06), bar_y - 0.10, bar_z * 0.55), 0.05, mat=METAL,
                    parent="bar", square=False, segments=6)
 
+    # One grab handle per rider, which is what the bar is actually held by.
+    x0 = -s["seat_w"] * 0.5 + s["pitch"] * 0.5
+    grab = m.box((x0, bar_y + 0.07, bar_z - 0.02), (0.05, 0.14, 0.05), mat=METAL,
+                 parent="bar", bevel=False)
+    grab += m.box((x0, bar_y + 0.13, bar_z + 0.05), (0.05, 0.05, 0.18), mat=METAL,
+                  parent="bar", bevel=False)
+    m.array(grab, s["capacity"], (s["pitch"], 0.0, 0.0), parent="bar")
+
     foot_parent = "bar" if (s["tier"] >= 3 or s["detachable"]) else "cabin_hanger"
     m.cylinder((0.0, s["foot_r"], 0.64), s["foot_r"], s["frame_w"] * 0.88, axis=0,
-               segments=8, mat=METAL, parent=foot_parent)
+               segments=10, mat=METAL, parent=foot_parent)
+    pad = m.box((x0, s["foot_r"] + 0.045, 0.64), (s["pitch"] - 0.10, 0.035, 0.16),
+                mat=BODY, parent=foot_parent, bevel=False)
+    m.array(pad, s["capacity"], (s["pitch"], 0.0, 0.0), parent=foot_parent)
+    for sx in (-1.0, 1.0):
+        m.box((sx * s["frame_w"] * 0.44, s["foot_r"], 0.64), (0.06, 0.10, 0.12),
+              mat=METAL, parent=foot_parent)
     for sx in (-1.0, 1.0):
         if foot_parent == "bar":
             m.beam((sx * s["seat_w"] * 0.30, bar_y - 0.03, bar_z),
@@ -424,7 +460,7 @@ def _cabin_spec(record, capacity):
     return s
 
 
-def _shell(m, s, parent, half_x, half_z, height, sill, head, corner, per_corner,
+def _shell(m, parent, half_x, half_z, height, sill, head, corner, per_corner,
            floor_scale=0.88, roof_scale=0.84):
     """Body, window band and roof as three lofts sharing one rounded cross section.
 
@@ -447,7 +483,7 @@ def _shell(m, s, parent, half_x, half_z, height, sill, head, corner, per_corner,
            mat=BODY, parent=parent)
 
 
-def _doors(m, s, parent, half_x, half_z, sill, head, leaves, aperture):
+def _doors(m, parent, half_x, half_z, sill, head, leaves, aperture):
     """Sliding leaves standing proud of the side walls, one node per side.
 
     They sit on the outside of the skin because that is where a plug door sits when it
@@ -466,7 +502,7 @@ def _doors(m, s, parent, half_x, half_z, sill, head, leaves, aperture):
             m.box((x, 0.30, z), (0.035, 0.16, aperture - 0.22), mat=METAL, parent=node)
 
 
-def _bench(m, s, parent, half_x, half_z, z_sign, count, seats, y0=0.0):
+def _bench(m, parent, half_x, half_z, z_sign, count, seats, y0=0.0):
     """One bench seat arrayed across the cabin, backs to the end wall.
 
     The riders face each other along the line, which is the only arrangement that fits:
@@ -488,7 +524,7 @@ def _bench(m, s, parent, half_x, half_z, z_sign, count, seats, y0=0.0):
         seats.append((x0 + pitch * i, y0 + 0.50, z_sign * (half_z - 0.30)))
 
 
-def _roof_rack(m, s, parent, half_x, half_z, height, mat=METAL):
+def _roof_rack(m, parent, half_x, half_z, height, mat=METAL):
     """Ski rack rails and the roof ribs between them."""
     for sx in (-1.0, 1.0):
         m.box((sx * half_x * 0.62, height + 0.07, 0.0), (0.07, 0.10, half_z * 1.5),
@@ -508,14 +544,14 @@ def _build_cabin(record, capacity, model_name):
 
     hang_top = s["grip_y"] - (1.10 if tri else 0.26)
     m.node("cabin_hanger", pivot=(0.0, hang_top, 0.0))
-    _shell(m, s, "cabin_hanger", hx, hz, h, s["sill"], s["head"], s["corner"],
+    _shell(m, "cabin_hanger", hx, hz, h, s["sill"], s["head"], s["corner"],
            s["per_corner"])
-    _doors(m, s, "cabin_hanger", hx, hz, s["sill"], s["head"], s["leaves"],
+    _doors(m, "cabin_hanger", hx, hz, s["sill"], s["head"], s["leaves"],
            _clamp(0.42 + 0.022 * s["cap"], 0.62, hz * 1.5 / max(1, s["leaves"])))
     seats = []
-    _bench(m, s, "cabin_hanger", hx, hz, -1.0, s["bench"], seats)
-    _bench(m, s, "cabin_hanger", hx, hz, 1.0, s["cap"] - s["bench"], seats)
-    _roof_rack(m, s, "cabin_hanger", hx, hz, h)
+    _bench(m, "cabin_hanger", hx, hz, -1.0, s["bench"], seats)
+    _bench(m, "cabin_hanger", hx, hz, 1.0, s["cap"] - s["bench"], seats)
+    _roof_rack(m, "cabin_hanger", hx, hz, h)
     m.box((0.0, h + 0.14, 0.0), (hx * 0.9, 0.12, hz * 0.6), mat=METAL,
           parent="cabin_hanger")
 
@@ -526,17 +562,17 @@ def _build_cabin(record, capacity, model_name):
         m.box((0.0, hang_top, 0.0), (gap + 0.30, 0.16, 0.26), mat=METAL,
               parent="cabin_hanger")
         for sx in (-1.0, 1.0):
-            _hanger_blade(m, s, "cabin_hanger", hang_top + 0.02, h + 0.12,
-                          0.0, 0.0, 0.15)
             m.beam((sx * gap * 0.5, hang_top + 0.06, 0.0), (0.0, h + 0.30, 0.0), 0.13,
                    mat=BODY, parent="cabin_hanger")
+            m.cylinder((sx * gap * 0.5, hang_top + 0.16, 0.0), 0.09, 0.22, axis=1,
+                       segments=8, mat=METAL, parent="cabin_hanger")
         for i, sx in enumerate((-1.0, 1.0)):
             _grip(m, s, "grip_arm" if i == 0 else "grip_arm_2", sx * gap * 0.5,
                   s["grip_y"])
     elif tri:
         _tricable_bogie(m, s, hang_top)
     else:
-        _hanger_blade(m, s, "cabin_hanger", hang_top + 0.04, h + 0.10, 0.0, -0.04, 0.17)
+        _hanger_blade(m, "cabin_hanger", hang_top + 0.04, h + 0.10, 0.0, -0.04, 0.17)
         _grip(m, s, "grip_arm", 0.0, s["grip_y"])
 
     limit = min(len(seats), SOCKET_LIMIT)
@@ -591,16 +627,16 @@ def _build_tram(record, model_name):
                  seed=datasrc.seed_for(s["id"], "carrier", "tram"))
     carriage_y = height + 2.35
     m.node("cabin_hanger", pivot=(0.0, height + 0.30, 0.0))
-    _shell(m, s, "cabin_hanger", half_x, half_z, height, sill, head, 0.34, 4)
-    _doors(m, s, "cabin_hanger", half_x, half_z, sill, head, leaves,
+    _shell(m, "cabin_hanger", half_x, half_z, height, sill, head, 0.34, 4)
+    _doors(m, "cabin_hanger", half_x, half_z, sill, head, leaves,
            _clamp(half_z * 0.9 / leaves, 0.7, 1.25))
 
     # Perimeter benches and a stanchion grid: a tram is a standing car with seats round
     # the wall, not a row of pairs.
     seats = []
-    _bench(m, s, "cabin_hanger", half_x, half_z, -1.0, int(_clamp(cap / 14.0, 2, 6)),
+    _bench(m, "cabin_hanger", half_x, half_z, -1.0, int(_clamp(cap / 14.0, 2, 6)),
            seats)
-    _bench(m, s, "cabin_hanger", half_x, half_z, 1.0, int(_clamp(cap / 14.0, 2, 6)),
+    _bench(m, "cabin_hanger", half_x, half_z, 1.0, int(_clamp(cap / 14.0, 2, 6)),
            seats)
     poles = int(_clamp(half_z, 2, 5))
     for sx in (-1.0, 1.0):
@@ -634,26 +670,39 @@ def _build_tram(record, model_name):
     m.box((0.0, carriage_y - wheel_r - 0.85, 0.0), (0.50, 0.44, 0.90), mat=METAL)
     _grip(m, s, "grip_arm", 0.0, carriage_y - wheel_r - 1.25)
 
-    _car_sockets(m, cap, half_x, half_z, 0.0, 0.0)
+    _car_sockets(m, cap, half_x, half_z, seats)
     colliders = [("car_col", (0.0, height * 0.5, 0.0),
                   (half_x * 2.1, height, half_z * 2.1))]
     return m, colliders, s
 
 
-def _car_sockets(m, cap, half_x, half_z, y, z0):
-    """A standing grid of rider positions, capped so a tram is not 150 empties."""
-    count = min(int(cap), SOCKET_LIMIT)
-    cols = max(1, int(round(math.sqrt(count * half_x / max(0.4, half_z)))))
-    rows = max(1, int(math.ceil(count / float(cols))))
+def _car_sockets(m, cap, half_x, half_z, seated):
+    """Rider positions: the seats round the wall first, then a standing grid.
+
+    A tram is a standing car, so most of its riders have no seat to be placed on. The
+    grid stops at SOCKET_LIMIT because a hundred and fifty empties in an FBX is a worse
+    problem than a view that has to crowd the last of them itself.
+    """
     made = 0
+    for point in seated:
+        if made >= SOCKET_LIMIT:
+            return
+        made += 1
+        m.socket("seat_%02d" % made, point)
+    count = min(int(cap), SOCKET_LIMIT)
+    standing = count - made
+    if standing <= 0:
+        return
+    cols = max(1, int(round(math.sqrt(standing * half_x / max(0.4, half_z)))))
+    rows = max(1, int(math.ceil(standing / float(cols))))
     for r in range(rows):
         for c in range(cols):
             if made >= count:
                 return
-            x = -half_x * 0.72 + (2.0 * half_x * 0.72) * ((c + 0.5) / cols)
-            z = z0 - half_z * 0.72 + (2.0 * half_z * 0.72) * ((r + 0.5) / rows)
+            x = -half_x * 0.62 + (2.0 * half_x * 0.62) * ((c + 0.5) / cols)
+            z = -half_z * 0.62 + (2.0 * half_z * 0.62) * ((r + 0.5) / rows)
             made += 1
-            m.socket("seat_%02d" % made, (x, y + 0.05, z))
+            m.socket("seat_%02d" % made, (x, 0.05, z))
 
 
 # --------------------------------------------------------------------------- rail cars
@@ -687,17 +736,20 @@ def _build_rail(record, model_name):
     m.node("cabin_hanger", pivot=(0.0, deck, 0.0))
 
     seats = []
-    per_bay = max(2, int(math.ceil(cap / float(bays * 2))))
+    # Seats across a bay come from the car's width with an aisle down the middle, not
+    # from the capacity: the rest of a funicular's 120 riders stand, which is why its
+    # capacity is three times the seats it has.
+    per_bay = int(_clamp((half_x * 2.0 - 0.55) / 0.52, 2, 5))
     leaves = int(_clamp(max(round(s["load_s"] / 45.0), 1), 1, 2))
+    detail = 2 if bays >= 4 else 3
     for b in range(bays):
         z = -length * 0.5 + step * (b + 0.5)
         origin = (0.0, deck, z)
         _rail_bay(m, s, origin, pitch, half_x, bay_len * 0.5, height, sill, head,
-                  leaves, seats, per_bay, rack, b)
+                  leaves, seats, per_bay, rack, b, detail)
 
     _rail_underframe(m, s, half_x, length, deck, rack)
-    limit = min(len(seats), SOCKET_LIMIT)
-    for i in range(limit):
+    for i in range(min(len(seats), SOCKET_LIMIT, cap)):
         m.socket("seat_%02d" % (i + 1), seats[i])
     colliders = [("car_col", (0.0, deck + height * 0.5, 0.0),
                   (half_x * 2.1, height + 0.6, length))]
@@ -705,9 +757,9 @@ def _build_rail(record, model_name):
 
 
 def _rail_bay(m, s, origin, pitch, half_x, half_z, height, sill, head, leaves, seats,
-              per_bay, rack, index):
+              per_bay, rack, index, per_corner):
     """One compartment of a rail car, assembled in its own level frame."""
-    corner, per_corner = 0.16, 3
+    corner = 0.16
     args = (corner, per_corner)
 
     def ring(y, scale=1.0):
@@ -768,21 +820,33 @@ def _rail_underframe(m, s, half_x, length, deck, rack):
     for sz in (-1.0, 1.0):
         for sx in (-1.0, 1.0):
             x, z = sx * gauge * 0.5, sz * length * 0.32
-            wheel = m.cylinder((x, wheel_r, z - 0.55), wheel_r, 0.12, axis=0,
+            axle_y = wheel_r * 1.16
+            wheel = m.cylinder((x, axle_y, z - 0.55), wheel_r, 0.12, axis=0,
                                segments=_seg(wheel_r), mat=METAL)
+            wheel += m.cylinder((x, axle_y, z - 0.55), wheel_r * 1.16, 0.04, axis=0,
+                                segments=_seg(wheel_r), mat=METAL)
             m.array(wheel, 2, (0.0, 0.0, 1.10))
-            m.cylinder((x, wheel_r, z - 0.55), wheel_r * 1.16, 0.04, axis=0,
-                       segments=_seg(wheel_r), mat=METAL)
-            m.box((x, wheel_r + 0.22, z), (0.16, 0.26, 1.50), mat=METAL)
-        m.box((0.0, wheel_r + 0.30, sz * length * 0.32), (gauge, 0.20, 0.60),
+            m.box((x, axle_y + 0.22, z), (0.16, 0.26, 1.50), mat=METAL)
+            m.cylinder((x - sx * 0.08, axle_y, z - 0.55), 0.06, 0.16, axis=0,
+                       segments=8, mat=METAL)
+            m.cylinder((x - sx * 0.08, axle_y, z + 0.55), 0.06, 0.16, axis=0,
+                       segments=8, mat=METAL)
+        m.box((0.0, wheel_r * 1.16 + 0.30, sz * length * 0.32), (gauge, 0.20, 0.60),
               mat=METAL)
     if rack:
-        # An electric rack car carries its own drive: a pinion down on the rack rail and
-        # a pantograph up on the roof.
-        m.cylinder((0.0, 0.30, 0.0), 0.30, 0.12, axis=0, segments=12, mat=METAL)
-        tooth = m.box((0.0, 0.60, 0.0), (0.10, 0.10, 0.06), mat=METAL, bevel=False)
-        m.array(tooth, 10, (0.0, 0.0, 0.0), parent=None)
-        m.box((0.0, 0.20, 0.0), (0.46, 0.16, 0.70), mat=METAL)
+        # An electric rack car carries its own drive: a pinion down on the rack rail, the
+        # traction motor behind it, and a pantograph up on the roof.
+        pinion_r = 0.30
+        m.cylinder((0.0, pinion_r, 0.0), pinion_r, 0.12, axis=0, segments=14, mat=METAL)
+        teeth = 12
+        for i in range(teeth):
+            a = 2.0 * math.pi * i / teeth
+            m.box((0.0, pinion_r + math.cos(a) * pinion_r,
+                   math.sin(a) * pinion_r), (0.11, 0.09, 0.07), mat=METAL,
+                  rot=_tilt(-math.degrees(a)), bevel=False)
+        m.box((0.0, pinion_r + 0.26, 0.0), (0.46, 0.34, 0.70), mat=METAL)
+        m.cylinder((0.0, pinion_r + 0.20, 0.40), 0.16, 0.52, axis=0, segments=10,
+                   mat=METAL)
     else:
         m.box((0.0, deck - 0.30, -length * 0.5 + 0.30), (0.34, 0.30, 0.50), mat=METAL)
         m.cylinder((0.0, deck - 0.30, -length * 0.5 + 0.04), 0.10, 0.36, axis=2,
@@ -804,21 +868,36 @@ def _surface_hanger(m, s, top_y, bottom_y, spring=True):
     _grip(m, s, "grip_arm", 0.0, top_y)
     m.node("cabin_hanger", pivot=(0.0, top_y - 0.20, 0.0))
     if spring:
-        m.box((0.0, top_y - 0.42, 0.0), (0.26, 0.44, 0.30), mat=BODY,
+        # The spring box is the whole carrier on a surface lift: a drum of rope the
+        # rider pulls out against a spring, so it is a housing, a lid, a sheave inside
+        # it and the bolt ring round the joint.
+        box_y = top_y - 0.44
+        m.box((0.0, box_y, 0.0), (0.27, 0.46, 0.31), mat=BODY, parent="cabin_hanger")
+        m.box((0.0, box_y + 0.25, 0.0), (0.30, 0.06, 0.34), mat=METAL,
               parent="cabin_hanger")
-        m.cylinder((0.0, top_y - 0.70, 0.0), 0.075, 0.22, axis=1, segments=8,
-                   mat=METAL, parent="cabin_hanger")
+        m.lathe([(0.0, 0.10), (0.11, 0.09), (0.13, 0.03), (0.13, -0.03), (0.11, -0.09),
+                 (0.0, -0.10)], (0.0, box_y + 0.02, 0.17), segments=10, mat=METAL,
+                parent="cabin_hanger", axis=2)
         for sx in (-1.0, 1.0):
-            m.box((sx * 0.10, top_y - 0.42, 0.17), (0.05, 0.36, 0.05), mat=METAL,
-                  parent="cabin_hanger", bevel=False)
-        tube_top = top_y - 0.78
+            for sy in (-0.16, 0.16):
+                m.cylinder((sx * 0.12, box_y + sy, 0.17), 0.022, 0.04, axis=2,
+                           segments=6, mat=METAL, parent="cabin_hanger")
+        m.cylinder((0.0, box_y - 0.30, 0.0), 0.075, 0.20, axis=1, segments=10,
+                   mat=METAL, parent="cabin_hanger")
+        tube_top = box_y - 0.38
     else:
         tube_top = top_y - 0.22
+    # A telescoping hanger: an outer tube with its guide collar, and the inner rod that
+    # runs out of it when a rider takes up the slack.
     m.cylinder((0.0, (tube_top + bottom_y) * 0.5, 0.0), 0.032,
-               tube_top - bottom_y, axis=1, segments=8, mat=METAL,
+               tube_top - bottom_y, axis=1, segments=10, mat=METAL,
                parent="cabin_hanger")
-    m.cylinder((0.0, tube_top - 0.30, 0.0), 0.048, 0.56, axis=1, segments=8,
+    m.cylinder((0.0, tube_top - 0.32, 0.0), 0.050, 0.60, axis=1, segments=10,
                mat=METAL, parent="cabin_hanger")
+    m.tube((0.0, tube_top - 0.64, 0.0), 0.058, 0.038, 0.07, axis=1, segments=10,
+           mat=METAL, parent="cabin_hanger")
+    m.tube((0.0, bottom_y + 0.16, 0.0), 0.046, 0.030, 0.06, axis=1, segments=10,
+           mat=METAL, parent="cabin_hanger")
     return tube_top
 
 
@@ -827,18 +906,26 @@ def _build_tbar(record, model_name):
     s = _surface_spec(record)
     m = mk.Model(model_name, budget_key="lift_carrier",
                  seed=datasrc.seed_for(s["id"], "carrier", "tbar"))
-    bar_y = 0.10
+    bar_y = 0.055
     top_y = bar_y + s["hanger_len"]
-    _surface_hanger(m, s, top_y, bar_y + 0.06)
+    _surface_hanger(m, s, top_y, bar_y + 0.12)
     width = 0.42 * s["capacity"] + 0.12
-    m.cylinder((0.0, bar_y, 0.0), 0.035, width, axis=0, segments=8, mat=METAL,
+    m.cylinder((0.0, bar_y, 0.0), 0.035, width, axis=0, segments=10, mat=METAL,
                parent="cabin_hanger")
     for sx in (-1.0, 1.0):
-        m.box((sx * width * 0.27, bar_y, 0.0), (width * 0.36, 0.09, 0.13), mat=BODY,
+        m.box((sx * width * 0.27, bar_y, 0.0), (width * 0.36, 0.11, 0.13), mat=BODY,
               parent="cabin_hanger")
         m.cylinder((sx * width * 0.5, bar_y, 0.0), 0.045, 0.05, axis=0, segments=8,
                    mat=METAL, parent="cabin_hanger")
-    m.box((0.0, bar_y + 0.10, 0.0), (0.13, 0.16, 0.10), mat=METAL, parent="cabin_hanger")
+        # The yoke that lets the T swing under the hanger and follow a rider round a
+        # corner, which is the joint that wears out on these.
+        m.beam((sx * 0.055, bar_y + 0.22, 0.0), (sx * 0.032, bar_y + 0.03, 0.0), 0.045,
+               mat=METAL, parent="cabin_hanger", square=False, segments=6)
+        m.cylinder((sx * 0.055, bar_y + 0.03, 0.0), 0.030, 0.05, axis=0, segments=6,
+                   mat=METAL, parent="cabin_hanger")
+    m.box((0.0, bar_y + 0.24, 0.0), (0.15, 0.16, 0.11), mat=METAL, parent="cabin_hanger")
+    m.cylinder((0.0, bar_y + 0.34, 0.0), 0.040, 0.14, axis=1, segments=8, mat=METAL,
+               parent="cabin_hanger")
     for i in range(s["capacity"]):
         x = width * (-0.27 if i == 0 else 0.27) if s["capacity"] == 2 else 0.0
         m.socket("seat_%02d" % (i + 1), (x, bar_y, 0.42))
@@ -852,16 +939,27 @@ def _build_platter(record, model_name):
     m = mk.Model(model_name, budget_key="lift_carrier",
                  seed=datasrc.seed_for(s["id"], "carrier", "platter"))
     disc_r = 0.17
-    disc_y = 0.05
+    disc_y = 0.030
     top_y = disc_y + s["hanger_len"]
-    _surface_hanger(m, s, top_y, disc_y + 0.04)
+    _surface_hanger(m, s, top_y, disc_y + 0.10)
     m.lathe([(0.0, disc_y + 0.055), (disc_r * 0.55, disc_y + 0.045),
              (disc_r, disc_y + 0.020), (disc_r, disc_y - 0.020),
-             (disc_r * 0.55, disc_y - 0.035), (0.0, disc_y - 0.030)],
-            (0.0, 0.0, 0.0), segments=_seg(disc_r) + 4, mat=BODY,
+             (disc_r * 0.55, disc_y - 0.030), (0.0, disc_y - 0.025)],
+            (0.0, 0.0, 0.0), segments=_seg(disc_r) + 6, mat=BODY,
             parent="cabin_hanger")
-    m.cylinder((0.0, disc_y + 0.14, 0.0), 0.055, 0.20, axis=1, segments=8, mat=METAL,
+    # A button disc is a moulding with ribs under it, and a collar on the pole above to
+    # stop the disc riding up the rider's back.
+    ribs = 6
+    for i in range(ribs):
+        a = 2.0 * math.pi * i / ribs
+        m.box((math.cos(a) * disc_r * 0.55, disc_y - 0.015, math.sin(a) * disc_r * 0.55),
+              (disc_r * 0.60, 0.03, 0.035), mat=METAL,
+              rot=mk.unity_euler(0.0, math.degrees(a), 0.0), parent="cabin_hanger",
+              bevel=False)
+    m.cylinder((0.0, disc_y + 0.12, 0.0), 0.055, 0.16, axis=1, segments=10, mat=METAL,
                parent="cabin_hanger")
+    m.tube((0.0, disc_y + 0.24, 0.0), 0.062, 0.034, 0.06, axis=1, segments=10,
+           mat=METAL, parent="cabin_hanger")
     m.socket("seat_01", (0.0, disc_y + 0.02, 0.30))
     colliders = [("carrier_col", (0.0, disc_y, 0.0), (disc_r * 2.2, 0.20, disc_r * 2.2))]
     return m, colliders, s
@@ -872,23 +970,34 @@ def _build_handle(record, model_name):
     s = _surface_spec(record)
     m = mk.Model(model_name, budget_key="lift_carrier",
                  seed=datasrc.seed_for(s["id"], "carrier", "handle"))
-    bar_y = 0.06
-    top_y = bar_y + _clamp(0.55 + 0.10 * s["speed"], 0.6, 1.0)
+    bar_y = 0.045
+    top_y = bar_y + _clamp(0.95 + 0.10 * s["speed"], 1.0, 1.4)
     _grip(m, s, "grip_arm", 0.0, top_y)
     m.node("cabin_hanger", pivot=(0.0, top_y - 0.18, 0.0))
+    # A handle is a small thing with a lot of joints in it: a swivel eye under the
+    # clamp so the handle can turn, a shock spring so the rider is not jerked off the
+    # snow when the rope takes up, and a moulded bar with a sleeve on each grip.
     m.box((0.0, top_y - 0.30, 0.0), (0.09, 0.22, 0.16), mat=METAL,
           parent="cabin_hanger")
-    m.cylinder((0.0, (top_y - 0.36 + bar_y) * 0.5, 0.0), 0.022, top_y - 0.36 - bar_y,
-               axis=1, segments=8, mat=METAL, parent="cabin_hanger")
-    for sy in (0.0, 0.06, 0.12):
-        m.cylinder((0.0, bar_y + 0.22 + sy, 0.0), 0.030, 0.03, axis=1, segments=8,
+    m.tube((0.0, top_y - 0.42, 0.0), 0.055, 0.030, 0.05, axis=0, segments=10,
+           mat=METAL, parent="cabin_hanger")
+    spring_y = top_y - 0.56
+    for i in range(4):
+        m.cylinder((0.0, spring_y - i * 0.045, 0.0), 0.048, 0.026, axis=1, segments=10,
                    mat=METAL, parent="cabin_hanger")
+    m.cylinder((0.0, (top_y - 0.74 + bar_y) * 0.5, 0.0), 0.022,
+               top_y - 0.74 - bar_y, axis=1, segments=8, mat=METAL,
+               parent="cabin_hanger")
+    m.cylinder((0.0, bar_y + 0.16, 0.0), 0.032, 0.14, axis=1, segments=8, mat=METAL,
+               parent="cabin_hanger")
     m.cylinder((0.0, bar_y, 0.0), 0.032, 0.34, axis=0, segments=10, mat=BODY,
                parent="cabin_hanger")
     for sx in (-1.0, 1.0):
-        m.cylinder((sx * 0.17, bar_y, 0.0), 0.042, 0.04, axis=0, segments=8, mat=METAL,
-                   parent="cabin_hanger")
-        m.box((sx * 0.09, bar_y + 0.10, 0.0), (0.05, 0.14, 0.05), mat=METAL,
+        m.tube((sx * 0.115, bar_y, 0.0), 0.045, 0.033, 0.10, axis=0, segments=10,
+               mat=METAL, parent="cabin_hanger")
+        m.cylinder((sx * 0.175, bar_y, 0.0), 0.042, 0.035, axis=0, segments=8,
+                   mat=METAL, parent="cabin_hanger")
+        m.box((sx * 0.055, bar_y + 0.09, 0.0), (0.05, 0.14, 0.05), mat=METAL,
               parent="cabin_hanger", bevel=False)
     m.socket("seat_01", (0.0, bar_y, 0.55))
     colliders = [("carrier_col", (0.0, bar_y + 0.10, 0.0), (0.40, 0.40, 0.20))]
@@ -924,11 +1033,25 @@ def _build_belt(record, model_name):
               mat=BODY)
         m.box((sx * (width * 0.5 + 0.05), belt_y + 0.15, 0.0), (0.11, 0.04, length * 0.9),
               mat=METAL, bevel=False)
-        m.box((sx * (width * 0.5 + 0.02), 0.06, 0.0), (0.07, 0.14, length * 0.5),
+        m.box((sx * (width * 0.5 + 0.02), 0.07, 0.0), (0.07, 0.14, length * 0.5),
               mat=METAL)
+        # The brush skirt that keeps snow out of the belt run, and the bolt row that
+        # holds the side panel onto the frame.
+        m.box((sx * (width * 0.5 + 0.005), belt_y - 0.01, 0.0), (0.03, 0.05, length * 0.96),
+              mat=METAL, bevel=False)
+        bolt = m.cylinder((sx * (width * 0.5 + 0.10), belt_y + 0.08, -length * 0.5 + 0.12),
+                          0.016, 0.02, axis=0, segments=6, mat=METAL)
+        m.array(bolt, max(2, int(length / 0.40)), (0.0, 0.0, 0.40))
+    # Carrying rollers over the bed and a return roller under it: the belt is a loop.
     roller = m.cylinder((0.0, belt_y - 0.10, -length * 0.5 + 0.20), 0.075, width * 0.92,
-                        axis=0, segments=8, mat=METAL)
+                        axis=0, segments=10, mat=METAL)
     m.array(roller, max(2, int(length / 0.6)), (0.0, 0.0, 0.6))
+    ret = m.cylinder((0.0, 0.11, -length * 0.5 + 0.45), 0.055, width * 0.86, axis=0,
+                     segments=10, mat=METAL)
+    m.array(ret, max(2, int(length / 1.1)), (0.0, 0.0, 1.1))
+    cross = m.box((0.0, 0.10, -length * 0.5 + 0.30), (width + 0.16, 0.07, 0.08),
+                  mat=METAL, bevel=False)
+    m.array(cross, max(2, int(length / 0.8)), (0.0, 0.0, 0.8))
 
     if s["exposure"] < 0.5:
         # A gallery is what the covered record pays for: hoops and a polycarbonate skin
