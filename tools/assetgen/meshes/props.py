@@ -37,11 +37,12 @@ step is published as `sectionLengthM` on every one of those manifest records.
 Articulation
 ------------
 docs/ART_CONTRACT.md names transforms for machines and lifts and says nothing about
-scenery, so the three moving props here publish names of their own: `gate_swing` on the
-closure gate and the maze gate (rotates about Y at the hinge), `sock_yaw` on the wind
+scenery, so the props that move publish three names of their own: `gate_swing` on the
+closure gate and on the maze gate (rotates about Y at the hinge), `sock_yaw` on the wind
 sock (yaws about Y) and `anemometer` on the weather station (spins about Y). They are
 optional in exactly the way the contract means: bound if a view wants them, ignored
-otherwise.
+otherwise. Nothing else here articulates, and the family publishes no required
+transform, which is what `prop` means in validate.REQUIRED_NODES.
 """
 import math
 import os
@@ -181,11 +182,11 @@ def _lunch_seats(scenario, tuning):
     return guests * _tune(tuning, "guests.lunchProbPerVisit") / sittings
 
 
-def _plan_from_seats(seats, storeys):
+def _plan_from_seats(seats, storeys, aspect=LODGE_ASPECT, back=BACK_OF_HOUSE):
     """Footprint of a building that has to seat `seats` people on `storeys` floors."""
-    floor_area = seats * SEAT_AREA_M2 * BACK_OF_HOUSE / max(1, storeys)
-    length = _clamp(math.sqrt(max(20.0, floor_area) * LODGE_ASPECT), 14.0, 44.0)
-    return length, length / LODGE_ASPECT
+    floor_area = seats * SEAT_AREA_M2 * back / max(1, storeys)
+    length = _clamp(math.sqrt(max(20.0, floor_area) * aspect), 12.0, 44.0)
+    return length, length / aspect
 
 
 def _grades(scenario):
@@ -212,7 +213,9 @@ def _site():
     scenario = _default_scenario()
     seats = _lunch_seats(scenario, tuning)
     lodge_l, lodge_w = _plan_from_seats(seats, 2)
-    mid_l, mid_w = _plan_from_seats(seats * 0.45, 1)
+    # A mid-mountain restaurant serves fewer covers than the base and runs almost no
+    # back of house: no rental, no ski school, no boot room, one delivery a day.
+    mid_l, mid_w = _plan_from_seats(seats * 0.45, 1, aspect=2.4, back=1.5)
     snow = _design_snowpack(climate, tuning)
     return {
         "snow_m": snow,
@@ -235,12 +238,10 @@ def _site():
 
 
 # --------------------------------------------------------------------------- parts
-def _post(m, x, z, height, radius, mat=METAL, base=0.0, segments=None, parent=None,
-          taper=1.0):
+def _post(m, x, z, height, radius, mat=METAL, segments=None, parent=None):
     """A round post standing on the ground at (x, z)."""
-    seg = segments or _seg(radius)
-    return m.cylinder((x, base + height * 0.5, z), radius, height, axis=1, segments=seg,
-                      mat=mat, parent=parent, radius_end=radius * taper)
+    return m.cylinder((x, height * 0.5, z), radius, height, axis=1,
+                      segments=segments or _seg(radius), mat=mat, parent=parent)
 
 
 def _flange(m, x, z, radius, parent=None):
@@ -251,9 +252,13 @@ def _flange(m, x, z, radius, parent=None):
                mat=METAL, parent=parent)
 
 
-def _plate(m, center, size, mat=BODY, parent=None, rot=None):
-    """Sheet metal. A 2 mm blade gets no chamfer: the fold is in the texture."""
-    return m.box(center, size, mat=mat, parent=parent, rot=rot, bevel=False)
+def _clamp_band(m, y, post_r=POST_D * 0.5, parent=None):
+    """The band clamp a blade is actually held to a post with, and its two bolts."""
+    m.tube((0.0, y, 0.0), post_r * 1.22, post_r * 1.04, 0.045, axis=1, segments=10,
+           mat=METAL, parent=parent)
+    for side in (-1.0, 1.0):
+        m.box((side * post_r * 1.3, y, 0.0), (post_r * 0.5, 0.035, 0.035), mat=METAL,
+              parent=parent, bevel=False)
 
 
 def _disc_profile(radius, sides=12):
@@ -282,15 +287,18 @@ def _chamfered_plan(length, width, corner):
             (hl - c, hw), (-hl + c, hw), (-hl, hw - c), (-hl, -hw + c)]
 
 
-def _scaled_plan(plan, sx, sz, y=None):
-    """A footprint polygon as a loft ring, optionally lifted to a height."""
-    if y is None:
-        return [(x * sx, z * sz) for x, z in plan]
+def _scaled_plan(plan, sx, sz, y):
+    """A footprint polygon as a loft ring at one height."""
     return [(x * sx, y, z * sz) for x, z in plan]
 
 
-def _railing(m, x0, x1, z, top_y, base_y, parent=None, posts=None):
+def _railing(m, x0, x1, z, top_y, base_y, parent=None, balusters=48):
     """Deck railing: newel posts, a top rail, a bottom rail and a baluster field.
+
+    The baluster field is capped rather than spaced to code. A thirty metre deck at code
+    spacing is two hundred balusters and two thousand triangles for a building that is
+    read from the far side of the valley, so the field thins out as the deck grows and
+    the spacing is what is left over.
 
     Everything repeated is built unchamfered, because meshkit's array copies the faces
     it is handed and a bevel replaces those faces.
@@ -298,7 +306,7 @@ def _railing(m, x0, x1, z, top_y, base_y, parent=None, posts=None):
     span = abs(x1 - x0)
     if span < 0.2:
         return
-    posts = posts or max(2, int(span / 2.2) + 1)
+    posts = max(2, int(span / 2.2) + 1)
     step = span / max(1, posts - 1)
     newel = m.box((min(x0, x1), base_y + (top_y - base_y) * 0.5, z),
                   (0.09, top_y - base_y, 0.09), mat=METAL, parent=parent, bevel=False)
@@ -306,7 +314,7 @@ def _railing(m, x0, x1, z, top_y, base_y, parent=None, posts=None):
     m.box((0.5 * (x0 + x1), top_y, z), (span, 0.075, 0.10), mat=BODY, parent=parent)
     m.box((0.5 * (x0 + x1), base_y + 0.12, z), (span, 0.05, 0.06), mat=METAL,
           parent=parent, bevel=False)
-    count = max(2, int(span / 0.16))
+    count = max(2, min(balusters, int(span / 0.14)))
     gap = span / count
     baluster = m.box((min(x0, x1) + gap * 0.5, base_y + (top_y - base_y) * 0.5, z),
                      (0.035, top_y - base_y - 0.14, 0.035), mat=METAL, parent=parent,
@@ -314,7 +322,7 @@ def _railing(m, x0, x1, z, top_y, base_y, parent=None, posts=None):
     m.array(baluster, count, (gap, 0.0, 0.0), parent=parent)
 
 
-def _window_band(m, x0, x1, z, sill_y, height, count, parent=None, depth=0.10):
+def _window_band(m, x0, x1, z, sill_y, height, count, parent=None):
     """A glazed band with real frames: a mullion field is what makes a wall read as a
     building rather than a shed with a hole in it."""
     span = abs(x1 - x0)
@@ -328,13 +336,14 @@ def _window_band(m, x0, x1, z, sill_y, height, count, parent=None, depth=0.10):
                  bevel=False)
     m.array(pane, count, (pitch, 0.0, 0.0), parent=parent)
     frame = []
-    frame += m.box((cx, sill_y - 0.05, z), (pane_w + 0.10, 0.10, depth), mat=BODY,
+    reveal = 0.10                 # how far the surround stands proud of the wall
+    frame += m.box((cx, sill_y - 0.05, z), (pane_w + 0.10, 0.10, reveal), mat=BODY,
                    parent=parent, bevel=False)
-    frame += m.box((cx, sill_y + height + 0.05, z), (pane_w + 0.10, 0.10, depth),
+    frame += m.box((cx, sill_y + height + 0.05, z), (pane_w + 0.10, 0.10, reveal),
                    mat=BODY, parent=parent, bevel=False)
     for side in (-1.0, 1.0):
         frame += m.box((cx + side * (pane_w * 0.5 + 0.05), cy, z),
-                       (0.10, height + 0.20, depth), mat=BODY, parent=parent,
+                       (0.10, height + 0.20, reveal), mat=BODY, parent=parent,
                        bevel=False)
     m.array(frame, count, (pitch, 0.0, 0.0), parent=parent)
 
@@ -364,8 +373,7 @@ def _blade(m, grade, y, z=POST_D * 0.5 + BLADE_T):
             profile = _rect_profile(size * 1.35, size * 0.72)
         m.prism(profile, (x, y, z), BLADE_T, mat=BODY, axis=2)
     for band in (-1.0, 1.0):
-        m.box((0.0, y + band * size * 0.34, POST_D * 0.5 * 0.5),
-              (POST_D * 1.5, 0.05, POST_D * 0.6), mat=METAL, bevel=False)
+        _clamp_band(m, y + band * size * 0.34)
 
 
 def _trail_sign(m, site, grade="Blue"):
@@ -402,8 +410,7 @@ def _run_name_board(m, site):
             (-width * 0.5 + height * 0.42, top - height * 0.5, face + BOARD_T * 0.5 + BLADE_T),
             BLADE_T, mat=BODY, axis=2)
     for band in (-1.0, 1.0):
-        m.box((0.0, top - height * 0.5 + band * height * 0.32, POST_D * 0.25),
-              (POST_D * 1.5, 0.05, POST_D * 0.6), mat=METAL, bevel=False)
+        _clamp_band(m, top - height * 0.5 + band * height * 0.32)
     return {"boardWidthM": round(width, 3)}
 
 
@@ -420,8 +427,7 @@ def _slow_zone_sign(m, site):
     m.prism([(-0.02, 0.0), (0.44, -0.09), (0.44, 0.09)],
             (0.02, head - size * 0.62, face), BLADE_T, mat=BODY, axis=2)
     for band in (-1.0, 1.0):
-        m.box((0.0, head + band * size * 0.22, POST_D * 0.25),
-              (POST_D * 1.5, 0.05, POST_D * 0.6), mat=METAL, bevel=False)
+        _clamp_band(m, head + band * size * 0.22)
     return {}
 
 
@@ -524,11 +530,13 @@ def _snow_fence(m, site):
     z0 = -length * 0.5
     m.box((0.0, height * 0.5, z0), (0.10, height, 0.10), mat=BODY)
     m.box((0.0, height + 0.03, z0), (0.14, 0.06, 0.14), mat=METAL, bevel=False)
-    # Every drift fence is braced downwind or it lies down in the first storm.
-    m.beam((0.0, height * 0.86, z0), (height * 0.55, 0.02, z0 + height * 0.30), 0.08,
-           mat=BODY)
-    m.box((height * 0.55, 0.04, z0 + height * 0.30), (0.30, 0.08, 0.30), mat=METAL,
-          bevel=False)
+    # Braced both ways, which is what a free-standing panel needs: the wind that builds
+    # the drift comes from one side and the drift itself pushes back from the other.
+    for side in (-1.0, 1.0):
+        m.beam((0.0, height * 0.86, z0), (side * height * 0.55, 0.02,
+                                          z0 + height * 0.30), 0.08, mat=BODY)
+        m.box((side * height * 0.55, 0.05, z0 + height * 0.30), (0.30, 0.10, 0.30),
+              mat=METAL)
     pitch = slat_w / max(0.15, 1.0 - porosity)
     count = max(3, int((height - bottom) / pitch))
     slat = m.box((0.0, bottom + slat_w * 0.5, 0.0), (0.025, slat_w, length), mat=BODY,
@@ -546,35 +554,39 @@ def _a_net(m, site):
     """
     length = 3.50
     height = site["net_h"]
-    rake = 18.0                          # the pole leans downhill so the net faces the slip
+    rake = 18.0                          # the pole leans downhill, so the net faces the slip
     z0 = -length * 0.5
+    # The fence line runs along +Z and the slope falls along +X, so the rake and the
+    # guys are perpendicular to the line the sections are arrayed on.
     lean = math.tan(math.radians(rake)) * height
-    top = (0.0, height, z0 + lean)
-    m.beam((0.0, 0.0, z0), top, 0.14, mat=METAL, square=False, segments=10)
+    # The section straddles its own footprint: the anchor reaches as far uphill as the
+    # rake reaches downhill, so a row of them arrays on the fence line, not beside it.
+    foot_x = (height * 0.55 - lean) * 0.5
+    top = (foot_x + lean, height, z0)
+    m.beam((foot_x, 0.0, z0), top, 0.14, mat=METAL, square=False, segments=10)
     # The pole is padded where a skier can hit it, which is the bottom two metres.
-    m.cylinder((0.0, 0.9, z0 + lean * 0.9 / height), 0.13, 1.8, axis=2, segments=10,
-               mat=BODY, rot=mk.look_rotation((0.0, height, lean)))
-    m.box((0.0, 0.06, z0), (0.44, 0.12, 0.44), mat=METAL, bevel=False)
-    # Uphill guy to a ground anchor, and the downhill stay that holds the rake.
-    m.beam(top, (0.0, 0.05, z0 - height * 0.75), 0.035, mat=METAL, square=False,
-           segments=6)
-    m.box((0.0, 0.05, z0 - height * 0.75), (0.26, 0.10, 0.26), mat=METAL, bevel=False)
-    # Net: a rhombic field between the top cable and the ground cable. Four cables each
+    m.cylinder((foot_x + lean * 0.30, 0.90, z0), 0.13, 1.8, axis=2, segments=10,
+               mat=BODY, rot=mk.look_rotation((lean, height, 0.0)))
+    m.box((foot_x, 0.06, z0), (0.44, 0.12, 0.44), mat=METAL, bevel=False)
+    # Uphill guy into a ground anchor. The real anchor is eight metres of rope grouted
+    # into rock; what is modelled is the plate it comes out of.
+    anchor = (foot_x - height * 0.55, 0.05, z0)
+    m.beam(top, anchor, 0.035, mat=METAL, square=False, segments=6)
+    m.box(anchor, (0.30, 0.10, 0.30), mat=METAL)
+    # Net: a rhombic field between the top cable and the ground cable. Four strands each
     # way is enough to read as netting once the texture is on it.
-    top_c = (height, z0 + lean)
-    bot_c = (0.10, z0)
-    m.beam((0.0, top_c[0], top_c[1]), (0.0, top_c[0], top_c[1] + length), 0.045,
-           mat=METAL, square=False, segments=6)
-    m.beam((0.0, bot_c[0], bot_c[1]), (0.0, bot_c[0], bot_c[1] + length), 0.045,
-           mat=METAL, square=False, segments=6)
+    top_x, bot_x = top[0], foot_x
+    m.beam((top_x, height, z0), (top_x, height, z0 + length), 0.045, mat=METAL,
+           square=False, segments=6)
+    m.beam((bot_x, 0.10, z0), (bot_x, 0.10, z0 + length), 0.045, mat=METAL,
+           square=False, segments=6)
     strands = 4
     for i in range(strands):
         t = (i + 0.5) / strands
-        a = (0.0, top_c[0], top_c[1] + length * t)
-        b = (0.0, bot_c[0], bot_c[1] + length * min(1.0, t + 0.5))
-        c = (0.0, bot_c[0], bot_c[1] + length * max(0.0, t - 0.5))
-        m.beam(a, b, 0.022, mat=METAL, square=False, segments=4)
-        m.beam(a, c, 0.022, mat=METAL, square=False, segments=4)
+        a = (top_x, height, z0 + length * t)
+        for other in (min(1.0, t + 0.5), max(0.0, t - 0.5)):
+            m.beam(a, (bot_x, 0.10, z0 + length * other), 0.022, mat=METAL,
+                   square=False, segments=4)
     return {"sectionLengthM": length, "heightM": round(height, 2)}
 
 
@@ -704,7 +716,7 @@ def _eave_brackets(m, length, width, eave_y, count, parent=None):
 def _snow_guards(m, length, width, eave_y, pitch_deg, parent=None):
     """Snow stops along the eaves: an Alpine roof that sheds onto a deck kills somebody."""
     rise_at = math.tan(math.radians(pitch_deg))
-    count = max(4, int(length / 1.4))
+    count = _clamp(int(length / 1.4), 4, 14)
     span = length * 0.9
     step = span / max(1, count - 1)
     for side in (-1.0, 1.0):
@@ -713,6 +725,26 @@ def _snow_guards(m, length, width, eave_y, pitch_deg, parent=None):
         guard = m.box((-span * 0.5, y + 0.07, z), (0.05, 0.14, 0.04), mat=METAL,
                       parent=parent, bevel=False)
         m.array(guard, count, (step, 0.0, 0.0), parent=parent)
+
+
+def _end_windows(m, length, width, storeys, storey_h, parent=None):
+    """Two punched windows per floor in each gable end.
+
+    A building glazed only on its long face reads as a facade flat. The ends are what
+    you see first coming up the road, so they get real openings with a surround.
+    """
+    for side in (-1.0, 1.0):
+        x = side * (length * 0.5 + LAP)
+        for floor in range(storeys):
+            cy = storey_h * floor + 1.72
+            for k in (-1.0, 1.0):
+                z = k * width * 0.24
+                m.box((x, cy, z), (0.02, 1.25, 0.95), mat=GLASS, parent=parent,
+                      bevel=False)
+                for dy, dz, sy, sz in ((0.72, 0.0, 0.12, 1.15), (-0.72, 0.0, 0.12, 1.15),
+                                       (0.0, 0.53, 1.32, 0.12), (0.0, -0.53, 1.32, 0.12)):
+                    m.box((x - side * 0.04, cy + dy, z + dz), (0.09, sy, sz), mat=BODY,
+                          parent=parent, bevel=False)
 
 
 def _chimney(m, x, z, base_y, top_y, size=0.70, parent=None):
@@ -743,7 +775,8 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
              _scaled_plan(plan, 1.0, 1.0, eave_y)]
     m.loft(rings, mat=BODY)
     ridge = _pitched_roof(m, length, width, eave_y, 26.0, 0.90, 0.26, 0.60)
-    _eave_brackets(m, length, width, eave_y, max(4, int(length / 3.2)))
+    m.box((0.0, ridge + 0.03, 0.0), (length + 1.20, 0.10, 0.36), mat=METAL)
+    _eave_brackets(m, length, width, eave_y, int(_clamp(int(length / 3.2), 4, 12)))
     _snow_guards(m, length, width, eave_y, 26.0)
     for i in range(chimneys):
         x = (i - (chimneys - 1) * 0.5) * length * 0.42
@@ -752,13 +785,14 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
 
     # Glazing: a band to the plaza on every floor, and a smaller one on the gable ends.
     face_z = width * 0.5 + LAP
-    panes = max(3, int(length / 2.6))
+    panes = int(_clamp(int(length / 2.6), 3, 10))
     for floor in range(storeys):
         sill = storey_h * floor + 1.00
         _window_band(m, -length * 0.42, length * 0.42, face_z, sill, 1.55, panes)
     m.prism(_rect_profile(1.90, 2.35), (0.0, 1.175, face_z + 0.02), 0.10, mat=METAL,
             axis=2)
     m.box((0.0, 1.10, face_z + 0.09), (1.70, 2.20, 0.06), mat=GLASS, bevel=False)
+    _end_windows(m, length, width, storeys, storey_h)
 
     if deck_depth > 0.2:
         deck_y = 0.82
@@ -766,12 +800,13 @@ def _lodge(m, site, length, width, storeys, deck_depth, chimneys, name):
         z1 = z0 + deck_depth
         m.box((0.0, deck_y - 0.09, (z0 + z1) * 0.5), (length * 0.92, 0.18, deck_depth),
               mat=BODY)
-        posts = max(2, int(length / 3.4))
+        posts = int(_clamp(int(length / 3.4), 2, 12))
         step = length * 0.88 / max(1, posts - 1)
         leg = m.box((-length * 0.44, deck_y * 0.5 - 0.09, z1 - 0.25),
                     (0.16, deck_y - 0.18, 0.16), mat=BODY, bevel=False)
         m.array(leg, posts, (step, 0.0, 0.0))
-        _railing(m, -length * 0.46, length * 0.46, z1 - 0.06, deck_y + 0.95, deck_y)
+        _railing(m, -length * 0.46, length * 0.46, z1 - 0.06, deck_y + 0.95, deck_y,
+                 balusters=64)
         for side in (-1.0, 1.0):
             m.box((side * length * 0.46, deck_y + 0.48, (z0 + z1) * 0.5),
                   (0.09, 0.95, deck_depth), mat=METAL, bevel=False)
@@ -928,7 +963,7 @@ def _deciduous_bare(m, site, height=9.0):
                segments=6 if depth > 1 else 4)
         if depth <= 0 or length < height * 0.05:
             return
-        children = 3 if depth > 1 else 2
+        children = 3
         for k in range(children):
             spin = 2.0 * math.pi * ((k + float(rng.random()) * 0.5) / children)
             lean = 0.42 + 0.30 * float(rng.random())
@@ -940,7 +975,7 @@ def _deciduous_bare(m, site, height=9.0):
                    length * (0.62 + 0.10 * float(rng.random())), radius * 0.62,
                    depth - 1)
 
-    limbs = 3
+    limbs = 4
     for k in range(limbs):
         spin = 2.0 * math.pi * (k + float(rng.random()) * 0.4) / limbs
         lean = 0.36 + 0.22 * float(rng.random())
@@ -1078,7 +1113,9 @@ def _weather_station(m, site):
     mast_h = 3.00
     m.cylinder((0.0, mast_h * 0.5, 0.0), 0.032, mast_h, axis=1, segments=8, mat=METAL)
     for k in range(3):
-        angle = 2.0 * math.pi * k / 3.0
+        # One leg straight back and two forward, so the tripod straddles the centreline
+        # instead of sitting to one side of it.
+        angle = math.pi * 0.5 + 2.0 * math.pi * k / 3.0
         foot = (math.cos(angle) * 1.05, 0.0, math.sin(angle) * 1.05)
         m.beam((math.cos(angle) * 0.05, mast_h * 0.62, math.sin(angle) * 0.05), foot,
                0.030, mat=METAL, square=False, segments=6)
@@ -1285,11 +1322,11 @@ def _catalogue(site):
         ("hut_patrol", "Patrol hut", "prop", "prop", _patrol_hut, {}),
 
         ("tree_conifer_sapling", "Conifer sapling", "tree", "tree", _conifer,
-         {"height": 2.1, "whorls": 5, "needle_segments": 7}),
+         {"height": 2.1, "whorls": 8, "needle_segments": 8}),
         ("tree_conifer_mid", "Conifer, mid growth", "tree", "tree", _conifer,
-         {"height": 8.0, "whorls": 9, "needle_segments": 8}),
+         {"height": 8.0, "whorls": 11, "needle_segments": 8}),
         ("tree_conifer_mature", "Mature conifer", "tree", "tree", _conifer,
-         {"height": 16.0, "whorls": 12, "needle_segments": 9}),
+         {"height": 16.0, "whorls": 14, "needle_segments": 9}),
         ("tree_deciduous_bare", "Bare deciduous", "tree", "tree", _deciduous_bare,
          {"height": 9.0}),
 
@@ -1299,7 +1336,7 @@ def _catalogue(site):
          {"radius": 0.70, "aspect": (1.00, 0.92, 1.35), "segments": 16, "rings": 11,
           "lumps": 6}),
         ("rock_boulder_c", "Boulder, slab", "rock", "rock", _boulder,
-         {"radius": 1.90, "aspect": (1.30, 0.52, 1.10), "segments": 20, "rings": 13,
+         {"radius": 1.50, "aspect": (1.30, 0.52, 1.10), "segments": 20, "rings": 13,
           "lumps": 4}),
 
         ("snow_stake", "Snow depth stake", "prop", "prop", _snow_stake, {}),

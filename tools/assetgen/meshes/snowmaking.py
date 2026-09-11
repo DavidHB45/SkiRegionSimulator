@@ -396,8 +396,10 @@ def _build_fan_gun(m, record, vis):
         _control_cabinet(m, (0.0, deck_y + 0.34, -_num(vis.get("BodyL"), 2.2) * 0.3),
                          (0.62, 0.62, 0.34), auto)
         if auto:
+            # The sensors stand at the back of the frame and above the barrel: a wet-bulb
+            # read in the gun's own plume is worse than no reading at all.
             _weather_head(m, (_num(vis.get("BodyW"), 1.4) * 0.38, deck_y,
-                              -_num(vis.get("BodyL"), 2.2) * 0.46), 2.0)
+                              -_num(vis.get("BodyL"), 2.2) * 0.50), 2.4)
         base_half = (_num(vis.get("BodyW"), 1.4) * 0.5, _num(vis.get("BodyL"), 2.2) * 0.5)
         colliders = [("base_col", (0.0, deck_y * 0.5, 0.0),
                       (base_half[0] * 2.0, deck_y, base_half[1] * 2.0))]

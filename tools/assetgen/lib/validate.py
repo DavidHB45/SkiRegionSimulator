@@ -22,6 +22,7 @@ REQUIRED_NODES = {
     "lift_carrier": (),
     "attachment": (),          # an implement's transforms depend on its Kind, not the family
     "station": (),             # fixed plant: a gun's yaw and pitch depend on what kind it is
+    "prop": (),                # scenery: a gate or a wind sock moves, nothing binds to it
 }
 
 
