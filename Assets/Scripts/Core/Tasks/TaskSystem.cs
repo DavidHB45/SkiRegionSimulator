@@ -342,7 +342,7 @@ namespace AlpineSim.Core.Tasks
                 case TaskKind.Spread: vs.AssignZoneWork(ctx, v.Id, task.TargetId, AiMode.SpreadZone, task.Id); break;
                 case TaskKind.HaulSnow: case TaskKind.HaulMaterial: case TaskKind.PourConcrete:
                     vs.AssignHaul(ctx, v.Id, task.LoadAt, task.Site, task.CargoKind, MathF.Max(0f, task.QuantityRequired - task.QuantityDelivered), task.Id); break;
-                default: vs.AssignSiteWork(ctx, v.Id, task.Site, task.Id); break;
+                default: vs.AssignSiteWork(ctx, v.Id, task.Site, task.Id, task.Kind == TaskKind.Refuel || task.Kind == TaskKind.Repair || task.Kind == TaskKind.Rescue); break;
             }
             task.Status = TaskStatus.InProgress;
         }

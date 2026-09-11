@@ -256,3 +256,19 @@ a pass that distance represents, which is the same total as compacting the whole
 tick for a ninth of the work. Guest cohorts step every fourth tick with four times the step
 (`simulation.guestTickDivisor`): walking, queueing and skiing at 5 Hz are indistinguishable from
 20 Hz. Two simulated days went from 76 s to 43 s; the thirty-day fixtures dominate the suite.
+
+## D-035 Steep runs are groomed downhill, with a transfer by track between lanes
+A run with one pitch the cat cannot climb had been groomed only below that pitch, lane after
+lane, and the upper half became a permanent mogul field whatever the fleet. When a climbing lane
+is abandoned the AI now switches the rest of the job to the way steep runs are really groomed:
+every remaining lane is tilled downhill from the top, and between lanes the machine drives back
+up by track. The transfer is planned under the operator's rating by
+`vehicles.aiTransferGradeMarginDeg` because off the groomed runs the snow is untracked, and a
+run steeper than the machine's own rating is left for the winch cat (M7). Route search became
+directional for this (a machine may descend a pitch it could never climb), prices grade by its
+square so a 13° track beats a 30° run at half the distance, samples link grades finely enough to
+see a run's cut bank, limits cross-country links to the 80 m that ties a lot to its road, and
+links everything on the base pad to the base. A machine on a refuel, repair or rescue call is
+the one exception to its rating: it goes where the stranded machine is, up to
+`vehicles.aiServiceCallExtraGradeDeg` past what it would otherwise take, because the alternative
+is a cat stranded on the run all night.

@@ -47,7 +47,7 @@ namespace AlpineSim.Core.Save
         /// (false / -1), which is the correct pre-v3 behaviour, so the step only stamps the version.</summary>
         private static void MigrateV2ToV3(JsonNode root) { }
 
-        /// <summary>v4: VehicleAiState gained LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer, JobMode, LaneAbandoned and ParkedStuckTick, WorkTask gained BlockedTick, SurfaceZone gained SnowScore, FuelDepotState gained AutoOrder (true). All default to their pre-v4 meaning (zero, Idle, false, -1, a full clearance score),
+        /// <summary>v4: VehicleAiState gained LanesSkipped, RefuseTimer, StuckCount, FuelDeniedTimer, JobMode, LaneAbandoned, ParkedStuckTick, TopDown and ServiceCall, WorkTask gained BlockedTick, SurfaceZone gained SnowScore, FuelDepotState gained AutoOrder (true). All default to their pre-v4 meaning (zero, Idle, false, -1, a full clearance score),
         /// which is the state of an AI that has not refused, stuck or been turned away from the depot, so the step only stamps.</summary>
         private static void MigrateV3ToV4(JsonNode root) { }
 

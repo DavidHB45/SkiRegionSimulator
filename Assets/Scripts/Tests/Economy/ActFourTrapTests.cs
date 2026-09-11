@@ -1,5 +1,6 @@
 using AlpineSim.Core.Economy;
 using AlpineSim.Core.Sim;
+using AlpineSim.Core.Vehicles;
 using NUnit.Framework;
 
 namespace AlpineSim.Tests.Economy
@@ -27,6 +28,8 @@ namespace AlpineSim.Tests.Economy
             data.Operators.LicensedAccidentProbabilityPerHour = 0f;
             var scen = data.GetScenario("default");
             foreach (var l in scen.Lifts) if (l.Id == "quad") l.TypeId = quadType;
+            // an Act IV resort has a driver for each of its two cats; the same two cats groom in both runs
+            foreach (var so in scen.StartingOperators) if (so.Name.StartsWith("Tobias") && !so.Licenses.Contains(OperatorLicense.Groomer)) so.Licenses.Add(OperatorLicense.Groomer);
             var sim = Simulation.CreateNew(data, seed, "default");
             sim.World.Economy.Act = 4; // the Act IV decision: both runs at Act IV demand and credit
             if (quadType != "fixed_quad")
@@ -55,8 +58,12 @@ namespace AlpineSim.Tests.Economy
             Assert.GreaterOrEqual(eD.Daily.Count, 30);
             double netF = 0, netD = 0;
             for (int d = 20; d < 30; d++) { netF += eF.Daily[d].Net; netD += eD.Daily[d].Net; }
-            float pqiF = fixedRun.World.Pistes.ResortPqi, pqiD = detachRun.World.Pistes.ResortPqi;
-            Assert.Less(pqiD, pqiF, "more uphill capacity on ungroomed runs should leave the snow worse");
+            // the snow the guests actually skied on over the last ten days, not the resort average after the night's grooming
+            var hF = fixedRun.World.Guests.History; var hD = detachRun.World.Guests.History;
+            Assert.GreaterOrEqual(hF.Count, 30); Assert.GreaterOrEqual(hD.Count, 30);
+            float pqiF = 0f, pqiD = 0f;
+            for (int d = 20; d < 30; d++) { pqiF += hF[d].AvgPqi; pqiD += hD[d].AvgPqi; }
+            Assert.Less(pqiD, pqiF, "more uphill capacity on the same runs should leave the snow the guests ski on worse (fixed " + (pqiF / 10f).ToString("0.0") + ", detachable " + (pqiD / 10f).ToString("0.0") + ")");
             Assert.Less(netD, netF, "the detachable should net less over days 21-30 without extra grooming (fixed " + EconomySystem.Money(netF) + ", detachable " + EconomySystem.Money(netD) + ")");
         }
     }

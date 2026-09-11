@@ -1039,6 +1039,20 @@
       "unit": "s",
       "comment": "Reverse time when stuck."
     },
+    "aiTransferGradeMarginDeg": {
+      "value": 8,
+      "min": 0,
+      "max": 20,
+      "unit": "deg",
+      "comment": "A groomer transferring to the top of a run by track plans the climb this far under its operator's rating: off the groomed runs the snow is untracked, and a pitch a cat climbs on corduroy stalls it in fresh snow."
+    },
+    "aiServiceCallExtraGradeDeg": {
+      "value": 10,
+      "min": 0,
+      "max": 20,
+      "unit": "deg",
+      "comment": "How far past its rating a machine on a refuel, repair or rescue call will take a pitch to reach the stranded machine: the service truck goes up the run in low range with chains on, slowly, because the alternative is a cat stranded all night."
+    },
     "aiTransitMaxKmh": {
       "value": 40,
       "min": 15,
@@ -1103,11 +1117,11 @@
       "comment": "Steepest ground the AI router treats as normal driving; steeper edges cost routeSteepCostFactor times more. A groomer climbs 30 degrees on firm snow, but the router keeps a margin for soft conditions."
     },
     "routeLinkRadiusM": {
-      "value": 180,
+      "value": 80,
       "min": 40,
       "max": 500,
       "unit": "m",
-      "comment": "Route graph adds a straight cross-country link between any two waypoints this close when the ground between them is under the grade limit and buildable."
+      "comment": "Straight cross-country links join graph nodes this far apart where the ground stays under the routing grade: enough to tie a lot to the road at its rim, too short to bridge a run to a cat track through untracked snow."
     },
     "routeSteepCostFactor": {
       "value": 20,

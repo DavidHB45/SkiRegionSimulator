@@ -61,7 +61,7 @@ namespace AlpineSim.Core.Vehicles
             int version = net.Pistes.Count * 1000 + net.Zones.Count;
             if (version == _routeVersion) return;
             var t = ctx.Tuning;
-            _routes.Build(net, ctx.Sim.Scenario.BaseArea.Pos, t.F("vehicles.routeSnapRadiusM"), ctx.Terrain, t.F("vehicles.routeMaxGradeDeg"), t.F("vehicles.routeLinkRadiusM"), t.F("vehicles.routeSteepCostFactor"));
+            _routes.Build(net, ctx.Sim.Scenario.BaseArea.Pos, t.F("vehicles.routeSnapRadiusM"), ctx.Terrain, t.F("vehicles.routeMaxGradeDeg"), t.F("vehicles.routeLinkRadiusM"), t.F("vehicles.routeSteepCostFactor"), ctx.Sim.Scenario.BaseAreaRadiusM);
             _routeVersion = version;
         }
 
@@ -344,11 +344,14 @@ namespace AlpineSim.Core.Vehicles
             _haulRemaining[id] = quantity;
         }
 
-        public void AssignSiteWork(SimContext ctx, int id, Vec2 site, int taskId)
+        public void AssignSiteWork(SimContext ctx, int id, Vec2 site, int taskId, bool serviceCall = false)
         {
             var v = Get(ctx, id); if (v == null) return;
-            v.Ai = new VehicleAiState { Mode = AiMode.GoToSite, TaskId = taskId, Phase = "to site", DeliverTo = site };
-            v.Ai.Route = FindRoute(ctx, v, site);
+            v.Ai = new VehicleAiState { Mode = AiMode.GoToSite, TaskId = taskId, Phase = serviceCall ? "to the stranded machine" : "to site", DeliverTo = site, ServiceCall = serviceCall };
+            // a service call goes where the stranded machine is: the route may climb past the truck's rating
+            var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
+            float limit = (def != null ? def.MaxGradeDeg : 90f) + ctx.Tuning.F("vehicles.aiSlopeMarginDeg") + (serviceCall ? ctx.Tuning.F("vehicles.aiServiceCallExtraGradeDeg") : 0f);
+            v.Ai.Route = FindRoute(ctx, v, site, limit);
             v.Ai.RouteIndex = 0;
             v.TaskId = taskId;
         }
@@ -517,11 +520,33 @@ namespace AlpineSim.Core.Vehicles
         /// <summary>A route this machine can drive: graph edges above its gradeability (plus the AI's margin) are left out.</summary>
         public List<Vec2> FindRoute(SimContext ctx, VehicleState v, Vec2 to)
         {
-            RebuildRoutes(ctx);
             var t = ctx.Tuning;
             var def = v.Def ?? ctx.Data.Vehicle(v.DefId);
-            float limit = (def != null ? def.MaxGradeDeg : 90f) + t.F("vehicles.aiSlopeMarginDeg");
-            return _routes.Find(v.Pos, to, t.F("vehicles.routeSnapRadiusM"), t.F("vehicles.routeStraightMaxM"), limit);
+            return FindRoute(ctx, v, to, (def != null ? def.MaxGradeDeg : 90f) + t.F("vehicles.aiSlopeMarginDeg"));
+        }
+
+        /// <summary>A route whose graph edges stay under an explicit climb limit (an operator's rating for a transfer by track).</summary>
+        public List<Vec2> FindRoute(SimContext ctx, VehicleState v, Vec2 to, float maxGradeDeg)
+        {
+            RebuildRoutes(ctx);
+            var t = ctx.Tuning;
+            return _routes.Find(v.Pos, to, t.F("vehicles.routeSnapRadiusM"), t.F("vehicles.routeStraightMaxM"), maxGradeDeg);
+        }
+
+        /// <summary>Steepest climb along a route's straight legs, sampled every 5 m over a 6 m baseline.</summary>
+        public float RouteMaxClimbDeg(SimContext ctx, List<Vec2> route)
+        {
+            float worst = -90f;
+            if (route == null) return worst;
+            for (int i = 0; i + 1 < route.Count; i++)
+            {
+                Vec2 a = route[i], b = route[i + 1];
+                float len = Vec2.Distance(a, b);
+                if (len < 1f) continue;
+                Vec2 dir = (b - a) / len;
+                for (float s = 0f; s <= len; s += 5f) worst = MathF.Max(worst, ctx.Terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 6f));
+            }
+            return worst;
         }
 
         public VehicleState Nearest(SimContext ctx, Vec2 pos, float radiusM)

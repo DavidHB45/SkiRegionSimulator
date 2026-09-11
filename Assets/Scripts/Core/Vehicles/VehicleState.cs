@@ -158,6 +158,10 @@ namespace AlpineSim.Core.Vehicles
         public bool LaneAbandoned;
         /// <summary>Tick the machine parked itself stuck on the way back; the foreman leaves it alone for a while after.</summary>
         public long ParkedStuckTick = -1;
+        /// <summary>The run has a pitch the machine cannot climb: every remaining lane is groomed downhill after a transfer to the top by track.</summary>
+        public bool TopDown;
+        /// <summary>On a refuel, repair or rescue call: the driver goes where the stranded machine is, pitch or no pitch.</summary>
+        public bool ServiceCall;
     }
 
     /// <summary>

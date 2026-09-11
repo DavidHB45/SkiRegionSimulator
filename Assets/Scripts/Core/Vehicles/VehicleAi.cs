@@ -190,7 +190,7 @@ namespace AlpineSim.Core.Vehicles
             }
             // slope refusal: operators do not drive onto pitches above their rating, nor above what the machine is rated for
             float grade = ctx.Terrain.GradeAlongDeg(v.Pos.X, v.Pos.Y, to, MathF.Max(3f, def.Visual != null ? def.Visual.BodyL : 3f));
-            float slopeLimit = MathF.Min(maxSlopeDeg, def.MaxGradeDeg);
+            float slopeLimit = MathF.Min(maxSlopeDeg, def.MaxGradeDeg) + (ai.ServiceCall ? t.F("vehicles.aiServiceCallExtraGradeDeg") : 0f);
             // a machine heading for the depot or home takes the pitch it came over: refusing there means never arriving;
             // and only a climb is refused: a driver already on a pitch can always let the machine down it
             if (grade > slopeLimit + t.F("vehicles.aiSlopeMarginDeg") && ai.Mode != AiMode.Refuel && ai.Mode != AiMode.ReturnToBase)
@@ -268,6 +268,7 @@ namespace AlpineSim.Core.Vehicles
                 ai.Lane = 0;
                 ai.LanesSkipped = 0;
                 ai.LaneAbandoned = false;
+                ai.TopDown = false;
                 ai.Uphill = true;
                 ai.Phase = "driving to " + piste.Name;
                 // route to the bottom of the run first
@@ -303,10 +304,51 @@ namespace AlpineSim.Core.Vehicles
                     ai.RouteIndex = 0;
                     return;
                 }
+                // A pitch the machine could not climb: the way steep runs are really groomed is downhill only, with a
+                // transfer back to the top by track between lanes. Switch to that for the rest of the run if the
+                // machine may descend it and a track route to the top exists under the operator's rating; a run
+                // steeper than the machine's own rating stays for the winch cat.
+                if (ai.LaneAbandoned && ai.Uphill && !ai.TopDown && CanGroomTopDown(ctx, vs, v, def, piste, maxSlopeDeg)) ai.TopDown = true;
+                if (ai.TopDown)
+                {
+                    ai.Uphill = false;
+                    ai.Loaded = false;
+                    ai.LaneAbandoned = false;
+                    ai.Route = vs.FindRoute(ctx, v, LanePoint(piste, ai.Lane, ai.LaneCount, 0), maxSlopeDeg - ctx.Tuning.F("vehicles.aiTransferGradeMarginDeg"));
+                    ai.RouteIndex = 0;
+                    ai.Phase = "to the top of " + piste.Name + " by track for lane " + (ai.Lane + 1) + "/" + ai.LaneCount;
+                    return;
+                }
                 ai.Uphill = !ai.Uphill;
                 BuildLaneRoute(ctx, v, piste, ai.LaneAbandoned);
                 ai.LaneAbandoned = false;
             }
+        }
+
+        private static bool CanGroomTopDown(SimContext ctx, VehicleSystem vs, VehicleState v, VehicleDef def, PisteState piste, float maxSlopeDeg)
+        {
+            float steepest = 0f;
+            foreach (var sid in piste.SegmentIds) { var sg = ctx.World.Pistes.Segment(sid); if (sg != null) steepest = MathF.Max(steepest, MathF.Abs(sg.GradeDeg)); }
+            if (steepest > def.MaxGradeDeg) return false;
+            // the transfer is planned well under the operator's rating: off the groomed runs the snow is untracked,
+            // and a pitch the cat climbs on corduroy stalls it in fresh snow
+            float limit = maxSlopeDeg - ctx.Tuning.F("vehicles.aiTransferGradeMarginDeg");
+            var route = vs.FindRoute(ctx, v, LanePoint(piste, 0, 1, 0), limit);
+            return route != null && route.Count >= 2 && vs.RouteMaxClimbDeg(ctx, route) <= limit + ctx.Tuning.F("vehicles.aiSlopeMarginDeg");
+        }
+
+        /// <summary>A lane's waypoint at polyline vertex index (0 = the top of the run).</summary>
+        private static Vec2 LanePoint(PisteState piste, int lane, int lanes, int index)
+        {
+            var pts = piste.Points;
+            float laneW = piste.WidthM / System.Math.Max(1, lanes);
+            float offset = -piste.WidthM * 0.5f + (lane + 0.5f) * laneW;
+            int i = System.Math.Clamp(index, 0, pts.Count - 1);
+            Vec2 dir;
+            if (i == 0) dir = (pts[1] - pts[0]).Normalized;
+            else if (i == pts.Count - 1) dir = (pts[i] - pts[i - 1]).Normalized;
+            else dir = ((pts[i] - pts[i - 1]).Normalized + (pts[i + 1] - pts[i]).Normalized).Normalized;
+            return pts[i] + dir.Perp * offset;
         }
 
         /// <summary>

@@ -33,7 +33,7 @@ namespace AlpineSim.Core.Vehicles
         /// takes a foundation. Edge cost grows with grade; edges over the limit cost <paramref name="steepFactor"/>x
         /// so they are a last resort, never the first choice.
         /// </summary>
-        public void Build(PisteNetwork net, Vec2 basePos, float linkRadiusM, Terrain.TerrainData terrain = null, float maxGradeDeg = 24f, float longLinkRadiusM = 0f, float steepFactor = 20f)
+        public void Build(PisteNetwork net, Vec2 basePos, float linkRadiusM, Terrain.TerrainData terrain = null, float maxGradeDeg = 24f, float longLinkRadiusM = 0f, float steepFactor = 20f, float baseRadiusM = 0f)
         {
             _terrain = terrain; _maxGradeDeg = maxGradeDeg; _steepFactor = steepFactor;
             _verts.Clear(); _adj.Clear(); _cost.Clear(); _grade.Clear();
@@ -50,6 +50,12 @@ namespace AlpineSim.Core.Vehicles
             }
             foreach (var p in net.Pistes) AddPolyline(p.Points, 1.3f);
             _verts.Add(basePos); _adj.Add(new List<int>()); _cost.Add(new List<float>()); _grade.Add(new List<float>());
+            // everything on the base pad is reachable from the base: run bottoms, ramps, the garage and the lots sit
+            // on one flat platform whatever the link radius says
+            int baseIdx = _verts.Count - 1;
+            if (baseRadiusM > 0f)
+                for (int i = 0; i < baseIdx; i++)
+                    if (Vec2.Distance(_verts[i], basePos) <= baseRadiusM) Link(baseIdx, i, 1f);
             // proximity links, then longer cross-country links where the ground allows
             float r2 = linkRadiusM * linkRadiusM;
             float l2 = longLinkRadiusM * longLinkRadiusM;
@@ -58,7 +64,9 @@ namespace AlpineSim.Core.Vehicles
                 {
                     float d2 = Vec2.SqrDistance(_verts[i], _verts[j]);
                     if (d2 <= r2) Link(i, j, 1f);
-                    else if (d2 <= l2 && terrain != null && Passable(_verts[i], _verts[j])) Link(i, j, 1.2f);
+                    // a cross-country link is untracked snow: three times the cost of the same distance on a track,
+                    // so a route leaves the roads, tracks and runs only when nothing else connects
+                    else if (d2 <= l2 && terrain != null && Passable(_verts[i], _verts[j])) Link(i, j, 3f);
                 }
         }
 
@@ -95,7 +103,11 @@ namespace AlpineSim.Core.Vehicles
             return worst;
         }
 
-        /// <summary>Steepest grade along a straight segment, sampled every 10 m (0 without terrain).</summary>
+        /// <summary>
+        /// Steepest grade along a straight segment, sampled every 2 m over a 4 m baseline (0 without terrain): fine
+        /// enough to see the cut bank at a run's edge, which a 10 m sampling stepped straight over and sent a cat
+        /// sideways off a run into a bank it then could not climb.
+        /// </summary>
         private float MaxGradeAlong(Vec2 a, Vec2 b)
         {
             if (_terrain == null) return 0f;
@@ -103,7 +115,7 @@ namespace AlpineSim.Core.Vehicles
             if (len < 1f) return 0f;
             Vec2 dir = (b - a) / len;
             float worst = 0f;
-            for (float s = 0f; s <= len; s += 10f) worst = MathF.Max(worst, MathF.Abs(_terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 8f)));
+            for (float s = 0f; s <= len; s += 2f) worst = MathF.Max(worst, MathF.Abs(_terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 4f)));
             return worst;
         }
 
@@ -112,17 +124,34 @@ namespace AlpineSim.Core.Vehicles
             if (MaxGradeAlong(a, b) > _maxGradeDeg) return false;
             float len = Vec2.Distance(a, b);
             Vec2 dir = (b - a) / MathF.Max(1f, len);
-            for (float s = 0f; s <= len; s += 10f) if (_terrain.HasFlag(a.X + dir.X * s, a.Y + dir.Y * s, TerrainFlags.NoFoundation)) return false;
+            for (float s = 0f; s <= len; s += 5f) if (_terrain.HasFlag(a.X + dir.X * s, a.Y + dir.Y * s, TerrainFlags.NoFoundation)) return false;
             return true;
         }
 
         private void Link(int a, int b, float factor)
         {
             float grade = MaxGradeAlong(_verts[a], _verts[b]);
-            float gradeFactor = grade > _maxGradeDeg ? _steepFactor : 1f + 0.5f * grade / MathF.Max(1f, _maxGradeDeg);
+            // cost rises with the square of the grade so a 13-degree track beats a 30-degree run even when the run is
+            // half the distance: a cat that can climb 30 degrees on corduroy stalls on it in fresh snow
+            float rel = grade / MathF.Max(1f, _maxGradeDeg);
+            float gradeFactor = grade > _maxGradeDeg ? _steepFactor : 1f + 3f * rel * rel;
             float d = Vec2.Distance(_verts[a], _verts[b]) * factor * gradeFactor;
-            if (!_adj[a].Contains(b)) { _adj[a].Add(b); _cost[a].Add(d); _grade[a].Add(grade); }
-            if (!_adj[b].Contains(a)) { _adj[b].Add(a); _cost[b].Add(d); _grade[b].Add(grade); }
+            // the stored grade is the steepest climb in the direction of travel: a machine may run down a pitch it
+            // could never climb, and a route home from a run's top goes down the run, not up it
+            if (!_adj[a].Contains(b)) { _adj[a].Add(b); _cost[a].Add(d); _grade[a].Add(MaxClimbAlong(_verts[a], _verts[b])); }
+            if (!_adj[b].Contains(a)) { _adj[b].Add(a); _cost[b].Add(d); _grade[b].Add(MaxClimbAlong(_verts[b], _verts[a])); }
+        }
+
+        /// <summary>Steepest climb (signed, positive uphill) along a straight leg from a to b.</summary>
+        private float MaxClimbAlong(Vec2 a, Vec2 b)
+        {
+            if (_terrain == null) return 0f;
+            float len = Vec2.Distance(a, b);
+            if (len < 1f) return 0f;
+            Vec2 dir = (b - a) / len;
+            float worst = -90f;
+            for (float s = 0f; s <= len; s += 2f) worst = MathF.Max(worst, _terrain.GradeAlongDeg(a.X + dir.X * s, a.Y + dir.Y * s, dir, 4f));
+            return worst;
         }
 
         private int Nearest(Vec2 p, float maxDist)
@@ -163,7 +192,7 @@ namespace AlpineSim.Core.Vehicles
                 for (int k = 0; k < adj.Count; k++)
                 {
                     int v = adj[k];
-                    if (grades[k] > maxGradeDeg) continue;
+                    if (grades[k] > maxGradeDeg) continue; // a climb above the machine's rating
                     float nd = dist[u] + cost[k];
                     if (nd < dist[v]) { dist[v] = nd; prev[v] = u; }
                 }
