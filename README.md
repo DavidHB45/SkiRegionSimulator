@@ -21,7 +21,8 @@ Then open the folder in **Unity 6 LTS (6000.0.61f1 or later 6000.0.x)** via Unit
 `Assets/Scenes/Boot.unity`, and press Play. The `Bootstrap` component builds the world.
 
 Requirements: .NET SDK 8.0 (for the `dotnet` mirror build), Unity 6000.0.x with the
-Windows and macOS build support modules, Python 3 (for `tools/gen_meta.py`).
+build support module for whichever platform you build locally (the project opens and plays
+without either), Python 3 (for `tools/gen_meta.py`).
 
 ## Controls
 

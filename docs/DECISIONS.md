@@ -32,7 +32,10 @@ are compile-only and must never be referenced by Unity. A stub with a wrong sign
 The brief's layout has no `Editor` folder. `Assets/Scripts/Editor/BuildScript.cs`
 (`AlpineSim.Editor`, editor-only asmdef) exists solely so game-ci can build macOS Universal
 (x64 + ARM64) from one commit; game-ci's default build method does not set the macOS
-architecture. It is plain text and needs no editor to author.
+architecture. It is plain text and needs no editor to author. The macOS architecture setting
+(`UnityEditor.OSXStandalone.UserBuildSettings`) lives in the macOS Build Support module's editor
+assembly, so the script resolves it by reflection: an Editor without that module still compiles
+the project, and CI's macOS image still gets the Universal setting.
 
 ## D-006 Terrain is derived, not saved
 The 2048×2048 heightmap is regenerated from (scenario id, seed) on load. Saving 16 MB of floats
