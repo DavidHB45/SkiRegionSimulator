@@ -43,19 +43,28 @@ CHANNELS = {
 # One record per set, in build order. `world_m` is how much real surface one tile covers,
 # which is what makes the normal map's slope correct: a 6 mm panel stamping across 2 m of
 # bodywork is a gentle rise, the same 6 mm across 0.5 m of track rubber is a hard lug.
+# `cavity` is how hard the derived occlusion bites - a pitted casting shades itself far
+# more than a painted panel does. `wear` weights the four masks for the material: zinc
+# and paint rust and chip, glass and rubber do neither, and everything collects salt.
 SETS = (
     {"id": "machine", "surface": "painted_steel", "size": config.TEX_SIZE_HERO,
-     "world_m": 2.0, "relief_m": 0.006},
+     "world_m": 2.0, "relief_m": 0.007, "cavity": 6.0,
+     "wear": (1.0, 1.0, 1.0, 1.0)},
     {"id": "lift", "surface": "galvanised", "size": config.TEX_SIZE_HERO,
-     "world_m": 2.0, "relief_m": 0.004},
+     "world_m": 2.0, "relief_m": 0.005, "cavity": 5.0,
+     "wear": (0.9, 1.2, 0.9, 0.45)},
     {"id": "prop", "surface": "weathered_paint", "size": config.TEX_SIZE_PROP,
-     "world_m": 2.0, "relief_m": 0.007},
+     "world_m": 2.0, "relief_m": 0.008, "cavity": 4.5,
+     "wear": (1.0, 0.8, 1.0, 1.25)},
     {"id": "glass", "surface": "glass", "size": config.TEX_SIZE_SMALL,
-     "world_m": 1.0, "relief_m": 0.0006},
+     "world_m": 1.0, "relief_m": 0.0008, "cavity": 2.5,
+     "wear": (0.7, 0.12, 1.2, 0.1)},
     {"id": "rubber", "surface": "rubber", "size": config.TEX_SIZE_SMALL,
-     "world_m": 0.5, "relief_m": 0.009},
+     "world_m": 0.5, "relief_m": 0.009, "cavity": 3.0,
+     "wear": (0.8, 0.1, 0.9, 0.15)},
     {"id": "concrete", "surface": "concrete", "size": config.TEX_SIZE_PROP,
-     "world_m": 2.0, "relief_m": 0.013},
+     "world_m": 2.0, "relief_m": 0.015, "cavity": 3.5,
+     "wear": (0.6, 0.5, 1.1, 0.2)},
 )
 
 
@@ -239,13 +248,17 @@ def height_to_normal(height, relief_m, texel_m):
     return np.stack((nx * inv, ny * inv, nz * inv), axis=-1)
 
 
-def ambient_occlusion(height, radii=(3, 9, 27), strength=1.0):
-    """Cavity occlusion: how far below its own neighbourhood a texel sits, at several
-    radii so a pore and a panel recess both darken."""
+def ambient_occlusion(height, gain, radii=(3, 9, 27)):
+    """Cavity occlusion: how far below its own neighbourhood a texel sits, measured at
+    three radii so a blow hole, a weld groove and a panel recess all darken.
+
+    `gain` is per material because the same height range means different things: a pitted
+    casting shades itself, a sheet of painted steel barely does.
+    """
     ao = np.ones_like(height)
-    for r in radii:
-        cav = np.clip(blur(height, r) - height, 0.0, 1.0)
-        ao -= cav * np.float32(strength * (0.9 - 0.2 * radii.index(r)))
+    for i, r in enumerate(radii):
+        cav = np.clip((blur(height, r) - height) * np.float32(gain), 0.0, 1.0)
+        ao -= cav * np.float32(0.55 - 0.13 * i)
     return np.clip(ao, 0.0, 1.0)
 
 
@@ -258,17 +271,21 @@ def _to_u8(a):
     return np.clip(a * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
 
 
-def write_map(array, out_dir, set_id, suffix, size):
-    """Write one map, validate it against the contract and return its manifest record."""
-    data = _to_u8(array)
-    mode = {3: "RGB", 4: "RGBA"}[data.shape[2]]
-    image = Image.fromarray(data, mode)
+def write_map(array, out_dir, set_id, suffix, size, channels=None):
+    """Write one map, validate it against the contract and return its manifest record.
+
+    `channels` overrides the packing published for the suffix. The only user of it is the
+    decal sheet, which is an _albedo file carrying an alpha coverage channel because a
+    decal has to be composited over bodywork rather than mapped into it.
+    """
+    names = tuple(channels or CHANNELS[suffix])
+    image = Image.fromarray(_to_u8(array))
     name = "%s_%s" % (set_id, suffix)
-    validate.check_texture(name, image, expect_size=size,
-                           expect_channels=len(CHANNELS[suffix]))
+    validate.check_texture(name, image, expect_size=size, expect_channels=len(names))
     path = os.path.join(out_dir, name + ".png")
     os.makedirs(out_dir, exist_ok=True)
-    image.save(path, format="PNG", optimize=True)
+    # No optimize pass: it costs ten seconds on a noisy 2048 RGBA and saves 3 per cent.
+    image.save(path, format="PNG")
     return {
         "id": name,
         "path": config.rel_to_root(path),
@@ -277,7 +294,7 @@ def write_map(array, out_dir, set_id, suffix, size):
         "set": set_id,
         "map": suffix,
         "size": size,
-        "channels": list(CHANNELS[suffix]),
+        "channels": list(names),
     }
 
 
@@ -303,6 +320,7 @@ def _painted_steel(shape, rng, spec):
         d = np.abs(((rows - centre + 0.5) % 1.0) - 0.5) / wide
         rib += np.clip(1.0 - d * d, 0.0, 1.0)
     h += rib * 0.22
+    h += micro_relief(shape, rng, 0.26, freq_divisor=6)      # grain in the topcoat
     h = _norm01(h)
 
     scuff = scratch_field(shape, rng, 90, shape[1] * 0.10, width=1, angle_deg=8.0,
@@ -311,13 +329,14 @@ def _painted_steel(shape, rng, spec):
     h -= scuff * 0.03
 
     grime = fbm(shape, 6, 4, rng)
-    tone = 0.70 + 0.06 * (fbm(shape, 11, 3, rng) - 0.5) - 0.10 * np.clip(grime - 0.55, 0, 1) * 2
-    tone -= np.clip(blur(h, 12) - h, 0.0, 1.0) * 0.35       # stamping shadow
-    tone += scuff * 0.10
+    tone = 0.72 + 0.13 * (fbm(shape, 11, 3, rng) - 0.5)
+    tone -= np.clip(grime - 0.50, 0, 1) * 0.34              # road film down the flanks
+    tone -= np.clip(blur(h, 12) - h, 0.0, 1.0) * 1.6        # stamping shadow
+    tone += scuff * 0.12
     albedo = np.stack((tone, tone * 0.995, tone * 0.985), axis=-1)
 
-    rough = 0.40 + 0.10 * fbm(shape, 20, 3, rng) + 0.14 * grime
-    rough -= scuff * 0.12                                   # a scuff polishes the paint
+    rough = 0.34 + 0.30 * fbm(shape, 20, 3, rng) + 0.26 * grime
+    rough -= scuff * 0.16                                   # a scuff polishes the paint
     metal = np.full(shape, 0.02, np.float32)
     return h, albedo, np.clip(rough, 0.05, 0.95), metal
 
@@ -334,6 +353,7 @@ def _galvanised(shape, rng, spec):
     h = base * 0.45 + facets * 0.22
     h += fbm(shape, (9, 120), 3, rng) * 0.16                  # rolling direction
     h += ridged(shape, 60, 2, rng) * 0.08                     # mill scale
+    h += micro_relief(shape, rng, 0.18, freq_divisor=6)
     h = _norm01(h)
 
     brush = scratch_field(shape, rng, 160, shape[1] * 0.25, width=1, angle_deg=0.0,
@@ -360,6 +380,7 @@ def _weathered_paint(shape, rng, spec):
     boards = np.abs(((np.arange(shape[0], dtype=np.float32)[:, None] / shape[0] * 6.0)
                      % 1.0) - 0.5) * 2.0
     h -= np.clip(1.0 - boards * 14.0, 0.0, 1.0) * 0.30        # gaps between boards
+    h += micro_relief(shape, rng, 0.24, freq_divisor=6)       # chalked, open surface
     h = _norm01(h)
 
     nicks = speckle(shape, rng, shape[0] // 6, 0.012, softness=12.0)
@@ -370,7 +391,7 @@ def _weathered_paint(shape, rng, spec):
     tone -= nicks * 0.22
     albedo = np.stack((tone * 1.01, tone, tone * 0.96), axis=-1)
 
-    rough = 0.55 + 0.20 * fbm(shape, 14, 3, rng) + nicks * 0.18
+    rough = 0.46 + 0.34 * fbm(shape, 14, 3, rng) + nicks * 0.22 + grain * 0.10
     metal = np.full(shape, 0.0, np.float32)
     return h, albedo, np.clip(rough, 0.05, 0.98), metal
 
@@ -384,6 +405,7 @@ def _glass(shape, rng, spec):
                          spread=6.0)
     wipe = np.clip(blur(wipe, 2) * 1.6, 0.0, 1.0)
     h += wipe * 0.10
+    h += micro_relief(shape, rng, 0.04, freq_divisor=6)        # sand scoring, barely there
     h = _norm01(h)
 
     haze = fbm(shape, 7, 3, rng)
@@ -405,6 +427,7 @@ def _rubber(shape, rng, spec):
     cols = np.arange(shape[1], dtype=np.float32)[None, :] / shape[1]
     seam = np.clip(1.0 - np.abs(((cols - 0.5 + 0.5) % 1.0) - 0.5) / 0.006, 0.0, 1.0)
     h += seam * 0.30                                            # mould flash
+    h += micro_relief(shape, rng, 0.14, freq_divisor=5)
     h = _norm01(h)
 
     bloom = fbm(shape, 12, 3, rng)                              # antiozonant bloom
@@ -412,7 +435,7 @@ def _rubber(shape, rng, spec):
     tone -= np.clip(blur(h, 6) - h, 0.0, 1.0) * 0.02
     albedo = np.stack((tone, tone * 0.99, tone * 0.97), axis=-1)
 
-    rough = 0.82 + 0.12 * pebble - 0.10 * np.clip(bloom - 0.7, 0, 1) * 3.0
+    rough = 0.74 + 0.26 * pebble - 0.14 * np.clip(bloom - 0.7, 0, 1) * 3.0
     metal = np.full(shape, 0.0, np.float32)
     return h, albedo, np.clip(rough, 0.3, 1.0), metal
 
@@ -430,6 +453,7 @@ def _concrete(shape, rng, spec):
     h -= voids * 0.45                                           # blow holes
     spall = np.clip((fbm(shape, 9, 3, rng) - 0.72) * 6.0, 0.0, 1.0)
     h -= spall * 0.20
+    h += micro_relief(shape, rng, 0.34, freq_divisor=5)         # sand in the mix
     h = _norm01(h)
 
     tone = 0.50 + 0.11 * (body - 0.5) + 0.07 * (aggregate - 0.5)
@@ -437,9 +461,20 @@ def _concrete(shape, rng, spec):
     tone += spall * 0.06                                        # fresh break is lighter
     albedo = np.stack((tone * 1.02, tone, tone * 0.95), axis=-1)
 
-    rough = 0.78 + 0.15 * aggregate + voids * 0.1
+    rough = 0.62 + 0.30 * aggregate + voids * 0.12 + 0.12 * (body - 0.5)
     metal = np.full(shape, 0.0, np.float32)
     return h, albedo, np.clip(rough, 0.2, 1.0), metal
+
+
+def micro_relief(shape, rng, amount, freq_divisor=8, octaves=3):
+    """Detail near texel scale, which is the only thing a normal map can actually show.
+
+    A height field built only from metre-scale noise differentiates to nothing: the slope
+    between two adjacent texels is tiny however deep the shape is. Real surfaces carry
+    grain a few texels wide, and this is it.
+    """
+    freq = max(4, min(shape[0], shape[0] // freq_divisor))
+    return (fbm(shape, freq, octaves, rng) - 0.5) * np.float32(amount)
 
 
 SURFACES = {
@@ -478,8 +513,8 @@ def wear_masks(height, spec, rng):
     lower = np.clip((0.62 - lower) / 0.62, 0.0, 1.0)            # 1 at the bottom edge
 
     edge = convex * (0.45 + 0.85 * zones)
-    edge = np.clip(edge * 1.35, 0.0, 1.0)
-    edge = np.maximum(edge, blur(edge, 2) * 0.7)
+    edge = np.clip(edge * 1.45, 0.0, 1.0) ** 1.6                # keep it on the crests
+    edge = np.maximum(edge, blur(edge, 2) * 0.6)
 
     seeds = concave * np.clip((fbm(shape, 13, 3, rng) - 0.42) * 3.2, 0.0, 1.0)
     seeds = np.maximum(seeds, speckle(shape, rng, shape[0] // 16, 0.006, softness=6.0)
@@ -498,7 +533,9 @@ def wear_masks(height, spec, rng):
     chip *= 0.15 + 1.6 * edge                                   # paint lets go at edges
     chip = np.clip(chip * (0.3 + 1.2 * zones), 0.0, 1.0)
 
-    return np.stack((edge, rust, salt, chip), axis=-1)
+    gain = spec.get("wear", (1.0, 1.0, 1.0, 1.0))
+    return np.clip(np.stack((edge * gain[0], rust * gain[1],
+                             salt * gain[2], chip * gain[3]), axis=-1), 0.0, 1.0)
 
 
 # --------------------------------------------------------------------------- build
@@ -514,8 +551,8 @@ def build_set(spec, out_dir):
     texel_m = spec["world_m"] / size
     normal = encode_normal(height_to_normal(height, spec["relief_m"], texel_m))
 
-    ao = ambient_occlusion(height, strength=1.0)
-    albedo = np.clip(albedo * (0.55 + 0.45 * ao[..., None]), 0.0, 1.0)
+    ao = ambient_occlusion(height, spec["cavity"])
+    albedo = np.clip(albedo * (0.45 + 0.55 * ao[..., None]), 0.0, 1.0)
     orm = np.stack((ao, np.clip(rough, 0.0, 1.0), np.clip(metal, 0.0, 1.0)), axis=-1)
 
     wear = wear_masks(height, spec, rng_for("pbr", spec["id"], "wear"))
