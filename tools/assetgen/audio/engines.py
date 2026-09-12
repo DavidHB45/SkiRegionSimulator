@@ -115,6 +115,25 @@ def noise(n, rng, tilt=0.0, lo=18.0, hi=None):
     return x / (float(np.sqrt(np.mean(x * x))) + 1e-12)
 
 
+def wander(n, rng, rate, tilt=1.0):
+    """A slow random envelope in -1..1, band-limited to `rate` and periodic with the loop.
+
+    Gusting wind, a plume breathing, an engine hunting at idle: all of them are something
+    that moves over seconds rather than over milliseconds. Built from the lowest bins of
+    the loop's own spectrum, so it wraps exactly, and so it cannot be asked for a movement
+    slower than one cycle per loop - which is also the honest limit of what a loop can
+    hold. A tilt of 1 puts the weight on the slowest movement; 0 spreads it evenly up to
+    `rate`, which is what a syllable rate or a flutter wants.
+    """
+    count = max(1, int(round(rate * n / SR)))
+    spec = np.zeros(n // 2 + 1, dtype=np.complex128)
+    k = np.arange(1, min(count, spec.size - 1) + 1)
+    mag = (n * 0.5) * k.astype(np.float64) ** -tilt
+    spec[k] = mag * np.exp(1j * rng.uniform(0.0, 2.0 * np.pi, k.size))
+    x = np.fft.irfft(spec, n)
+    return x / (float(np.max(np.abs(x))) + 1e-12)
+
+
 def apply_gain(x, gain):
     """Zero-phase spectral shaping. Circular, so it never smears a loop's seam the way a
     time-domain filter's start-up transient would."""
@@ -122,11 +141,22 @@ def apply_gain(x, gain):
 
 
 def butter_gain(freqs, cutoff, order=4, kind="low"):
-    """Magnitude response of a Butterworth filter, sampled at the loop's own bins."""
-    wn = min(max(cutoff / (SR * 0.5), 1e-5), 0.999)
-    b, a = signal.butter(order, wn, btype=kind)
-    _, h = signal.freqz(b, a, worN=freqs * (2.0 * np.pi / SR))
-    return np.abs(h)
+    """Magnitude response of a Butterworth filter, sampled at the loop's own bins.
+
+    Designed with scipy across the audio band. A corner down at a few hertz is the one
+    case that has to be handled differently: a digital Butterworth that far below Nyquist
+    collapses into its own rounding error and comes back as NaN. Shaping here is
+    zero-phase, so the analytic magnitude below that point is not an approximation of the
+    filter, it is the same filter without the conditioning problem.
+    """
+    wn = cutoff / (SR * 0.5)
+    if 1e-3 < wn < 0.999:
+        b, a = signal.butter(order, wn, btype=kind)
+        _, h = signal.freqz(b, a, worN=freqs * (2.0 * np.pi / SR))
+        return np.abs(h)
+    ratio = freqs / max(cutoff, 1e-6)
+    roll = 1.0 / np.sqrt(1.0 + ratio ** (2 * order))
+    return roll if kind == "low" else 1.0 - roll
 
 
 def lowpass(x, cutoff, order=4):
@@ -521,8 +551,7 @@ def _combustion_loop(spec, band, n, rng):
 
     # Per-cycle irregularity. An idle wanders more than an engine under load does, which
     # is why the depth falls as load rises.
-    wobble = lowpass(noise(n, rng, tilt=0.6, hi=26.0), 14.0)
-    wobble = wobble / (float(np.max(np.abs(wobble))) + 1e-9)
+    wobble = wander(n, rng, 14.0)
     body = time_warp(body, wobble * (SR / max(f_fire, 1.0)) * 0.045 * (1.3 - 0.6 * load))
 
     # No two cylinders make quite the same power, and the imbalance repeats once per
@@ -553,7 +582,7 @@ def _combustion_loop(spec, band, n, rng):
         f_turbo = _turbo_hz(rpm, load)
         turbo = (partial_stack(n, f_turbo, [1.0, 0.55, 0.30, 0.16], rng)
                  + 0.5 * bandpass(noise(n, rng), f_turbo * 0.85, f_turbo * 3.4))
-        turbo = time_warp(turbo, wobble * 140.0)              # the shaft is not steady either
+        turbo = time_warp(turbo, wobble * 140.0)        # the shaft is not steady either
         turbo_gain = 0.10 + 0.42 * load ** 1.4
     else:
         turbo = np.zeros(n)
@@ -596,8 +625,7 @@ def _electric_loop(spec, band, n, rng):
     whine += partial_stack(n, f_ripple, [1.2, 0.6, 0.35, 0.2], rng)
     whine += partial_stack(n, f_mesh, [0.7, 0.35, 0.18], rng)
 
-    wobble = lowpass(noise(n, rng, tilt=0.6, hi=20.0), 12.0)
-    whine = time_warp(whine, wobble * 30.0)
+    whine = time_warp(whine, wander(n, rng, 12.0) * 30.0)
 
     # Pumps and blowers: broadband, with the blade pass of the cooling fan sitting in it.
     bed = bandpass(noise(n, rng, tilt=0.45), 140.0, 2600.0)

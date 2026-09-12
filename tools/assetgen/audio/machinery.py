@@ -24,7 +24,7 @@ import config
 from audio.engines import (bandpass, burst, dc_block, fade, highpass, lowpass, n_for,
                            noise, normalise, partial_stack, pulse_train, report,
                            resonate, rng_for, soft_clip, time_warp, tone, tuning_value,
-                           write_clip)
+                           wander, write_clip)
 from lib import datasrc, validate
 
 # Grousers are arrayed along a belt at this fraction of the track's height, which is the
@@ -129,8 +129,7 @@ def _hydraulic_pump(n, rng):
     whine += partial_stack(n, mesh * 2.0, [0.30, 0.14], rng)
     # A pump is driven off the engine, and the engine is not perfectly steady, so neither
     # is the tooth pass. Without this the whine is a test tone.
-    wobble = lowpass(noise(n, rng, tilt=0.7, hi=22.0), 12.0)
-    whine = time_warp(whine, wobble / (float(np.max(np.abs(wobble))) + 1e-9) * 55.0)
+    whine = time_warp(whine, wander(n, rng, 12.0) * 55.0)
     whine *= 0.75 + 0.25 * tone(n, shaft, 1.0)          # once-per-revolution unevenness
 
     oil = bandpass(noise(n, rng, tilt=0.3), 700.0, 7000.0)
@@ -228,7 +227,8 @@ def _blower_roar(n, rng):
     impeller diameter, and the roar around it is the housing and the chute.
     """
     heads = _attachments_of("BlowerHead")
-    throw = _median([_num((a.get("Effects") or {}).get("ThrowDistanceM")) for a in heads], 22.0)
+    throw = _median([_num((a.get("Effects") or {}).get("ThrowDistanceM"))
+                     for a in heads], 22.0)
     width = _median([_num(a.get("WorkingWidthM")) for a in heads], 2.3)
     gravity = tuning_value("vehicles.gravity")
     tip = math.sqrt(gravity * max(throw, 4.0)) * 1.35    # ballistic, with a drag margin
@@ -293,17 +293,17 @@ def rope_drone(n, rng, speed=None, power=None):
     amps = [0.0] * 3 + [1.0, 0.85, 0.6, 0.75, 0.45, 0.3, 0.35, 0.2, 0.14, 0.1]
     drone = partial_stack(n, strand_rate, amps, rng, jitter_cents=6.0)
     drone = resonate(drone, strand_rate * ROPE_STRANDS, 2.0, 2.2)
-    wobble = lowpass(noise(n, rng, tilt=0.8, hi=9.0), 5.0)
-    drone = time_warp(drone, wobble / (float(np.max(np.abs(wobble))) + 1e-9) * 90.0)
+    drone = time_warp(drone, wander(n, rng, 5.0) * 90.0)
 
     # Wind across a moving rope: the aeolian hiss that sits under the note.
     hiss = bandpass(noise(n, rng, tilt=0.35), 700.0, 6000.0)
-    hiss *= 0.6 + 0.4 * np.abs(lowpass(noise(n, rng, tilt=0.9, hi=6.0), 4.0) * 3.0)
+    hiss *= 0.6 + 0.4 * (0.5 + 0.5 * wander(n, rng, 4.0))
     return normalise(drone, 1.0) * 0.8 + normalise(hiss, 1.0) * 0.22
 
 
 def _rope_hum(n, rng):
-    return normalise(soft_clip(highpass(dc_block(rope_drone(n, rng)), 45.0, order=4), 1.1), 0.82)
+    drone = highpass(dc_block(rope_drone(n, rng)), 45.0, order=4)
+    return normalise(soft_clip(drone, 1.1), 0.82)
 
 
 def _gearbox_whine(n, rng):
@@ -326,15 +326,17 @@ def _gearbox_whine(n, rng):
     oil = bandpass(noise(n, rng, tilt=0.5), 300.0, 5000.0)
     case = resonate(lowpass(noise(n, rng, tilt=0.9), 300.0), 96.0, 2.2, 2.8)
 
-    mix = normalise(whine, 1.0) * 0.7 + normalise(oil, 1.0) * 0.22 + normalise(case, 1.0) * 0.3
+    mix = (normalise(whine, 1.0) * 0.7 + normalise(oil, 1.0) * 0.22
+           + normalise(case, 1.0) * 0.3)
     return normalise(soft_clip(highpass(dc_block(mix), 45.0, order=4), 1.1), 0.84)
 
 
-def _grip_clack(rng):
+def grip_clack(rng):
     """A detachable grip closing on the rope: spring, jaw, and the rope taking the load.
 
     Two impacts about forty milliseconds apart. One impact is a hammer; two in that order
     is a mechanism, and a player standing in a terminal hears this a thousand times a day.
+    Public because the lift-line ambience bed scatters the same clack through its queue.
     """
     n = n_for(0.4)
     out = np.zeros(n)
@@ -390,8 +392,7 @@ def _snow_gun(n, rng):
     lobe_pass = rotor_rpm / 60.0 * lobes
 
     compressor = partial_stack(n, lobe_pass, [1.0, 0.62, 0.38, 0.22, 0.12, 0.07], rng)
-    wobble = lowpass(noise(n, rng, tilt=0.8, hi=14.0), 8.0)
-    compressor = time_warp(compressor, wobble / (float(np.max(np.abs(wobble))) + 1e-9) * 40.0)
+    compressor = time_warp(compressor, wander(n, rng, 8.0) * 40.0)
     compressor = resonate(compressor, 180.0, 1.6, 2.2)
 
     nucleator = bandpass(noise(n, rng, tilt=0.12), 3000.0, 16000.0)
@@ -399,7 +400,7 @@ def _snow_gun(n, rng):
     # Nozzles do not hiss at a constant level: the plume breathes as the air and water
     # find their balance, and that slow movement is what stops a hiss loop reading as
     # tape noise.
-    breath = 0.72 + 0.28 * normalise(lowpass(noise(n, rng, tilt=0.9, hi=5.0), 3.0), 1.0)
+    breath = 0.72 + 0.28 * wander(n, rng, 3.0)
     plume = (normalise(nucleator, 1.0) * 0.62 + normalise(water, 1.0) * 0.44) * breath
 
     mix = normalise(compressor, 1.0) * 0.4 + plume
@@ -438,7 +439,7 @@ def build_all(out_dir):
     loop("bullwheel_hum", _bullwheel_hum(n, rng_for("machinery", "bullwheel_hum")))
     loop("rope_hum", _rope_hum(n, rng_for("machinery", "rope_hum")))
     loop("gearbox_whine", _gearbox_whine(n, rng_for("machinery", "gearbox_whine")))
-    oneshot("grip_clack", _grip_clack(rng_for("machinery", "grip_clack")))
+    oneshot("grip_clack", grip_clack(rng_for("machinery", "grip_clack")))
     loop("snow_gun", _snow_gun(n, rng_for("machinery", "snow_gun")))
     loop("carpet_belt", _carpet_belt(n, rng_for("machinery", "carpet_belt")))
     return records
