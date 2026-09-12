@@ -703,8 +703,6 @@ def _pic_electric(draw, size):
 
 def _decal_warn(kind):
     def paint(draw, size):
-        draw.rounded_rectangle([0, 0, size - 1, size - 1], radius=size * 0.04,
-                               fill=(0, 0, 0, 0))
         _triangle(draw, size, {"warn_general": _pic_exclamation,
                                "warn_crush": _pic_crush,
                                "warn_hot": _pic_hot,
@@ -810,7 +808,6 @@ def _seven_seg(draw, x, y, w, h, digit, fill):
 
 def _decal_digits(first):
     def paint(draw, size):
-        draw.rectangle([0, 0, size, size], fill=(0, 0, 0, 0))
         cell = size / 5.0
         for i in range(5):
             digit = str(first + i)
