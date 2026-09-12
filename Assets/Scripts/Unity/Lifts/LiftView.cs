@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AlpineSim.Core.Lifts;
 using AlpineSim.Core.Math;
+using AlpineSim.Unity.Art;
 using AlpineSim.Unity.Guests;
 using AlpineSim.Unity.Vehicles;
 using UnityEngine;
@@ -9,7 +10,12 @@ namespace AlpineSim.Unity.Lifts
 {
     /// <summary>
     /// One lift's visuals: towers, terminals and a sagging haul rope built once from the sim's tower
-    /// positions, plus carriers drawn instanced and animated from sim time while the lift runs.
+    /// positions, plus carriers animated from sim time while the lift runs.
+    /// <para>
+    /// Towers and terminals come from the art pipeline when it has built them and from primitives when
+    /// it has not, and the two mix freely: a line whose terminals are generated and whose towers are not
+    /// still runs. The rope is always procedural - it is a curve through the towers, not an asset.
+    /// </para>
     /// Reads LiftState only.
     /// </summary>
     public sealed class LiftView : MonoBehaviour
@@ -24,6 +30,13 @@ namespace AlpineSim.Unity.Lifts
         private Material _statusMaterial;
         private MeshRenderer _statusRenderer;
         private InstancedBatch _carriers;
+        private Transform _models;                                    // generated towers, terminals and barn
+        private readonly List<Transform> _carrierObjects = new List<Transform>();
+        private readonly List<Matrix4x4> _carrierMatrices = new List<Matrix4x4>();
+        private Matrix4x4[] _carrierBatch;
+        private Mesh _carrierProxyMesh;
+        private Material[] _carrierProxyMaterials;
+        private bool _carrierModels;                                  // generated carriers as GameObjects
         private readonly List<Vector3> _line = new List<Vector3>();   // sampled rope polyline (up-line), world space
         private readonly List<float> _lineDist = new List<float>();
         private float _lineLength;
@@ -32,6 +45,11 @@ namespace AlpineSim.Unity.Lifts
         private int _lastTowerCount = -1;
         private float _phase;
 
+        // Steelwork is galvanised, not painted, so towers and terminals take the same near-white tint
+        // and only the carriers wear the family's colour.
+        private static readonly Color SteelLivery = new Color(0.74f, 0.76f, 0.78f, 1f);
+        private static readonly Color SteelAccent = new Color(0.28f, 0.30f, 0.33f, 1f);
+
         public void Construct(Bootstrap boot, LiftState state, LiftTypeDef type)
         {
             _boot = boot;
@@ -39,6 +57,7 @@ namespace AlpineSim.Unity.Lifts
             Type = type;
             LiftId = state.Id;
             name = "lift_" + state.Id + "_" + state.TypeId;
+            ModelRegistry.Configure(boot.Data.Render);
             var go = new GameObject("structure");
             go.transform.SetParent(transform, false);
             _staticFilter = go.AddComponent<MeshFilter>();
@@ -126,45 +145,78 @@ namespace AlpineSim.Unity.Lifts
         {
             _lastTowerCount = State.Towers.Count;
             _towerHeight = TowerHeightFor(Type);
+            if (_models != null) Destroy(_models.gameObject);
+            _models = new GameObject("models").transform;
+            _models.SetParent(transform, false);
+            _carrierObjects.Clear();
+            _carrierModels = false;
+            _carrierProxyMesh = null;
+            _carrierProxyMaterials = null;
+
             var pm = new ProceduralMesh();
             Color32 steel = new Color32(120, 128, 136, 255);
             Color32 dark = new Color32(60, 64, 70, 255);
             Color32 terminal = new Color32(150, 150, 160, 255);
             bool rail = Type.Family == LiftFamily.Rail;
+            var dir = Bootstrap.ToUnity(State.Direction, 0f);
+            var rot = Quaternion.LookRotation(dir);
+            var side = Vector3.Cross(Vector3.up, dir).normalized;
 
+            var bottom = SurfaceAt(State.Bottom);
+            var top = SurfaceAt(State.Top);
             var points = new List<Vector3>();
-            points.Add(SurfaceAt(State.Bottom) + Vector3.up * (rail ? 0.3f : _towerHeight * 0.6f));
+            points.Add(bottom + Vector3.up * (rail ? 0.3f : _towerHeight * 0.6f));
             foreach (var t in State.Towers)
             {
                 var basePos = SurfaceAt(t);
                 var topPos = basePos + Vector3.up * _towerHeight;
                 if (rail) { pm.Box(basePos + Vector3.up * 0.15f, new Vector3(3f, 0.3f, 3f), dark); points.Add(basePos + Vector3.up * 0.3f); continue; }
+
+                var tower = ModelRegistry.LiftComponent(Type, TowerClassFor(basePos, bottom, top), _models, SteelLivery, SteelAccent);
+                if (tower != null)
+                {
+                    tower.transform.SetPositionAndRotation(basePos, rot);
+                    // The rope rides the sheave train, so the model decides how high this span runs.
+                    var rig = tower.GetComponent<ArticulationBinder>();
+                    if (rig != null && rig.TryGet("sheave_01", out var sheave))
+                        topPos = new Vector3(basePos.x, sheave.position.y, basePos.z);
+                    points.Add(topPos);
+                    continue;
+                }
+
                 pm.Cylinder(basePos + Vector3.up * _towerHeight * 0.5f, Type.Family == LiftFamily.Aerial ? 1.2f : 0.45f, _towerHeight, 1, 8, steel);
                 pm.Box(basePos + Vector3.up * 0.4f, new Vector3(2.4f, 0.8f, 2.4f), dark);
                 // cross arm with sheave assemblies on both sides
-                var dir = Bootstrap.ToUnity(State.Direction, 0f);
-                var side = Vector3.Cross(Vector3.up, dir).normalized;
                 float arm = Type.Family == LiftFamily.Surface ? 1.2f : 3.2f;
                 pm.Box(topPos, new Vector3(0.3f, 0.3f, 0.3f), steel);
                 pm.Beam(topPos - side * arm, topPos + side * arm, 0.25f, steel);
-                pm.Box(topPos - side * arm, new Vector3(0.6f, 0.4f, 1.6f), Quaternion.LookRotation(dir), dark);
-                pm.Box(topPos + side * arm, new Vector3(0.6f, 0.4f, 1.6f), Quaternion.LookRotation(dir), dark);
+                pm.Box(topPos - side * arm, new Vector3(0.6f, 0.4f, 1.6f), rot, dark);
+                pm.Box(topPos + side * arm, new Vector3(0.6f, 0.4f, 1.6f), rot, dark);
                 points.Add(topPos);
             }
-            points.Add(SurfaceAt(State.Top) + Vector3.up * (rail ? 0.3f : _towerHeight * 0.6f));
+            points.Add(top + Vector3.up * (rail ? 0.3f : _towerHeight * 0.6f));
 
-            // terminals
-            var d = Bootstrap.ToUnity(State.Direction, 0f);
-            var rot = Quaternion.LookRotation(d);
+            // Terminals. The bottom end drives: that is where lifts.json puts the motor room, and where
+            // the barn spur runs off for types that garage their cabins overnight.
             float termL = Type.Family == LiftFamily.Surface ? 4f : (Type.Grip == GripType.Detachable || Type.IsEnclosed ? 22f : 10f);
             float termW = Type.Family == LiftFamily.Surface ? 2f : 8f;
             float termH = Type.Family == LiftFamily.Surface ? 3f : _towerHeight * 0.7f;
-            pm.Box(SurfaceAt(State.Bottom) + Vector3.up * termH * 0.5f, new Vector3(termW, termH, termL), rot, terminal);
-            pm.Box(SurfaceAt(State.Top) + Vector3.up * termH * 0.5f, new Vector3(termW, termH, termL), rot, terminal);
+            var drive = ModelRegistry.LiftComponent(Type, LiftPart.TerminalDrive, _models, SteelLivery, SteelAccent);
+            if (drive != null) drive.transform.SetPositionAndRotation(bottom, rot);
+            else pm.Box(bottom + Vector3.up * termH * 0.5f, new Vector3(termW, termH, termL), rot, terminal);
+            var ret = ModelRegistry.LiftComponent(Type, LiftPart.TerminalReturn, _models, SteelLivery, SteelAccent);
+            if (ret != null) ret.transform.SetPositionAndRotation(top, rot);
+            else pm.Box(top + Vector3.up * termH * 0.5f, new Vector3(termW, termH, termL), rot, terminal);
+
+            if (Type.CabinBarnCapex > 0.0)
+            {
+                var barn = ModelRegistry.LiftComponent(Type, LiftPart.Barn, _models, SteelLivery, SteelAccent);
+                if (barn != null) barn.transform.SetPositionAndRotation(SurfaceAt(State.Bottom) + side * (termW + 8f), rot);
+            }
 
             // haul rope: parabolic sag between consecutive support points, both directions
             _line.Clear(); _lineDist.Clear(); _lineLength = 0f;
-            var sideOffset = Vector3.Cross(Vector3.up, d).normalized * (Type.Family == LiftFamily.Surface ? 1.2f : 3.2f);
+            var sideOffset = side * (Type.Family == LiftFamily.Surface ? 1.2f : 3.2f);
             for (int i = 0; i + 1 < points.Count; i++)
             {
                 var a = points[i]; var b = points[i + 1];
@@ -185,8 +237,24 @@ namespace AlpineSim.Unity.Lifts
             }
             if (_staticFilter.sharedMesh != null) Destroy(_staticFilter.sharedMesh);
             _staticFilter.sharedMesh = pm.Build("lift_" + State.Id);
-            _statusRenderer.transform.position = SurfaceAt(State.Bottom) + Vector3.up * (termH + 1.5f);
+            _statusRenderer.transform.position = bottom + Vector3.up * (termH + 1.5f);
             _lastStatus = (LiftStatus)(-1);
+        }
+
+        /// <summary>
+        /// Which of the three tower height classes this ground wants. A line crosses a roll that needs a
+        /// short tower and a dip that needs a tall one, so the class is chosen by how far the rope runs
+        /// above the ground here, not by the lift type alone.
+        /// </summary>
+        private LiftPart TowerClassFor(Vector3 basePos, Vector3 bottom, Vector3 top)
+        {
+            float total = Vector3.Distance(new Vector3(bottom.x, 0f, bottom.z), new Vector3(top.x, 0f, top.z));
+            float along = total > 0.5f ? Vector3.Distance(new Vector3(bottom.x, 0f, bottom.z), new Vector3(basePos.x, 0f, basePos.z)) / total : 0f;
+            float ropeY = Mathf.Lerp(bottom.y + _towerHeight, top.y + _towerHeight, Mathf.Clamp01(along));
+            float needed = ropeY - basePos.y;
+            if (needed < _towerHeight * 0.78f) return LiftPart.TowerLow;
+            if (needed > _towerHeight * 1.22f) return LiftPart.TowerHigh;
+            return LiftPart.Tower;
         }
 
         private Vector3 SurfaceAt(Vec2 p) => _boot.SurfacePoint(p.X, p.Y);
@@ -225,12 +293,17 @@ namespace AlpineSim.Unity.Lifts
                 _statusMaterial.SetColor("_Color", c);
             }
             _staticRenderer.enabled = State.Status != LiftStatus.Planned;
+            if (_models != null) _models.gameObject.SetActive(State.Status != LiftStatus.Planned);
             _carriers.Clear();
-            if (!State.IsBuilt || _lineLength < 1f) return;
+            _carrierMatrices.Clear();
+            if (!State.IsBuilt || _lineLength < 1f) { HideCarrierObjects(0); return; }
+
             bool reversible = Type.RopeConfiguration == RopeConfig.Reversible || Type.Family == LiftFamily.Rail;
             float speed = State.IsRunning ? Type.LineSpeedMs : 0f;
             _phase = speed * simSeconds;
-            int carriers = Mathf.Max(reversible ? 2 : 2, State.Carriers);
+            int carriers = Mathf.Max(2, State.Carriers);
+            PrepareCarriers(carriers);
+            int placed = 0;
             if (reversible)
             {
                 float cycle = 2f * _lineLength / Mathf.Max(0.3f, Type.LineSpeedMs) + 2f * Type.LoadTimeS;
@@ -238,8 +311,8 @@ namespace AlpineSim.Unity.Lifts
                 float travel = Mathf.Clamp01(t < 0.5f ? t * 2f : (1f - t) * 2f);
                 var p1 = RopePoint(travel * _lineLength, out var f1);
                 var p2 = RopePoint(2f * _lineLength - travel * _lineLength, out var f2);
-                _carriers.Add(p1, Quaternion.LookRotation(f1), Vector3.one);
-                _carriers.Add(p2, Quaternion.LookRotation(f2), Vector3.one);
+                PlaceCarrier(placed++, p1, Quaternion.LookRotation(f1));
+                PlaceCarrier(placed++, p2, Quaternion.LookRotation(f2));
             }
             else
             {
@@ -249,10 +322,91 @@ namespace AlpineSim.Unity.Lifts
                 {
                     float dist = Mathf.Repeat(_phase + i * spacing, loop);
                     var p = RopePoint(dist, out var fwd);
-                    _carriers.Add(p, Quaternion.LookRotation(fwd), Vector3.one);
+                    PlaceCarrier(placed++, p, Quaternion.LookRotation(fwd));
                 }
             }
-            _carriers.Draw();
+            HideCarrierObjects(placed);
+            if (_carrierProxyMesh != null) DrawCarrierProxies();
+            else if (!_carrierModels) _carriers.Draw();
+        }
+
+        /// <summary>
+        /// Decide once per frame how this lift's carriers are drawn: a handful of full models, hundreds
+        /// of copies of the merged proxy mesh, or the primitive carrier when the pipeline has built
+        /// nothing. A gondola line carries more carriers than is worth a GameObject each.
+        /// </summary>
+        private void PrepareCarriers(int count)
+        {
+            if (_carrierModels)
+            {
+                EnsureCarrierObjects(count);
+                return;
+            }
+            if (_carrierProxyMesh != null) return;
+
+            var livery = CarrierColor(Type);
+            if (!ModelRegistry.HasLiftComponent(Type, LiftPart.Carrier, livery, SteelAccent)) return;
+            if (count <= _boot.Data.Render.MaxGeneratedCarrierObjects)
+            {
+                _carrierModels = true;
+                EnsureCarrierObjects(count);
+                return;
+            }
+            if (ModelRegistry.TryGetProxy(Type, LiftPart.Carrier, livery, SteelAccent, out var mesh, out var materials))
+            {
+                _carrierProxyMesh = mesh;
+                _carrierProxyMaterials = materials;
+            }
+        }
+
+        private void EnsureCarrierObjects(int count)
+        {
+            var livery = CarrierColor(Type);
+            while (_carrierObjects.Count < count)
+            {
+                var go = ModelRegistry.LiftComponent(Type, LiftPart.Carrier, _models, livery, SteelAccent);
+                if (go == null) { _carrierModels = false; return; }
+                _carrierObjects.Add(go.transform);
+            }
+        }
+
+        private void PlaceCarrier(int index, Vector3 pos, Quaternion rot)
+        {
+            if (_carrierModels && index < _carrierObjects.Count)
+            {
+                var t = _carrierObjects[index];
+                if (t == null) return;
+                t.gameObject.SetActive(true);
+                t.SetPositionAndRotation(pos, rot);
+                return;
+            }
+            if (_carrierProxyMesh != null) { _carrierMatrices.Add(Matrix4x4.TRS(pos, rot, Vector3.one)); return; }
+            _carriers.Add(pos, rot, Vector3.one);
+        }
+
+        private void HideCarrierObjects(int from)
+        {
+            for (int i = from; i < _carrierObjects.Count; i++)
+                if (_carrierObjects[i] != null) _carrierObjects[i].gameObject.SetActive(false);
+        }
+
+        /// <summary>Draw the merged carrier proxy once per submesh, in batches of the instancing limit.</summary>
+        private void DrawCarrierProxies()
+        {
+            if (_carrierMatrices.Count == 0 || _carrierProxyMaterials == null) return;
+            if (_carrierBatch == null) _carrierBatch = new Matrix4x4[1023];
+            int submeshes = Mathf.Max(1, _carrierProxyMesh.subMeshCount);
+            for (int start = 0; start < _carrierMatrices.Count; start += _carrierBatch.Length)
+            {
+                int n = Mathf.Min(_carrierBatch.Length, _carrierMatrices.Count - start);
+                for (int i = 0; i < n; i++) _carrierBatch[i] = _carrierMatrices[start + i];
+                for (int s = 0; s < submeshes; s++)
+                {
+                    var material = _carrierProxyMaterials[Mathf.Min(s, _carrierProxyMaterials.Length - 1)];
+                    if (material == null) continue;
+                    Graphics.DrawMeshInstanced(_carrierProxyMesh, s, material, _carrierBatch, n);
+                }
+            }
         }
     }
 }
