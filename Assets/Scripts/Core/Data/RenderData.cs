@@ -22,6 +22,8 @@ namespace AlpineSim.Core.Data
         public float GuestMarkerSizeM = 0.8f;
         public int GuestVisualBatch = 1023;
         public float CorduroyWavelengthM = 0.12f;
+        /// <summary>How many metres one tile of the generated corduroy detail normal covers.</summary>
+        public float CorduroyDetailTilingM = 3.84f;
         public float CorduroyDepthM = 0.03f;
         public float SnowDisplacementScale = 1f;
         public float DebugOverlayAlpha = 0.75f;

@@ -46,8 +46,44 @@ namespace AlpineSim.Unity.Snow
                 _overlayMaterial.SetTexture("_SurfaceMap", _uploader.SurfaceMap);
             }
             _uploader.Rebuild(boot.Sim.World.Time.Tick);
+            BindDetailMaps(render);
             boot.TerrainView.SetMaterial(_snowMaterial);
             ApplyOverlay();
+        }
+
+        /// <summary>
+        /// Hands the snow shader the detail maps tools/assetgen produced, if a build is present.
+        ///
+        /// Without them the surface keeps the analytic corduroy it has always had, which is why
+        /// _UseDetailMaps stays at zero unless the corduroy normal actually resolved: a half-bound
+        /// set would light the snow off a mixture of real relief and flat defaults.
+        /// </summary>
+        private void BindDetailMaps(AlpineSim.Core.Data.RenderData render)
+        {
+            const string root = "AlpineSim/Textures/";
+            var corduroy = Resources.Load<Texture2D>(root + "snow_corduroy_normal");
+            if (corduroy == null)
+            {
+                _snowMaterial.SetFloat("_UseDetailMaps", 0f);
+                Debug.Log("[Art] snow detail maps not present; the surface uses analytic corduroy.");
+                return;
+            }
+            _snowMaterial.SetTexture("_CorduroyNormal", corduroy);
+            SetIfPresent("_CrustNormal", root + "snow_crust_normal");
+            SetIfPresent("_PowderNormal", root + "snow_powder_normal");
+            SetIfPresent("_DriftMask", root + "snow_drift_mask");
+            SetIfPresent("_DirtySnow", root + "snow_dirty_albedo");
+            // The corduroy map is authored one groomer width across, so it tiles at the width the
+            // sim actually grooms rather than at whatever looked right in the texture.
+            _snowMaterial.SetFloat("_CorduroyTilingM", Mathf.Max(0.5f, render.CorduroyDetailTilingM));
+            _snowMaterial.SetFloat("_UseDetailMaps", 1f);
+            Debug.Log("[Art] snow detail maps bound.");
+        }
+
+        private void SetIfPresent(string property, string resourcePath)
+        {
+            var tex = Resources.Load<Texture2D>(resourcePath);
+            if (tex != null) _snowMaterial.SetTexture(property, tex);
         }
 
         public void CycleMode()
