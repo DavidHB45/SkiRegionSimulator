@@ -18,7 +18,11 @@ namespace AlpineSim.Unity.Art
         public const string TextureRoot = "AlpineSim/Textures/";
         public const string ShaderName = "AlpineSim/MachinePBR";
 
-        /// <summary>Texture set ids from tools/assetgen/textures/pbr.py and trimsheets.py.</summary>
+        // Texture set ids from tools/assetgen/textures/pbr.py and trimsheets.py. Generated models are
+        // box-projected at a fixed metres-per-tile (lib/meshkit._unwrap) rather than atlassed, so a
+        // material slot samples a tiling surface set and not the trim sheet: painted steel for
+        // bodywork, dark rubber for tracks and frames, galvanised steel for lift structures, and one
+        // glass set for every pane in the resort.
         public const string SetMachine = "machine";
         public const string SetLift = "lift";
         public const string SetProp = "prop";

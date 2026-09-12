@@ -29,10 +29,7 @@ namespace AlpineSim.Unity.Art
     /// </summary>
     public static class ModelRegistry
     {
-        // Which tiling surface set each slot samples. Generated models are box-projected at a fixed
-        // metres-per-tile (lib/meshkit._unwrap), not atlassed, so a slot wants a tiling material set
-        // and not the trim sheet: painted steel for bodywork, dark rubber for tracks and frames,
-        // galvanised steel for lift structures, and one glass set for every pane in the resort.
+        // The Resources layout the pipeline writes (tools/assetgen/config.py).
         public const string MachineRoot = "AlpineSim/Models/Machines/";
         public const string AttachmentRoot = "AlpineSim/Models/Attachments/";
         public const string LiftRoot = "AlpineSim/Models/Lifts/";

@@ -373,7 +373,7 @@ namespace AlpineSim.Unity.Lifts
             while (_carrierObjects.Count < count)
             {
                 var go = ModelRegistry.LiftComponent(Type, LiftPart.Carrier, _models, livery, SteelAccent);
-                if (go == null) { _carrierModels = false; return; }
+                if (go == null) { _carrierModels = false; HideCarrierObjects(0); return; }
                 _carrierObjects.Add(go.transform);
             }
         }
