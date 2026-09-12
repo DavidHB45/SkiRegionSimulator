@@ -173,6 +173,40 @@ def check_texture(name, image, expect_size=None, expect_channels=None):
               % (len(image.getbands()), expect_channels))
 
 
+# A texture that does not wrap shows as a repeating line across the ground or up a trunk,
+# and it is invisible in a thumbnail, so the build measures it instead of trusting it.
+# Atlases are exempt: a trim or decal sheet is a page of cells, each of which tiles within
+# itself, and its outer edge means nothing.
+TILING_EXEMPT_PREFIXES = ("trim_industrial", "trim_decals", "ui_", "icon_")
+
+# How far a wrap seam may exceed the map's own local gradient before it reads as an edge.
+SEAM_TOLERANCE = 2.0
+
+
+def check_tiling(name, array):
+    """Compare each wrap seam against the local gradient ALONG THAT SAME AXIS.
+
+    The axis matters. Bark fissures run vertically, so bark changes about four times
+    faster across columns than down rows; measuring its column seam against its row
+    gradient makes a map that tiles perfectly look four times worse than it is. Compare
+    like with like or the check invents defects.
+    """
+    import numpy as np
+
+    if any(name.startswith(p) for p in TILING_EXEMPT_PREFIXES):
+        return
+    g = array[..., 0] if getattr(array, "ndim", 2) == 3 else array
+    g = g.astype("float32")
+    for seam, grad, axis in (
+            (np.abs(g[0, :] - g[-1, :]).mean(), np.abs(np.diff(g, axis=0)).mean(), "top to bottom"),
+            (np.abs(g[:, 0] - g[:, -1]).mean(), np.abs(np.diff(g, axis=1)).mean(), "left to right")):
+        ratio = float(seam) / (float(grad) + 1e-9)
+        if ratio > SEAM_TOLERANCE:
+            note("tiling", name,
+                 "does not wrap %s: the seam is %.1f times its own local gradient, so it "
+                 "will read as a repeating line" % (axis, ratio))
+
+
 def check_uv_overlap(model, name, samples=4096):
     """Cheap overlap probe: bucket face UV centroids and flag heavy collisions.
 

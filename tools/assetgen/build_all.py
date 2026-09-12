@@ -88,8 +88,22 @@ def build_textures(log):
     records += pbr.build_all(config.TEXTURES_DIR)
     records += snow.build_all(config.TEXTURES_DIR)
     records += terrain.build_all(config.TEXTURES_DIR)
+    _check_tiling(records)
     log("textures: %d maps" % len(records))
     return records
+
+
+def _check_tiling(records):
+    """Measure every emitted map's wrap seam. Cheap, and the alternative is finding out
+    from a screenshot that the ground has a grid drawn on it."""
+    import numpy as np
+    from PIL import Image
+
+    for record in records:
+        path = os.path.join(config.ROOT, record["path"])
+        if not os.path.exists(path):
+            continue
+        validate.check_tiling(os.path.basename(path), np.asarray(Image.open(path)))
 
 
 def build_meshes(log, only_ids=None):
