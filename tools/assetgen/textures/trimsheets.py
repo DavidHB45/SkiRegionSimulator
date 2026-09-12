@@ -947,7 +947,9 @@ def build_decals(out_dir, size=DECAL_SHEET, supersample=2):
 def build_all(out_dir):
     """The industrial sheet and the decal sheet. Returns one record per PNG."""
     records = build_industrial(out_dir)
-    records[0]["cells"] = {k: list(v) for k, v in trim_cells().items()}
+    cells = {k: list(v) for k, v in trim_cells().items()}
+    for record in records:
+        record["cells"] = cells      # what UVs where, published for whoever maps to it
     records += build_decals(out_dir)
     return records
 

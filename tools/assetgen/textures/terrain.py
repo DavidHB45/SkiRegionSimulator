@@ -177,93 +177,111 @@ def _rock(shape, rng, spec):
     """Alpine granite: bedded, jointed, frost-shattered, and lichened where it is sheltered.
 
     Above the treeline the rock is not a noise field, it is a structure. It was laid down
-    in beds, it is cut by two joint sets, and every winter water freezes in those joints
-    and levers a block off, so the faces are angular and the debris is fresh. The lichen
-    matters more than it sounds: it is the only warm colour on a grey mountain and it is
-    what stops granite reading as concrete.
+    in beds, it is cut by joints, and every winter water freezes in those joints and levers
+    a block off, so the faces are angular and the scars are fresh. The lichen matters more
+    than it sounds: it is the only warm colour on a grey mountain and it is what stops
+    granite reading as concrete.
+
+    The joints are deliberately few and large. A face of a hundred small even blocks is
+    paving, not rock; what a crag actually shows is three or four metre-scale blocks with
+    a rough, heavily relieved face on each of them and a finer shatter only along the
+    edges where the frost has been working.
     """
-    # Bedding runs across the tile at a slight dip. Five beds per tile keeps it an
-    # integer count, which is what lets the band wrap at the seam.
-    dip = (fbm(shape, (2, 5), 3, rng) - 0.5) * 0.35
-    band = (_rows(shape) * 5.0 + dip) % 1.0
+    # The bedding dips across the face. Three beds per tile keeps the count integer, which
+    # is what lets the band wrap at the seam.
+    dip = (fbm(shape, (2, 4), 4, rng) - 0.5) * 0.75
+    band = (_rows(shape) + dip) * 3.0 % 1.0
     bedding = 1.0 - np.abs(band - 0.5) * 2.0
-    height = np.power(bedding, 1.6) * 0.30
+    height = np.power(np.clip(bedding, 0.0, 1.0), 2.2) * 0.34
 
-    # Two joint sets break the beds into blocks; the frost takes the blocks out along them.
-    f1, f2, ident = cellular(shape, (8, 7), rng, jitter=0.95)
-    joint = np.clip(1.0 - (f2 - f1) / 0.13, 0.0, 1.0)
-    joint = np.clip(joint - ridged(shape, 26, 3, rng) * 0.35, 0.0, 1.0)
-    height += (ident - 0.5) * 0.34                       # every block sits at its own level
-    height -= joint * 0.30
-    height += np.clip(1.0 - f1 * 1.6, 0.0, 1.0) * 0.10   # block faces bulge a little
+    # A handful of metre-scale blocks, their boundaries bent well off the straight.
+    f1, f2, ident = cellular(shape, (4, 3), rng, jitter=0.9, warp=0.55, warp_freq=5)
+    joint = np.clip(1.0 - (f2 - f1) / 0.055, 0.0, 1.0)
+    height += (ident - 0.5) * 0.40                       # every block sits at its own level
+    height -= joint * 0.42                               # and the joint between them is a cut
 
-    height += fbm(shape, 6, 5, rng) * 0.30               # the face is not a plane
-    height += ridged(shape, 40, 3, rng) * 0.10           # crystal grain and flake edges
-    spall = np.clip((fbm(shape, 14, 3, rng) - 0.66) * 5.0, 0.0, 1.0)
-    height -= spall * 0.16                               # a frost-shattered scar
+    # Frost shatter: a finer angular break that only bites near the joints and the edges,
+    # because that is where the water gets in.
+    sf1, sf2, sident = cellular(shape, (13, 11), rng, jitter=1.0, warp=0.45, warp_freq=9)
+    near_edge = np.clip(joint * 2.2 + np.clip(1.0 - (f2 - f1) / 0.35, 0.0, 1.0), 0.0, 1.0)
+    shatter = np.clip(1.0 - (sf2 - sf1) / 0.10, 0.0, 1.0)
+    height -= shatter * near_edge * 0.16
+    height += (sident - 0.5) * near_edge * 0.14
+
+    # The face itself. Most of the relief on rock is the rock, not its joints.
+    height += fbm(shape, 5, 6, rng) * 0.46
+    height += ridged(shape, (7, 18), 4, rng) * 0.16      # the grain of the flake planes
+    height += ridged(shape, 45, 3, rng) * 0.09           # crystal edges
+    spall = np.clip((fbm(shape, 13, 3, rng) - 0.64) * 5.0, 0.0, 1.0)
+    height -= spall * 0.20                               # a frost-shattered scar
     height = norm01(height)
 
     cavity = np.clip(blur(height, 9) - height, 0.0, 1.0)
-    grain = fbm(shape, 34, 3, rng)
+    grain = fbm(shape, 30, 4, rng)
+    coarse = fbm(shape, 6, 4, rng)
 
-    dark = (0.335, 0.325, 0.315)
-    pale = (0.560, 0.545, 0.520)
-    coarse = fbm(shape, 7, 3, rng)
-    albedo = _mix(dark, pale, np.clip(0.10 + 0.95 * grain + 0.55 * (ident - 0.5)
-                                      + 0.45 * (coarse - 0.5), 0.0, 1.0))
-    albedo += spall[..., None] * np.asarray((0.10, 0.095, 0.085), np.float32)  # fresh break
-    albedo *= 1.0 - cavity[..., None] * 0.55
+    dark = (0.300, 0.292, 0.284)
+    pale = (0.585, 0.570, 0.545)
+    albedo = _mix(dark, pale, np.clip(0.10 + 0.85 * grain + 0.50 * (ident - 0.5)
+                                      + 0.55 * (coarse - 0.5), 0.0, 1.0))
+    albedo += spall[..., None] * np.asarray((0.11, 0.105, 0.095), np.float32)  # fresh break
+    albedo *= 1.0 - cavity[..., None] * 0.65
 
     # Lichen colonises the sheltered, damp side of a block and the crack lines, never the
     # faces the wind scours, so it is keyed to cavity rather than sprinkled at random.
-    patch = fbm(shape, 9, 4, rng)
-    crustose = np.clip((patch - 0.52) * 3.4, 0.0, 1.0) * (0.35 + 0.9 * cavity)
-    crustose = np.clip(crustose * speckle(shape, rng, shape[0] // 12, 0.45, softness=4.0)
-                       * 1.6, 0.0, 1.0)
-    foliose = np.clip((fbm(shape, 22, 3, rng) - 0.63) * 4.0, 0.0, 1.0) * crustose
+    patch = fbm(shape, 8, 4, rng)
+    crustose = np.clip((patch - 0.50) * 3.2, 0.0, 1.0) * (0.30 + 1.0 * cavity)
+    crustose = np.clip(crustose * speckle(shape, rng, shape[0] // 14, 0.45, softness=4.0)
+                       * 1.7, 0.0, 1.0)
+    foliose = np.clip((fbm(shape, 20, 3, rng) - 0.60) * 4.0, 0.0, 1.0) * crustose
     albedo = _toward(albedo, (0.34, 0.40, 0.20), crustose * 0.75)
     albedo = _toward(albedo, (0.62, 0.60, 0.44), foliose * 0.65)
 
     rough = 0.80 + 0.14 * grain - crustose * 0.10 + joint * 0.05
     return np.clip(height, 0, 1), np.clip(albedo, 0, 1), np.clip(rough, 0.3, 1.0)
 
-
 def _scree(shape, rng, spec):
     """Loose angular fragments: the apron below every crag on the mountain.
 
-    Scree is graded by gravity - the big plates end up at the bottom of the run and the
-    chips filter into the gaps between them - so it is built as two fragment scales, a
-    coarse one and a fine one packed into its shadows, rather than one uniform rubble.
+    Scree is graded by gravity, so the plates that came off the crag end up at the bottom
+    of the run and the chips filter into the gaps between them. It is built as two
+    fragment scales with the fine one packed into the coarse one's shadows, and each
+    fragment gets its own size out of the lattice value, because rubble of one size is
+    cobbles and rubble of many sizes is scree.
     """
-    f1, f2, ident = cellular(shape, (11, 11), rng, jitter=1.0)
-    gap = np.clip(1.0 - (f2 - f1) / 0.16, 0.0, 1.0)
-    # An angular fragment has flat faces and a sharp lip, so the profile is a hard shoulder
-    # rather than a dome.
-    slab = np.clip(1.0 - f1 * 1.35, 0.0, 1.0)
-    height = np.power(slab, 0.55) * (0.45 + 0.55 * ident) * 0.75
+    f1, f2, ident = cellular(shape, (10, 10), rng, jitter=1.0, warp=0.40, warp_freq=7)
+    gap = np.clip(1.0 - (f2 - f1) / 0.20, 0.0, 1.0)
+    # Fragment size varies by a factor of two across the slope, and a broken stone has flat
+    # faces and a sharp lip, so the profile is a hard shoulder rather than a dome.
+    radius = 0.40 + 0.55 * ident
+    slab = np.clip(1.0 - f1 / radius, 0.0, 1.0)
+    height = np.power(slab, 0.40) * (0.40 + 0.60 * ident) * 0.80
+    # Each fragment lies at its own angle rather than flat on the slope.
+    tilt = (fbm(shape, 30, 2, rng) - 0.5) * slab
+    height += tilt * 0.22
 
-    ff1, ff2, fident = cellular(shape, (31, 29), rng, jitter=1.0)
-    chips = np.power(np.clip(1.0 - ff1 * 1.3, 0.0, 1.0), 0.6) * (0.3 + 0.7 * fident)
-    height += chips * 0.20 * (0.35 + 0.9 * gap)          # chips sit in the gaps
-    height -= gap * 0.28
-    height += fbm(shape, 5, 4, rng) * 0.22               # the whole slope is not level
-    height += fbm(shape, 90, 2, rng) * 0.05
+    ff1, ff2, fident = cellular(shape, (27, 27), rng, jitter=1.0, warp=0.35, warp_freq=14)
+    chips = np.power(np.clip(1.0 - ff1 / (0.45 + 0.5 * fident), 0.0, 1.0), 0.5)
+    height += chips * 0.24 * (0.25 + 1.0 * gap)          # chips filter into the gaps
+    height -= gap * 0.40                                 # and the gaps go deep
+    height += fbm(shape, 4, 5, rng) * 0.26               # the whole slope is not level
+    height += fbm(shape, 80, 3, rng) * 0.06
     height = norm01(height)
 
     cavity = np.clip(blur(height, 7) - height, 0.0, 1.0)
-    tone = np.clip(0.30 + 0.55 * ident + 0.30 * (fbm(shape, 40, 3, rng) - 0.5), 0.0, 1.0)
-    albedo = _mix((0.255, 0.245, 0.235), (0.545, 0.530, 0.500), tone)
+    tone = np.clip(0.20 + 0.70 * ident + 0.45 * (fbm(shape, 34, 4, rng) - 0.5)
+                   + 0.35 * (fbm(shape, 6, 3, rng) - 0.5), 0.0, 1.0)
+    albedo = _mix((0.215, 0.208, 0.200), (0.580, 0.562, 0.530), tone)
     # A freshly split face is lighter than the weathered top of the same stone.
-    fresh = np.clip((ident - 0.7) * 3.0, 0.0, 1.0) * np.clip(1.0 - f1 * 2.0, 0.0, 1.0)
-    albedo += fresh[..., None] * 0.09
-    albedo *= 1.0 - cavity[..., None] * 0.72             # the gaps are deep and dark
+    fresh = np.clip((ident - 0.68) * 3.2, 0.0, 1.0) * np.clip(1.0 - f1 / radius, 0.0, 1.0)
+    albedo += fresh[..., None] * 0.10
+    albedo *= 1.0 - cavity[..., None] * 0.80             # the gaps are deep and dark
 
-    dust = np.clip((fbm(shape, 16, 4, rng) - 0.45) * 2.2, 0.0, 1.0) * (0.4 + 0.8 * gap)
+    dust = np.clip((fbm(shape, 15, 4, rng) - 0.45) * 2.2, 0.0, 1.0) * (0.35 + 0.9 * gap)
     albedo = _toward(albedo, (0.46, 0.42, 0.36), dust * 0.55)
 
-    rough = 0.84 + 0.12 * fbm(shape, 28, 3, rng) + dust * 0.06
+    rough = 0.84 + 0.12 * fbm(shape, 26, 3, rng) + dust * 0.06
     return np.clip(height, 0, 1), np.clip(albedo, 0, 1), np.clip(rough, 0.3, 1.0)
-
 
 def _dirt(shape, rng, spec):
     """The summer track: a service road that has been driven on wet and then baked dry.
@@ -271,87 +289,101 @@ def _dirt(shape, rng, spec):
     The structure that reads is the pair of ruts, so they are built first and everything
     else is hung off them. A rut is lower, smoother and darker than the crown between the
     wheels, it holds the stones that got pressed into it, and it is where the tread print
-    survives. Four tread repeats across the tile keeps the print periodic at the seam.
+    survives. Fourteen tread repeats across the tile keeps the print periodic at the seam,
+    and the chevron apexes sit inside the tile rather than on it.
     """
+    rows = _rows(shape)
     cols = _cols(shape)
-    # Wheel tracks run along +U. Two ruts at a plausible 1.8 m track width on a 4 m tile.
+    # Wheel tracks run along +U, at a plausible 1.8 m track width on a 4 m tile. A rut has
+    # a shoulder where the tyre pushed the material sideways, not a soft airbrushed edge.
     rut = np.zeros(shape, np.float32)
+    shoulder = np.zeros(shape, np.float32)
     for centre in (0.275, 0.725):
-        d = np.abs(((_rows(shape) - centre + 0.5) % 1.0) - 0.5) / 0.085
-        rut += np.clip(1.0 - d * d, 0.0, 1.0)
-    rut = np.clip(rut + (fbm(shape, (3, 7), 3, rng) - 0.5) * 0.30, 0.0, 1.0)
+        d = np.abs(((rows - centre + 0.5) % 1.0) - 0.5) / 0.075
+        rut += np.clip(1.0 - d * d * d, 0.0, 1.0)
+        shoulder += np.clip(1.0 - np.abs(d - 1.15) * 7.0, 0.0, 1.0)
+    wander = (fbm(shape, (3, 9), 3, rng) - 0.5) * 0.35
+    rut = np.clip(rut + wander, 0.0, 1.0)
+    shoulder = np.clip(shoulder + wander * 0.5, 0.0, 1.0)
 
-    height = 0.55 + fbm(shape, 7, 5, rng) * 0.35
-    height -= rut * 0.30                                  # the wheels pressed it down
+    height = 0.50 + fbm(shape, 7, 5, rng) * 0.30
+    height -= rut * 0.34                                  # the wheels pressed it down
+    height += shoulder * 0.13                             # and pushed the spoil out sideways
     crown = np.clip(1.0 - rut * 1.8, 0.0, 1.0)
-    height += crown * fbm(shape, 22, 3, rng) * 0.12       # loose material on the crown
+    height += crown * fbm(shape, 26, 4, rng) * 0.20       # loose material on the crown
 
-    chevron = np.abs(((_rows(shape) + 0.25) % 1.0) - 0.5)
+    chevron = np.abs(((rows + 0.25) % 1.0) - 0.5)
     tread = 0.5 + 0.5 * np.cos((cols * 14.0 + chevron * 3.0) * 2.0 * np.pi)
-    height -= np.power(tread, 2.0) * rut * 0.14
-    stones = speckle(shape, rng, shape[0] // 7, 0.055, softness=9.0)
-    height += stones * 0.16 * (0.4 + 0.8 * rut)           # gravel pressed into the rut
+    height -= np.power(tread, 3.0) * np.clip(rut * 1.4 - 0.25, 0.0, 1.0) * 0.22
+
+    # Graded aggregate all through it, standing proud where the surface has dried out.
+    stones = speckle(shape, rng, shape[0] // 7, 0.075, softness=9.0)
+    grit = speckle(shape, rng, shape[0] // 3, 0.14, softness=14.0)
+    height += stones * 0.22 * (0.35 + 0.8 * rut)          # gravel pressed into the rut
+    height += grit * 0.07
 
     # Mud that was churned wet and dried cracks into plates; it only happens off the crown.
-    cf1, cf2, cident = cellular(shape, (17, 15), rng, jitter=1.0)
-    crack = np.clip(1.0 - (cf2 - cf1) / 0.09, 0.0, 1.0)
-    crack *= np.clip((fbm(shape, 6, 3, rng) - 0.42) * 3.0, 0.0, 1.0)
-    height -= crack * 0.18
-    height += fbm(shape, 120, 2, rng) * 0.05
+    cf1, cf2, cident = cellular(shape, (16, 14), rng, jitter=1.0, warp=0.40, warp_freq=11)
+    crack = np.clip(1.0 - (cf2 - cf1) / 0.10, 0.0, 1.0)
+    crack *= np.clip((fbm(shape, 6, 3, rng) - 0.36) * 3.0, 0.0, 1.0)
+    height -= crack * 0.24
+    height += fbm(shape, 110, 3, rng) * 0.07
     height = norm01(height)
 
     cavity = np.clip(blur(height, 8) - height, 0.0, 1.0)
-    damp = np.clip(rut * 0.8 + (fbm(shape, 9, 3, rng) - 0.5) * 0.7, 0.0, 1.0)
-    albedo = _mix((0.395, 0.335, 0.265), (0.205, 0.160, 0.120), damp)   # wet earth is dark
-    albedo += stones[..., None] * np.asarray((0.16, 0.15, 0.14), np.float32)
-    dust = crown * np.clip(fbm(shape, 12, 3, rng), 0.0, 1.0)
-    albedo = _toward(albedo, (0.46, 0.40, 0.32), dust * 0.5)
-    albedo *= 1.0 - cavity[..., None] * 0.55
+    damp = np.clip(rut * 0.85 + (fbm(shape, 9, 4, rng) - 0.5) * 0.8, 0.0, 1.0)
+    albedo = _mix((0.420, 0.355, 0.280), (0.175, 0.135, 0.100), damp)   # wet earth is dark
+    albedo += (stones * 0.55 + grit * 0.35)[..., None] * np.asarray((0.20, 0.19, 0.175),
+                                                                    np.float32)
+    dust = crown * np.clip(fbm(shape, 12, 4, rng) * 1.4 - 0.2, 0.0, 1.0)
+    albedo = _toward(albedo, (0.475, 0.415, 0.330), dust * 0.55)
+    albedo *= 1.0 - cavity[..., None] * 0.62
 
     rough = 0.88 + 0.10 * fbm(shape, 30, 3, rng) - damp * 0.12
     return np.clip(height, 0, 1), np.clip(albedo, 0, 1), np.clip(rough, 0.3, 1.0)
-
 
 def _grass_alpine(shape, rng, spec):
     """Short alpine tussock: clumped, cropped, half dead and full of holes.
 
     Nothing above 2000 m grows as a lawn. It grows in tussocks with bare soil and stone
     between them, half of last year's growth is still standing and brown, and the whole
-    thing is short because the wind crops it. The clumps are the low frequency that has
-    to survive mipping, the blades are the high frequency that reads underfoot.
+    thing is short because the wind crops it. The clumps come out of noise rather than out
+    of a lattice, because a tussock has no boundary: it thins out into the next one, and a
+    cell edge between them would read as turf laid in squares.
     """
-    f1, f2, ident = cellular(shape, (15, 15), rng, jitter=1.0)
-    clump = np.power(np.clip(1.0 - f1 * 1.25, 0.0, 1.0), 0.75) * (0.5 + 0.5 * ident)
-    height = clump * 0.62
+    clump = np.clip((fbm(shape, 13, 5, rng) - 0.42) * 2.4, 0.0, 1.0)
+    clump = np.clip(clump * (0.55 + 0.75 * fbm(shape, 34, 3, rng)), 0.0, 1.0)
+    core = np.clip((fbm(shape, 30, 3, rng) - 0.55) * 3.6, 0.0, 1.0) * clump
+    height = clump * 0.34 + core * 0.34
 
-    blades = scratch_field(shape, rng, 2600, shape[1] * 0.022, width=1,
-                           angle_deg=90.0, spread=70.0)
-    blades = np.clip(blades * 1.4, 0.0, 1.0)
-    height += blades * 0.26 * (0.25 + 0.9 * clump)
-    height += fbm(shape, 8, 4, rng) * 0.22                # the ground under it rolls
-    bare = np.clip((0.42 - clump) * 2.6, 0.0, 1.0)
-    stones = speckle(shape, rng, shape[0] // 9, 0.03, softness=10.0) * bare
-    height += stones * 0.18
+    # The blades are what the surface actually is; the clumps only say where they are tall.
+    blades = scratch_field(shape, rng, 5200, shape[1] * 0.020, width=1,
+                           angle_deg=90.0, spread=75.0)
+    blades = np.clip(blades * 1.6, 0.0, 1.0)
+    height += blades * 0.40 * (0.30 + 0.9 * clump)
+    fine = scratch_field(shape, rng, 3200, shape[1] * 0.010, width=1,
+                         angle_deg=90.0, spread=120.0)
+    height += np.clip(fine * 1.4, 0.0, 1.0) * 0.16
+    height += fbm(shape, 7, 4, rng) * 0.24                # the ground under it rolls
+    bare = np.clip((0.34 - clump) * 3.0, 0.0, 1.0)
+    stones = speckle(shape, rng, shape[0] // 9, 0.035, softness=10.0) * bare
+    height += stones * 0.20
     height = norm01(height)
 
     cavity = np.clip(blur(height, 6) - height, 0.0, 1.0)
-    dead = np.clip(0.30 + 0.75 * (fbm(shape, 11, 4, rng) - 0.45) + 0.5 * (ident - 0.5),
-                   0.0, 1.0)
-    green = _mix((0.150, 0.235, 0.105), (0.285, 0.330, 0.145), fbm(shape, 26, 3, rng))
-    straw = _mix((0.330, 0.290, 0.165), (0.455, 0.395, 0.230), fbm(shape, 19, 3, rng))
+    dead = np.clip(0.28 + 0.85 * (fbm(shape, 9, 4, rng) - 0.42)
+                   + 0.55 * (fbm(shape, 24, 3, rng) - 0.5), 0.0, 1.0)
+    green = _mix((0.135, 0.215, 0.095), (0.300, 0.350, 0.150), fbm(shape, 28, 4, rng))
+    straw = _mix((0.320, 0.280, 0.155), (0.475, 0.410, 0.240), fbm(shape, 21, 3, rng))
     albedo = green + (straw - green) * dead[..., None]
-    albedo *= (0.70 + 0.60 * np.clip(0.5 + (ident - 0.5) * 1.3
-                                     + (fbm(shape, 12, 3, rng) - 0.5) * 1.1,
-                                     0.0, 1.0))[..., None]
-    soil = _mix((0.255, 0.215, 0.170), (0.335, 0.295, 0.240), fbm(shape, 30, 3, rng))
-    albedo = albedo + (soil - albedo) * np.clip(bare * 0.9, 0.0, 1.0)[..., None]
+    soil = _mix((0.240, 0.200, 0.158), (0.345, 0.300, 0.240), fbm(shape, 30, 3, rng))
+    albedo = albedo + (soil - albedo) * np.clip(bare * 0.95, 0.0, 1.0)[..., None]
     albedo += stones[..., None] * 0.13
-    albedo *= 1.0 - cavity[..., None] * 0.60
-    albedo += blades[..., None] * np.asarray((0.05, 0.07, 0.03), np.float32)
+    albedo *= 1.0 - cavity[..., None] * 0.70
+    albedo += (blades * clump)[..., None] * np.asarray((0.06, 0.09, 0.035), np.float32)
 
     rough = 0.78 + 0.15 * dead + 0.08 * bare
     return np.clip(height, 0, 1), np.clip(albedo, 0, 1), np.clip(rough, 0.3, 1.0)
-
 
 def _bark(shape, rng, spec):
     """Conifer bark for the tree props: deep vertical fissures between scaly plates.
