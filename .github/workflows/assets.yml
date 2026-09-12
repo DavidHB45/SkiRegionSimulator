@@ -1,0 +1,144 @@
+name: Assets
+
+# Generated art is build output, so it is rebuilt here rather than committed. Both jobs
+# run on plain Ubuntu with Python and need no Unity licence: the pipeline is Blender as a
+# library plus numpy, and it reads the same Assets/StreamingAssets/Data/*.json the
+# simulation reads. Nothing here is skippable for want of a secret.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+    # A pull request only needs this workflow when it can change what comes out: the data
+    # the generators read, the generators themselves, or the contract they are held to.
+    paths:
+      - "Assets/StreamingAssets/Data/**"
+      - "tools/assetgen/**"
+      - "docs/ART_CONTRACT.md"
+      - ".github/workflows/assets.yml"
+      - "Makefile"
+  workflow_dispatch:
+
+concurrency:
+  group: assets-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. assets-build: the full art pack. Runs on every push, on version tags and on
+  #    manual dispatch, and uploads Assets/Art/Generated as an artifact; on a tag it
+  #    also attaches the pack to that release as a zip.
+  #
+  #    This job is slow, in two places and for two different reasons. bpy is a ~500 MB
+  #    wheel, so a cold pip cache spends minutes downloading Blender before a single
+  #    triangle exists - hence the aggressive cache below, keyed on the pinned
+  #    requirements file, which turns that into a few seconds on every later run. Then
+  #    the build itself is CPU-bound: every mesh is constructed, decimated twice and
+  #    hulled, and every texture is synthesised at 2048 squared. Both are the cost of
+  #    having no binary assets in the repository, which is the trade this project made.
+  # ---------------------------------------------------------------------------
+  assets-build:
+    name: assets-build (no Unity licence)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # only used to attach the art pack to a tagged release
+    env:
+      # Blender's FBX exporter numbers its objects from Python's salted hash(), so an
+      # unpinned salt makes two runs of one commit produce different files. See the
+      # Makefile, which pins the same value for a local build.
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      # bpy ships cp311 wheels for the pinned 4.2.0 release and nothing else, so the
+      # Python version is part of the toolchain pin, not a preference.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: tools/assetgen/requirements.txt
+
+      - name: System libraries bpy links against
+        # Blender as a library still links the X and GL client stacks even with no
+        # window, and a bare runner image does not carry all of them.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libgl1 libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0
+
+      - name: Install the pinned asset toolchain
+        run: make assets-deps
+
+      # Seconds, and it fails on exactly the mistakes that would otherwise take the whole
+      # build to surface: a flipped axis, a pivot off the ground, an unenforced budget.
+      - name: Pipeline self-test
+        run: make assets-selftest
+
+      - name: Build every asset
+        run: make assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alpine-art-generated
+          path: Assets/Art/Generated
+          retention-days: 14
+
+      - name: Attach the art pack to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          zip -qr "alpine-art-$TAG.zip" Assets/Art/Generated
+          # A tag is often pushed before anyone drafts its release; create one rather
+          # than fail the build over the order those two happened in.
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes
+          gh release upload "$TAG" "alpine-art-$TAG.zip" --clobber
+
+  # ---------------------------------------------------------------------------
+  # 2. assets-validate: the pull request gate. Same build, run for the contract
+  #    violations rather than for the output, so that a data edit which breaks a
+  #    generator - a machine with no mass, a lift with a tower height that produces a
+  #    400 m model, a silhouette no module claims - is caught on the pull request that
+  #    makes it instead of on someone else's branch a week later.
+  # ---------------------------------------------------------------------------
+  assets-validate:
+    name: assets-validate (contract)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: tools/assetgen/requirements.txt
+
+      - name: System libraries bpy links against
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libgl1 libxi6 libxxf86vm1 libxfixes3 libxrender1 libsm6 libxkbcommon0
+
+      - name: Install the pinned asset toolchain
+        run: make assets-deps
+
+      # Self-test, clean, full build, warning summary. A ContractError anywhere in it
+      # fails the job, and the message names the rule in docs/ART_CONTRACT.md.
+      - name: Validate the whole art pack
+        run: make assets-validate
+
+      # The warnings the build tolerated are worth reading on a data change even when
+      # the job passed: an under-budget mesh usually means a generator degenerated.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assets-validation-report
+          path: |
+            Assets/Art/Generated/validation.json
+            Assets/Art/Generated/manifest.json
+          if-no-files-found: ignore
