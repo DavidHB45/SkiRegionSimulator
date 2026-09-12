@@ -29,6 +29,10 @@ namespace AlpineSim.Unity.Art
     /// </summary>
     public static class ModelRegistry
     {
+        // Which tiling surface set each slot samples. Generated models are box-projected at a fixed
+        // metres-per-tile (lib/meshkit._unwrap), not atlassed, so a slot wants a tiling material set
+        // and not the trim sheet: painted steel for bodywork, dark rubber for tracks and frames,
+        // galvanised steel for lift structures, and one glass set for every pane in the resort.
         public const string MachineRoot = "AlpineSim/Models/Machines/";
         public const string AttachmentRoot = "AlpineSim/Models/Attachments/";
         public const string LiftRoot = "AlpineSim/Models/Lifts/";
@@ -57,7 +61,7 @@ namespace AlpineSim.Unity.Art
         {
             if (def == null) return null;
             var source = Resolve("machine:" + def.Id, def.ModelOverride, MachineRoot + def.Id, def.Id,
-                                 GeneratedMaterials.SetTrim, GeneratedMaterials.SetMachine);
+                                 GeneratedMaterials.SetMachine, GeneratedMaterials.SetRubber);
             return Spawn(source, parent, "model_" + def.Id, def.Visual);
         }
 
@@ -66,7 +70,7 @@ namespace AlpineSim.Unity.Art
         {
             if (def == null) return null;
             var source = Resolve("attachment:" + def.Id, def.ModelOverride, AttachmentRoot + def.Id, def.Id,
-                                 GeneratedMaterials.SetTrim, GeneratedMaterials.SetMachine);
+                                 GeneratedMaterials.SetMachine, GeneratedMaterials.SetRubber);
             return Spawn(source, parent, "model_" + def.Id, def.Visual);
         }
 
@@ -75,7 +79,7 @@ namespace AlpineSim.Unity.Art
         {
             if (string.IsNullOrEmpty(propId)) return null;
             var source = Resolve("prop:" + propId, null, PropRoot + propId, propId,
-                                 GeneratedMaterials.SetProp, GeneratedMaterials.SetProp);
+                                 GeneratedMaterials.SetProp, GeneratedMaterials.SetLift);
             return Spawn(source, parent, "model_" + propId, null);
         }
 
@@ -113,6 +117,35 @@ namespace AlpineSim.Unity.Art
             mesh = source.ProxyMesh;
             materials = source.ProxySlots;
             return materials != null && materials.Length > 0 && materials[0] != null;
+        }
+
+        /// <summary>
+        /// Where a named transform sits inside a lift part, in the model's own frame. A carrier's origin
+        /// is the bottom of the cabin like every other model's, but it hangs from its grip, so the view
+        /// needs to know how far below the rope to put it.
+        /// </summary>
+        public static Vector3 LiftPartAnchor(LiftTypeDef type, LiftPart part, string[] boneNames, Color livery, Color accent)
+        {
+            var source = ResolveLift(type, part, livery, accent);
+            if (source == null || source.Prefab == null || boneNames == null || boneNames.Length == 0) return Vector3.zero;
+            string key = string.Join(",", boneNames);
+            if (source.AnchorKey == key) return source.Anchor;
+            var anchor = Vector3.zero;
+            var all = source.Prefab.GetComponentsInChildren<Transform>(true);
+            for (int n = 0; n < boneNames.Length; n++)
+            {
+                bool found = false;
+                for (int i = 0; i < all.Length && !found; i++)
+                {
+                    if (all[i] == null || all[i].gameObject.name != boneNames[n]) continue;
+                    anchor = source.Prefab.transform.InverseTransformPoint(all[i].position);
+                    found = true;
+                }
+                if (found) break;
+            }
+            source.AnchorKey = key;
+            source.Anchor = anchor;
+            return anchor;
         }
 
         /// <summary>Whether a lift part resolved to a model at all, without instantiating it.</summary>
@@ -177,6 +210,8 @@ namespace AlpineSim.Unity.Art
             public Mesh ProxyMesh;
             public Material[] ProxySlots;
             public bool ProxyProbed;
+            public string AnchorKey;
+            public Vector3 Anchor;
         }
 
         private static Source Resolve(string cacheKey, string authoredPath, string generatedPath, string modelName,

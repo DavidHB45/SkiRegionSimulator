@@ -23,6 +23,7 @@ namespace AlpineSim.Unity.Art
         public const string SetLift = "lift";
         public const string SetProp = "prop";
         public const string SetGlass = "glass";
+        public const string SetRubber = "rubber";
         public const string SetTrim = "trim_industrial";
 
         private static readonly Dictionary<string, Material> _materials = new Dictionary<string, Material>();
@@ -68,7 +69,8 @@ namespace AlpineSim.Unity.Art
             var albedo = Load(setId, "albedo");
             var normal = Load(setId, "normal");
             var orm = Load(setId, "orm");
-            // The trim sheet carries no wear map of its own, so bodywork borrows the machine set's.
+            // Not every set has a wear map of its own - the trim sheet has none - and a wear mask is a
+            // noise field rather than a surface, so borrowing the machine set's costs nothing.
             var wear = Load(setId, "wear") ?? Load(SetMachine, "wear");
 
             if (albedo != null) m.SetTexture("_MainTex", albedo);

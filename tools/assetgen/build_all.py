@@ -214,7 +214,10 @@ def main(argv=None):
         return 1
 
     manifest["assets"].sort(key=lambda r: (r.get("path") or "", r.get("id") or ""))
-    manifest["elapsedSeconds"] = round(time.time() - started, 2)
+    # How long the build took is deliberately not written into the manifest. The manifest
+    # describes the assets, and a wall-clock field in it would make every rebuild differ
+    # from the artifact it is supposed to reproduce.
+    elapsed = round(time.time() - started, 2)
     with open(config.MANIFEST_PATH, "w", encoding="utf-8", newline="\n") as f:
         json.dump(manifest, f, indent=1, sort_keys=True)
         f.write("\n")
@@ -226,7 +229,7 @@ def main(argv=None):
 
     count = unitymeta.write_tree(config.ART_ROOT)
     log("%d assets, %d .meta files, %d warnings, %.1fs"
-        % (len(manifest["assets"]), count, len(problems), manifest["elapsedSeconds"]))
+        % (len(manifest["assets"]), count, len(problems), elapsed))
     for p in problems[:20]:
         log("  warning [%s] %s: %s" % (p["kind"], p["asset"], p["message"]))
     if len(problems) > 20:

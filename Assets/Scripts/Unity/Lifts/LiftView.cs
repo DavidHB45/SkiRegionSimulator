@@ -37,6 +37,7 @@ namespace AlpineSim.Unity.Lifts
         private Mesh _carrierProxyMesh;
         private Material[] _carrierProxyMaterials;
         private bool _carrierModels;                                  // generated carriers as GameObjects
+        private Vector3 _carrierGrip;                                 // where the model hangs from the rope
         private readonly List<Vector3> _line = new List<Vector3>();   // sampled rope polyline (up-line), world space
         private readonly List<float> _lineDist = new List<float>();
         private float _lineLength;
@@ -44,6 +45,11 @@ namespace AlpineSim.Unity.Lifts
         private LiftStatus _lastStatus = LiftStatus.Planned;
         private int _lastTowerCount = -1;
         private float _phase;
+
+        // A carrier's origin is the bottom of the cabin, like every other model's, so it is hung from
+        // whichever of these it publishes: the grip is the real rope attachment, the hanger arm is the
+        // next best thing, and a magic carpet's belt has neither because it never leaves the ground.
+        private static readonly string[] CarrierHang = { "grip_arm", "cabin_hanger" };
 
         // Steelwork is galvanised, not painted, so towers and terminals take the same near-white tint
         // and only the carriers wear the family's colour.
@@ -150,6 +156,7 @@ namespace AlpineSim.Unity.Lifts
             _models.SetParent(transform, false);
             _carrierObjects.Clear();
             _carrierModels = false;
+            _carrierGrip = Vector3.zero;
             _carrierProxyMesh = null;
             _carrierProxyMaterials = null;
 
@@ -346,6 +353,7 @@ namespace AlpineSim.Unity.Lifts
 
             var livery = CarrierColor(Type);
             if (!ModelRegistry.HasLiftComponent(Type, LiftPart.Carrier, livery, SteelAccent)) return;
+            _carrierGrip = ModelRegistry.LiftPartAnchor(Type, LiftPart.Carrier, CarrierHang, livery, SteelAccent);
             if (count <= _boot.Data.Render.MaxGeneratedCarrierObjects)
             {
                 _carrierModels = true;
@@ -377,10 +385,10 @@ namespace AlpineSim.Unity.Lifts
                 var t = _carrierObjects[index];
                 if (t == null) return;
                 t.gameObject.SetActive(true);
-                t.SetPositionAndRotation(pos, rot);
+                t.SetPositionAndRotation(pos - rot * _carrierGrip, rot);
                 return;
             }
-            if (_carrierProxyMesh != null) { _carrierMatrices.Add(Matrix4x4.TRS(pos, rot, Vector3.one)); return; }
+            if (_carrierProxyMesh != null) { _carrierMatrices.Add(Matrix4x4.TRS(pos - rot * _carrierGrip, rot, Vector3.one)); return; }
             _carriers.Add(pos, rot, Vector3.one);
         }
 
