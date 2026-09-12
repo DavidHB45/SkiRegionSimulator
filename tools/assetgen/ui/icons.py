@@ -184,7 +184,7 @@ def _geometry(kind, geom, xform):
     if kind == "rect":
         x, y, w, h = geom
         gw, gh = w * s, h * s
-        rx = min(RADIUS, gw * 0.5, gh * 0.5)
+        rx = min(RADIUS, gw * 0.3, gh * 0.3)
         return "rect", ('x="%s" y="%s" width="%s" height="%s" rx="%s"'
                         % (_num(x * s + tx), _num(GRID - ((y + h) * s + ty)),
                            _num(gw), _num(gh), _num(rx)))
@@ -331,36 +331,45 @@ def _wheels(sk, length, r, count):
 
 
 def _cab(sk, cx, cl, ch, base, tier, glazing=True):
-    """Cab shell and glazing. A tier 1 cab is a boxy upright; a tier 5 rakes its
-    windscreen forward into a wraparound, which is the same progression the mesh
-    generators build in three dimensions."""
+    """Cab shell, glazing and roof cap.
+
+    A tier 1 cab is a boxy upright; a tier 5 rakes its windscreen forward into a
+    wraparound, the same progression the mesh generators build in three dimensions. The
+    roof cap is what keeps the cab from melting into the bodywork underneath it, since
+    both are painted the same colour on a real machine and in this palette.
+    """
     cl = max(cl, 0.6)
     ch = max(ch, 0.5)
     rake = 0.10 + 0.05 * tier
     back, front = cx - cl * 0.5, cx + cl * 0.5
-    sk.poly([(back, base), (front, base), (front - cl * rake, base + ch),
+    top_front = front - cl * rake
+    sk.poly([(back, base), (front, base), (top_front, base + ch),
              (back + cl * 0.06, base + ch)], "shell")
     if glazing:
-        inset = min(0.18, cl * 0.14)
-        sk.poly([(back + cl * 0.20, base + ch * 0.36), (front - inset * 0.7, base + ch * 0.30),
-                 (front - cl * rake - inset * 0.5, base + ch - inset),
-                 (back + cl * 0.20, base + ch - inset)], "glass")
-
+        inset = min(0.16, cl * 0.12)
+        sk.poly([(back + cl * 0.16, base + ch * 0.26), (front - inset, base + ch * 0.20),
+                 (top_front - inset * 0.6, base + ch - inset * 1.4),
+                 (back + cl * 0.16, base + ch - inset * 1.4)], "glass")
+    sk.poly([(back + cl * 0.02, base + ch - 0.05), (top_front - 0.02, base + ch - 0.05),
+             (top_front - 0.02, base + ch + 0.14), (back + cl * 0.02, base + ch + 0.14)],
+            "shell_dim")
 
 def _blade(sk, x, h, clearance):
-    """A mouldboard from the side: concave forward, cutting edge on the ground."""
-    sk.beam((x + 0.20, h * 0.40), (x - 0.95, clearance * 0.75), 0.16, "dark")
-    sk.poly([(x + 0.46, 0.02), (x + 0.18, 0.0), (x - 0.02, h * 0.45),
-             (x + 0.16, h), (x + 0.50, h), (x + 0.32, h * 0.50)], "accent")
+    """A mouldboard from the side: concave forward, cutting edge on the ground.
 
+    Drawn with real thickness. A blade one line thick disappears at 64 px, and the blade
+    is the first thing that says whether a machine pushes snow or carries it.
+    """
+    sk.beam((x + 0.10, h * 0.45), (x - 1.15, clearance * 0.80), 0.22, "dark")
+    sk.poly([(x + 0.78, 0.02), (x + 0.30, 0.0), (x - 0.05, h * 0.42),
+             (x + 0.22, h), (x + 0.88, h), (x + 0.58, h * 0.48)], "accent")
 
 def _tiller(sk, x, w, h, clearance):
     """Rear tiller or track setter: rotor housing, finisher flap, lift arm."""
-    sk.beam((x + 0.5, clearance + 0.25), (x - w * 0.45, h * 0.9), 0.16, "shell_dim")
-    sk.rect(x - w, 0.16, w, h, "accent")
-    sk.poly([(x - w - 0.45, 0.02), (x - w * 0.35, 0.05), (x - w * 0.35, 0.22),
-             (x - w - 0.45, 0.26)], "shell_dim")
-
+    sk.beam((x + 0.55, clearance + 0.30), (x - w * 0.5, h * 0.95), 0.22, "shell_dim")
+    sk.rect(x - w, 0.22, w, h, "accent")
+    sk.poly([(x - w - 0.60, 0.0), (x - w * 0.30, 0.06), (x - w * 0.30, 0.32),
+             (x - w - 0.60, 0.36)], "shell_dim")
 
 def _hopper(sk, x, w, h, clearance):
     """A spreader hopper narrows to its spinner, which is what tells it from a tank."""
@@ -378,20 +387,18 @@ def _tank(sk, x, w, h, base):
 
 
 def _blower_head(sk, x, w, h, direction=1.0):
-    """Intake housing and chute. The auger mouth is the whole point of the silhouette."""
-    sk.rect(min(x, x + direction * w), 0.05, w, h, "accent")
-    sk.circle(x + direction * w * 0.5, h * 0.5, h * 0.36, "shell_dim")
-    sk.arc(x + direction * w * 0.5, h, h * 0.85, 90.0, 180.0 if direction > 0 else 0.0,
-           0.42, "shell_dim")
-
+    """Intake housing, auger and chute. The mouth is the whole point of the silhouette."""
+    sk.rect(min(x, x + direction * w), 0.04, w, h, "accent")
+    sk.circle(x + direction * w * 0.5, h * 0.48, h * 0.30, "shell_dim")
+    sk.arc(x + direction * w * 0.5, h, h * 0.80, 90.0, 175.0 if direction > 0 else 5.0,
+           h * 0.34, "shell_dim")
 
 def _winch(sk, cx, cy):
     """Roof winch: a drum and the rope leaving it uphill, which is how a winch cat is
     told from the same machine without one at a glance."""
-    sk.rect(cx - 0.55, cy, 1.1, 0.5, "shell_dim")
-    sk.circle(cx, cy + 0.25, 0.34, "accent")
-    sk.line([(cx, cy + 0.25), (cx + 2.6, cy + 1.7)], "ink")
-
+    sk.rect(cx - 0.60, cy, 1.2, 0.55, "shell_dim")
+    sk.circle(cx, cy + 0.28, 0.36, "accent")
+    sk.line([(cx, cy + 0.28), (cx + 1.5, cy + 1.1)], "ink")
 
 def _front_implement(sk, rec, nose, clearance):
     att = default_attachment(rec, "Front")
@@ -400,13 +407,12 @@ def _front_implement(sk, rec, nose, clearance):
     kind = att.get("Kind")
     width = float(att.get("WorkingWidthM") or 1.0)
     if kind in BLADE_KINDS:
-        _blade(sk, nose + 0.10, 0.62 + width * 0.11, clearance)
+        _blade(sk, nose + 0.30, 1.05 + width * 0.18, clearance)
     elif kind == "BlowerHead":
-        _blower_head(sk, nose + 0.05, 0.85, 0.55 + width * 0.20)
+        _blower_head(sk, nose + 0.05, 1.05, 0.75 + width * 0.28)
     elif kind == "Broom":
-        sk.circle(nose + 0.55, 0.42, 0.42, "accent")
-        sk.beam((nose + 0.55, 0.42), (nose - 0.6, clearance * 0.8), 0.16, "dark")
-
+        sk.circle(nose + 0.75, 0.50, 0.50, "accent")
+        sk.beam((nose + 0.75, 0.50), (nose - 0.7, clearance * 0.8), 0.18, "dark")
 
 def _rear_implement(sk, rec, tail, clearance):
     att = default_attachment(rec, "Rear")
@@ -415,14 +421,13 @@ def _rear_implement(sk, rec, tail, clearance):
     kind = att.get("Kind")
     width = float(att.get("WorkingWidthM") or 1.0)
     if kind in TILL_KINDS:
-        _tiller(sk, tail - 0.05, 1.05 + width * 0.10, 0.48 + width * 0.05, clearance)
+        _tiller(sk, tail - 0.05, 1.35 + width * 0.14, 0.80 + width * 0.09, clearance)
     elif kind == "Spreader":
-        _hopper(sk, tail - 0.1, 1.5, 0.9, clearance)
+        _hopper(sk, tail - 0.1, 1.7, 1.05, clearance)
     elif kind == "BrineTank":
-        _tank(sk, tail - 0.1, 2.4, 1.1, clearance + 0.2)
+        _tank(sk, tail - 0.1, 2.6, 1.25, clearance + 0.15)
     elif kind == "BlowerHead":
-        _blower_head(sk, tail - 0.05, 0.85, 0.55 + width * 0.20, direction=-1.0)
-
+        _blower_head(sk, tail - 0.05, 1.05, 0.75 + width * 0.28, direction=-1.0)
 
 def _roof_implement(sk, rec, roof_y, cx):
     att = default_attachment(rec, "Roof")
@@ -434,82 +439,93 @@ def _build_groomer(sk, rec, vis, tier):
     length, height, track = vis["BodyL"], vis["BodyH"], vis["TrackH"]
     x0, x1 = -length * 0.46, length * 0.46
     _belt(sk, x0, x1, track)
-    sk.rect(-length * 0.44, track, length * 0.88, height, "shell")
-    # The engine deck behind the cab is what separates a cat's profile from a dozer's.
-    sk.rect(-length * 0.45, track + height, length * 0.40, height * 0.30, "shell_dim")
+    # The hood slopes away in front of the cab on every cat, and that slope is most of
+    # what separates the profile from a dozer's flat deck.
+    sk.poly([(x0 - 0.05, track), (x1 * 0.62, track), (x1 * 0.98, track + height * 0.55),
+             (x1 * 0.98, track + height * 0.80), (x0 - 0.05, track + height)], "shell")
+    sk.rect(x0, track + height, length * 0.42, height * 0.34, "shell_dim")
     _cab(sk, vis["CabOffset"], vis["CabL"], vis["CabH"], track + height, tier)
     if rec.get("Category") == "Construction":
         # A dozer's blade is part of the machine rather than an attachment, which is why
         # the record gives it no front slot. Draw it anyway: a tracked chassis with no
         # blade reads as a carrier.
-        _blade(sk, x1 + 0.10, 1.35, track)
-        sk.beam((x0 - 0.1, track * 0.9), (x0 - 1.1, track * 0.25), 0.22, "shell_dim")
+        _blade(sk, x1 + 0.30, 1.85, track)
+        sk.beam((x0 - 0.1, track * 0.9), (x0 - 1.2, track * 0.30), 0.26, "shell_dim")
     else:
         _front_implement(sk, rec, x1, track)
     _rear_implement(sk, rec, x0, track)
     _roof_implement(sk, rec, track + height + vis["CabH"], vis["CabOffset"])
 
-
 def _build_truck(sk, rec, vis, tier):
-    length, height = vis["BodyL"], vis["BodyH"]
+    height = vis["BodyH"]
     radius = vis["WheelRadiusM"]
     sil = vis["Silhouette"]
     deck = radius + 0.30
+    # A 16 m lowboy drawn to scale is a 5 px tall smear. Long rigs are foreshortened to
+    # roughly four times their own drawn height, which keeps the axles and the drop deck
+    # readable while a longer rig still draws longer than a shorter one.
+    length = min(vis["BodyL"], (deck + max(height, vis["CabH"])) * 4.0)
     _wheels(sk, length, radius, max(2, vis["Axles"]))
     sk.rect(-length * 0.48, deck - 0.24, length * 0.96, 0.28, "dark")
-    cab_x = vis["CabOffset"]
+    cab_x = clamp(vis["CabOffset"], 0.0, length * 0.5 - vis["CabL"] * 0.5)
     body_front = cab_x - vis["CabL"] * 0.5 - 0.15
     body_back = -length * 0.46
     span = max(body_front - body_back, 0.8)
     if sil == "tanker":
-        _tank(sk, body_front, span, height * 1.15, deck + 0.10)
+        _tank(sk, body_front, span, height * 1.25, deck + 0.12)
     elif sil == "mixer":
         # A mixer drum is a cone lying down: wide at the chute end, tapered over the cab.
-        sk.poly([(body_back + 0.2, deck + 0.15), (body_front, deck + 0.55),
-                 (body_front, deck + height * 0.95), (body_back + 0.2, deck + height * 1.35)],
+        sk.poly([(body_back + 0.30, deck + 0.20), (body_front, deck + 0.70),
+                 (body_front, deck + height * 1.10), (body_back + 0.30, deck + height * 1.60)],
                 "shell")
-        sk.circle(body_back + 0.35, deck + height * 0.75, height * 0.58, "shell")
-        sk.poly([(body_back - 0.1, deck + 0.9), (body_back - 0.75, deck + 0.35),
-                 (body_back - 0.45, deck + 0.05), (body_back + 0.1, deck + 0.5)], "accent")
+        sk.circle(body_back + 0.40, deck + height * 0.90, height * 0.70, "shell")
+        sk.poly([(body_back - 0.05, deck + 1.05), (body_back - 0.85, deck + 0.45),
+                 (body_back - 0.50, deck + 0.05), (body_back + 0.15, deck + 0.60)], "accent")
     elif sil == "lowboy":
-        # A lowboy is a gooseneck and a deck a hand's width off the ground; that drop is
-        # the whole silhouette.
-        sk.rect(body_back, deck - 0.55, span * 0.72, 0.30, "shell")
-        sk.poly([(body_front - span * 0.30, deck - 0.25), (body_front, deck + 0.55),
-                 (body_front - span * 0.12, deck + 0.55), (body_front - span * 0.36, deck - 0.25)],
+        sk.rect(body_back, deck - 0.62, span * 0.70, 0.34, "shell")
+        sk.poly([(body_back + span * 0.62, deck - 0.28), (body_front, deck + 0.70),
+                 (body_front - span * 0.16, deck + 0.70), (body_back + span * 0.48, deck - 0.28)],
                 "shell_dim")
+        sk.rect(body_back + span * 0.10, deck - 0.34, span * 0.30, 0.30, "accent")
     elif sil == "pickup":
-        sk.rect(body_back, deck, span, height * 0.75, "shell")
+        sk.rect(body_back, deck, span, height * 0.80, "shell")
+        sk.rect(body_back, deck + height * 0.80, span * 0.96, 0.16, "shell_dim")
     else:
-        sk.rect(body_back, deck, span, height, "shell")
-        sk.poly([(body_back - 0.1, deck), (body_back - 0.1, deck + height),
-                 (body_back - 0.55, deck + height * 0.55)], "shell_dim")
+        # A tipper body is taller than the frame it sits on and slopes at the headboard.
+        sk.poly([(body_back - 0.25, deck), (body_front, deck),
+                 (body_front, deck + height * 1.25), (body_back - 0.25, deck + height * 1.25),
+                 (body_back - 0.70, deck + height * 0.65)], "shell")
     _cab(sk, cab_x, vis["CabL"], vis["CabH"], deck, tier)
     _front_implement(sk, rec, length * 0.5, deck * 0.55)
-    _rear_implement(sk, rec, body_back, deck)
-
+    if sil not in ("tanker", "mixer", "lowboy"):
+        _rear_implement(sk, rec, body_back - 0.2, deck)
 
 def _build_tractor(sk, rec, vis, tier):
+    """Small front wheel, big drive wheel, long hood, cab over the back axle.
+
+    The wheels go on last. A tractor's drive wheel stands proud of the body, and hiding
+    it behind the fender is what made the first pass read as a van.
+    """
     length, height = vis["BodyL"], vis["BodyH"]
     radius = vis["WheelRadiusM"]
-    front_r = radius * 0.62
-    sk.circle(-length * 0.28, radius, radius, "dark")
-    sk.circle(-length * 0.28, radius, radius * 0.46, "shell_dim")
-    sk.circle(length * 0.34, front_r, front_r, "dark")
-    sk.circle(length * 0.34, front_r, front_r * 0.46, "shell_dim")
-    bonnet = front_r * 0.6
-    sk.rect(-length * 0.12, bonnet, length * 0.50, height * 0.62, "shell")
-    sk.rect(-length * 0.34, bonnet + 0.1, length * 0.30, height * 0.85, "shell")
-    _cab(sk, vis["CabOffset"] - length * 0.18, vis["CabL"], vis["CabH"],
-         bonnet + height * 0.85, tier)
-    sk.rect(length * 0.30, bonnet + height * 0.30, 0.16, height * 0.55, "dark")
+    front_r = radius * 0.58
+    hood = front_r * 0.85
+    sk.poly([(-length * 0.10, hood), (length * 0.44, hood),
+             (length * 0.44, hood + height * 0.42), (-length * 0.10, hood + height * 0.62)],
+            "shell")
+    sk.rect(-length * 0.34, radius * 0.45, length * 0.34, height * 0.95, "shell")
+    _cab(sk, -length * 0.20, vis["CabL"], vis["CabH"], radius * 0.45 + height * 0.95, tier)
+    sk.rect(-length * 0.02, hood + height * 0.55, 0.18, height * 0.50, "dark")
     if rec.get("ChassisType") == "Artic":
         # An articulated frame hinges in the middle, so the icon shows the joint the
         # chassis generator has to build a pivot_center for.
-        sk.circle(0.05, bonnet + height * 0.30, 0.28, "accent")
-    _front_implement(sk, rec, length * 0.5, front_r * 0.8)
-    _rear_implement(sk, rec, -length * 0.46, radius * 0.5)
-
+        sk.circle(-length * 0.02, hood + height * 0.20, 0.30, "accent")
+    sk.circle(-length * 0.26, radius, radius, "dark")
+    sk.circle(-length * 0.26, radius, radius * 0.44, "shell_dim")
+    sk.circle(length * 0.38, front_r, front_r, "dark")
+    sk.circle(length * 0.38, front_r, front_r * 0.44, "shell_dim")
+    _front_implement(sk, rec, length * 0.5, front_r * 0.9)
+    _rear_implement(sk, rec, -length * 0.46, radius * 0.6)
 
 def _build_loader(sk, rec, vis, tier):
     length, height = vis["BodyL"], vis["BodyH"]
@@ -544,21 +560,24 @@ def _build_loader(sk, rec, vis, tier):
 
 
 def _build_grader(sk, rec, vis, tier):
+    """A grader is a long frame with the blade slung under the middle of it, and that gap
+    between the front axle and the engine is the whole silhouette."""
     length, height = vis["BodyL"], vis["BodyH"]
     radius = vis["WheelRadiusM"]
-    # A grader is a long nose, a mid blade and the cab right over the drive axle. The
-    # front wheel sits at the very end of the frame, not on the chassis box.
+    frame_y = radius * 1.30
+    sk.poly([(-length * 0.30, frame_y - 0.22), (length * 0.48, frame_y - 0.02),
+             (length * 0.48, frame_y + 0.30), (-length * 0.30, frame_y + 0.34)], "shell_dim")
+    sk.rect(-length * 0.48, radius * 0.70, length * 0.36, height * 1.05, "shell")
+    _cab(sk, -length * 0.14, vis["CabL"], vis["CabH"], radius * 0.70 + height * 1.05, tier)
+    # The mouldboard hangs off a turntable circle halfway along the frame.
+    sk.circle(length * 0.06, frame_y - 0.05, 0.42, "shell_dim")
+    sk.poly([(-length * 0.04, radius * 0.70), (length * 0.18, radius * 0.16),
+             (length * 0.30, radius * 0.42), (length * 0.08, radius * 0.96)], "accent")
     sk.circle(length * 0.46, radius, radius, "dark")
     sk.circle(length * 0.46, radius, radius * 0.44, "shell_dim")
-    for x in (-length * 0.42, -length * 0.42 + radius * 2.3):
+    for x in (-length * 0.42, -length * 0.42 + radius * 2.35):
         sk.circle(x, radius, radius, "dark")
         sk.circle(x, radius, radius * 0.44, "shell_dim")
-    sk.rect(-length * 0.05, radius + 0.35, length * 0.50, 0.34, "shell")
-    sk.rect(-length * 0.48, radius * 0.9, length * 0.45, height, "shell")
-    _cab(sk, -length * 0.22, vis["CabL"], vis["CabH"], radius * 0.9 + height, tier)
-    sk.poly([(length * 0.02, radius * 0.75), (length * 0.20, radius * 0.20),
-             (length * 0.26, radius * 0.45), (length * 0.08, radius * 1.0)], "accent")
-
 
 def _build_excavator(sk, rec, vis, tier):
     length, height = vis["BodyL"], vis["BodyH"]
@@ -603,103 +622,137 @@ def _build_crane(sk, rec, vis, tier):
     sk.rect(-length * 0.42, base, length * 0.64, height, "shell")
     _cab(sk, vis["CabOffset"] + length * 0.22, vis["CabL"], vis["CabH"], base, tier)
     # A 30 m boom drawn to scale would shrink the carrier to nothing, so the drawn boom is
-    # capped against the chassis. Longer booms still draw longer, just not to scale.
-    boom = clamp(vis["BoomLengthM"], 4.0, length * 1.7)
+    # capped against the chassis. A longer boom still draws longer, just not to scale.
+    boom = clamp(vis["BoomLengthM"], 4.0, length * 0.85)
     root = (-length * 0.34, base + height)
-    tip = (root[0] + boom * 0.74, root[1] + boom * 0.68)
-    sk.beam(root, tip, 0.42, "shell")
-    sk.beam((root[0] + boom * 0.18, root[1] + boom * 0.17),
-            (tip[0] - boom * 0.18, tip[1] - boom * 0.16), 0.16, "dark")
-    sk.line([(tip[0], tip[1]), (tip[0], base + height * 0.4)], "ink")
-    sk.rect(tip[0] - 0.28, base + height * 0.1, 0.56, 0.34, "accent")
-
+    tip = (root[0] + boom * 0.72, root[1] + boom * 0.70)
+    sk.beam(root, tip, 0.48, "shell")
+    sk.beam((root[0] + boom * 0.16, root[1] + boom * 0.16),
+            (tip[0] - boom * 0.16, tip[1] - boom * 0.15), 0.18, "dark")
+    sk.line([(tip[0], tip[1]), (tip[0], base + height * 0.5)], "ink")
+    sk.rect(tip[0] - 0.32, base + height * 0.15, 0.64, 0.40, "accent")
 
 def _build_blower(sk, rec, vis, tier):
     length, height = vis["BodyL"], vis["BodyH"]
     radius = vis["WheelRadiusM"]
     _wheels(sk, length, radius, max(2, vis["Axles"]))
     deck = radius * 0.85
-    sk.rect(-length * 0.46, deck, length * 0.70, height, "shell")
-    _cab(sk, vis["CabOffset"] - length * 0.22, vis["CabL"], vis["CabH"], deck + height, tier)
+    sk.rect(-length * 0.46, deck, length * 0.62, height, "shell")
+    _cab(sk, vis["CabOffset"] - length * 0.26, vis["CabL"], vis["CabH"], deck + height, tier)
+    # The intake head is as tall as the machine and as wide as the record says: a blower
+    # is a mouth on wheels, and the mouth has to dominate or it reads as a truck.
     intake = float((rec.get("Specs") or {}).get("intakeWidthM") or 1.6)
-    mouth = 0.55 + intake * 0.30
-    sk.rect(length * 0.24, 0.05, length * 0.26, mouth, "accent")
-    sk.circle(length * 0.37, mouth * 0.5, mouth * 0.34, "shell_dim")
-    sk.arc(length * 0.16, mouth, mouth * 1.5, 0.0, 110.0, 0.40, "shell_dim")
-
+    mouth = 0.75 + intake * 0.45
+    front = length * 0.12
+    sk.rect(front, 0.04, length * 0.34, mouth, "accent")
+    sk.circle(front + length * 0.17, mouth * 0.50, mouth * 0.30, "shell_dim")
+    sk.arc(front + length * 0.05, mouth * 0.95, mouth * 0.95, -5.0, 115.0,
+           mouth * 0.34, "shell_dim")
 
 def _build_walkbehind(sk, rec, vis, tier):
+    """A walk-behind blower is an auger housing, a small engine deck and handlebars, and
+    the handlebars are what say a person walks behind it rather than sits on it."""
     length, height = vis["BodyL"], vis["BodyH"]
     radius = vis["WheelRadiusM"]
-    sk.circle(-length * 0.12, radius, radius, "dark")
-    sk.circle(-length * 0.12, radius, radius * 0.45, "shell_dim")
-    sk.rect(-length * 0.30, radius * 0.6, length * 0.55, height * 0.55, "shell")
     intake = float((rec.get("Specs") or {}).get("intakeWidthM") or 0.8)
-    sk.rect(length * 0.18, 0.04, length * 0.28, 0.30 + intake * 0.35, "accent")
-    sk.arc(length * 0.12, height * 0.55, height * 0.45, 0.0, 120.0, 0.24, "shell_dim")
-    sk.beam((-length * 0.22, radius * 0.6 + height * 0.55),
-            (-length * 0.62, height * 1.05), 0.14, "dark")
-    sk.line([(-length * 0.62, height * 1.05), (-length * 0.38, height * 1.05)], "ink")
-
+    mouth = 0.30 + intake * 0.55
+    sk.rect(length * 0.02, 0.02, length * 0.42, mouth, "accent")
+    sk.circle(length * 0.23, mouth * 0.5, mouth * 0.30, "shell_dim")
+    sk.rect(-length * 0.34, radius * 0.5, length * 0.40, height * 0.42, "shell")
+    sk.arc(length * 0.02, mouth * 0.9, mouth * 0.95, 10.0, 140.0, mouth * 0.32, "shell_dim")
+    sk.circle(-length * 0.20, radius, radius, "dark")
+    sk.circle(-length * 0.20, radius, radius * 0.45, "shell_dim")
+    sk.beam((-length * 0.24, radius * 0.5 + height * 0.42),
+            (-length * 0.60, height * 1.15), 0.16, "dark")
+    sk.beam((-length * 0.60, height * 1.15), (-length * 0.34, height * 1.15), 0.16, "dark")
 
 def _build_gun(sk, rec, vis, tier):
+    """A snow gun. A fan gun has a motor worth kilowatts and a barrel; a lance runs on
+    compressed air and is a pole with nozzle heads, so gunPowerKw tells them apart."""
     specs = rec.get("Specs") or {}
     fan = float(specs.get("gunPowerKw") or 0.0) >= 5.0
-    mast = max(vis["BoomLengthM"], 2.5) * (0.55 if fan else 0.85)
-    stationary = rec.get("ChassisType") == "Stationary"
-    if stationary:
-        sk.poly([(-0.55, 0.0), (0.55, 0.0), (0.22, 0.5), (-0.22, 0.5)], "shell_dim")
-        base = 0.4
+    mast = max(vis["BoomLengthM"], 2.5) * (0.55 if fan else 0.90)
+    if rec.get("ChassisType") == "Stationary":
+        sk.poly([(-0.70, 0.0), (0.70, 0.0), (0.26, 0.55), (-0.26, 0.55)], "shell_dim")
+        base = 0.45
     else:
         radius = vis["WheelRadiusM"]
-        sk.circle(-0.45, radius, radius, "dark")
-        sk.circle(-0.45, radius, radius * 0.45, "shell_dim")
-        sk.rect(-1.0, radius * 0.85, 1.9, 0.35, "shell_dim")
-        sk.beam((0.9, radius * 1.0), (1.7, radius * 0.55), 0.14, "dark")
+        sk.circle(-0.55, radius, radius, "dark")
+        sk.circle(-0.55, radius, radius * 0.45, "shell_dim")
+        sk.rect(-1.15, radius * 0.80, 2.1, 0.40, "shell_dim")
+        sk.beam((0.95, radius * 1.0), (1.85, radius * 0.50), 0.16, "dark")
         base = radius * 1.2
-    sk.beam((0.0, base), (0.0, base + mast), 0.30, "shell")
+    sk.beam((0.0, base), (0.0, base + mast), 0.34, "shell")
+    top = base + mast
     if fan:
-        # A fan gun is a barrel on a yoke; the spray cone comes straight off the record's
-        # own cone angle, so a wide angle gun looks like one.
+        # The spray cone comes off the record's own cone half angle, so a wide angle gun
+        # visibly throws wider than a narrow one.
         cone = float(specs.get("coneHalfAngleDeg") or 25.0)
-        top = base + mast
-        sk.circle(0.0, top + 0.75, 0.78, "shell")
-        sk.circle(0.0, top + 0.75, 0.40, "dark")
-        sk.fan(0.70, top + 0.75, 2.3, -cone + 18.0, cone + 18.0, "snow")
+        sk.circle(0.0, top + 0.95, 1.00, "shell")
+        sk.circle(0.0, top + 0.95, 0.52, "dark")
+        sk.rect(-0.30, top + 0.05, 0.60, 0.55, "accent")
+        sk.fan(0.95, top + 0.95, 2.6, -cone + 16.0, cone + 16.0, "snow")
     else:
-        top = base + mast
-        sk.rect(-0.16, base, 0.32, mast, "shell_dim")
+        sk.rect(-0.20, base, 0.40, mast, "shell_dim")
         for i in range(4):
-            y = base + mast * (0.45 + 0.16 * i)
-            sk.circle(0.30, y, 0.16, "accent")
-        sk.fan(0.35, top, 1.6, -12.0, 42.0, "snow")
-
+            sk.circle(0.36, base + mast * (0.44 + 0.17 * i), 0.19, "accent")
+        sk.fan(0.45, top, 1.8, -14.0, 44.0, "snow")
 
 def _build_station(sk, rec, vis, tier):
+    """Fixed plant: a fuel cube, a pump or compressor skid, or the snow factory.
+
+    What each one is comes off its Specs rather than its id: a record with fuelStorageL is
+    a tank in a bund, one with waterLpm is a plant hall, one with pumpLps is a pump skid.
+    Buildings are drawn as polygons so their corners stay square while the machinery on
+    them keeps the set's corner radius.
+    """
     length, height = vis["BodyL"], vis["BodyH"]
     specs = rec.get("Specs") or {}
-    sk.rect(-length * 0.5, 0.0, length, height, "shell")
     if specs.get("fuelStorageL"):
-        # A fuel cube is a tank in a bund with a filling point on top.
-        sk.rect(-length * 0.5, 0.0, length, height * 0.22, "dark")
-        sk.rect(-length * 0.30, height, length * 0.22, height * 0.18, "accent")
-        sk.beam((length * 0.18, height), (length * 0.18, height * 1.35), 0.18, "shell_dim")
-        sk.line([(length * 0.18, height * 1.35), (length * 0.42, height * 1.35)], "ink")
-    elif specs.get("waterLpm"):
-        # The snow factory is plant, not a machine: a hall with a chute out of the side.
+        sk.poly([(-length * 0.52, 0.0), (length * 0.52, 0.0),
+                 (length * 0.46, height * 0.22), (-length * 0.46, height * 0.22)], "dark")
+        sk.poly([(-length * 0.42, height * 0.18), (length * 0.42, height * 0.18),
+                 (length * 0.42, height * 0.95), (-length * 0.42, height * 0.95)], "shell")
+        sk.rect(-length * 0.30, height * 0.40, length * 0.26, height * 0.34, "accent")
+        sk.poly([(length * 0.06, height * 0.95), (length * 0.30, height * 0.95),
+                 (length * 0.30, height * 1.12), (length * 0.06, height * 1.12)], "shell_dim")
+        sk.beam((length * 0.18, height * 1.05), (length * 0.18, height * 1.45), 0.22,
+                "shell_dim")
+        sk.line([(length * 0.18, height * 1.45), (length * 0.46, height * 1.45)], "ink")
+        return
+    if specs.get("waterLpm"):
+        sk.poly([(-length * 0.46, 0.0), (length * 0.46, 0.0),
+                 (length * 0.46, height), (-length * 0.46, height)], "shell")
         sk.poly([(-length * 0.54, height), (length * 0.54, height),
-                 (length * 0.30, height * 1.35), (-length * 0.30, height * 1.35)], "shell_dim")
-        sk.rect(-length * 0.36, height * 0.25, length * 0.30, height * 0.45, "glass")
-        sk.beam((length * 0.5, height * 0.7), (length * 0.95, height * 0.35), 0.40, "accent")
-        sk.fan(length * 0.95, height * 0.35, height * 0.8, -50.0, 10.0, "snow")
+                 (length * 0.30, height * 1.40), (-length * 0.30, height * 1.40)],
+                "shell_dim")
+        sk.rect(-length * 0.38, height * 0.30, length * 0.28, height * 0.42, "glass")
+        sk.rect(-length * 0.04, 0.0, length * 0.22, height * 0.58, "dark")
+        sk.beam((length * 0.40, height * 0.82), (length * 0.92, height * 0.46), 0.50,
+                "accent")
+        sk.fan(length * 0.92, height * 0.46, height * 0.95, -58.0, 6.0, "snow")
+        return
+    # A skid is a frame, the machine bolted to it and the pipework that says which machine
+    # it is: an impeller volute for a pump, a cooler pack for a compressor.
+    sk.poly([(-length * 0.52, 0.0), (length * 0.52, 0.0),
+             (length * 0.46, height * 0.24), (-length * 0.46, height * 0.24)], "dark")
+    sk.poly([(-length * 0.42, height * 0.20), (length * 0.42, height * 0.20),
+             (length * 0.42, height * 0.86), (-length * 0.42, height * 0.86)], "shell")
+    if specs.get("pumpLps"):
+        sk.circle(length * 0.18, height * 0.53, height * 0.30, "accent")
+        sk.beam((length * 0.18, height * 0.53), (length * 0.18, height * 1.16), 0.28,
+                "shell_dim")
+        sk.beam((-length * 0.40, height * 0.53), (length * 0.18, height * 0.53), 0.24,
+                "shell_dim")
     else:
-        sk.rect(-length * 0.5, 0.0, length, height * 0.18, "dark")
-        sk.rect(-length * 0.34, height * 0.30, length * 0.32, height * 0.40, "shell_dim")
-        sk.circle(length * 0.22, height * 0.52, height * 0.24,
-                  "accent" if specs.get("pumpLps") else "dark")
-        sk.arc(length * 0.22, height * 0.52, height * 0.55, 180.0, 300.0, 0.22, "shell_dim")
-        sk.rect(-length * 0.1, height, length * 0.5, height * 0.16, "shell_dim")
-
+        sk.rect(length * 0.00, height * 0.32, length * 0.36, height * 0.46, "accent")
+        for i in range(3):
+            x = length * (0.06 + 0.11 * i)
+            sk.line([(x, height * 0.38), (x, height * 0.72)], "ink")
+        sk.beam((-length * 0.28, height * 0.86), (-length * 0.28, height * 1.22), 0.26,
+                "shell_dim")
+    sk.poly([(-length * 0.44, height * 0.84), (length * 0.44, height * 0.84),
+             (length * 0.44, height * 1.02), (-length * 0.44, height * 1.02)], "shell_dim")
 
 def _build_snowmobile(sk, rec, vis, tier):
     length, height = vis["BodyL"], vis["BodyH"]
@@ -729,17 +782,19 @@ def _build_utv(sk, rec, vis, tier):
     else:
         radius = vis["WheelRadiusM"]
         _wheels(sk, length, radius, 2)
-        base = radius * 0.8
-    sk.rect(-length * 0.42, base, length * 0.84, height * 0.55, "shell")
-    sk.rect(-length * 0.42, base + height * 0.55, length * 0.36, height * 0.18, "shell_dim")
-    # A side by side is a roll cage over an open tub, and the cage is the silhouette.
+        base = radius * 0.75
+    sk.poly([(-length * 0.42, base), (length * 0.44, base),
+             (length * 0.40, base + height * 0.48), (-length * 0.42, base + height * 0.54)],
+            "shell")
+    sk.rect(-length * 0.40, base + height * 0.54, length * 0.26, height * 0.16, "shell_dim")
+    # An open cab under a bar: the cage is the silhouette, so it stays thin and square
+    # rather than closing up into a cab.
     roof = base + height * 1.35
-    sk.beam((-length * 0.30, base + height * 0.5), (-length * 0.22, roof), 0.14, "dark")
-    sk.beam((length * 0.22, base + height * 0.5), (length * 0.10, roof), 0.14, "dark")
-    sk.rect(-length * 0.26, roof - 0.10, length * 0.40, 0.18, "accent")
-    sk.poly([(-length * 0.06, base + height * 0.55), (length * 0.18, base + height * 0.55),
-             (length * 0.08, roof - 0.12), (-length * 0.06, roof - 0.12)], "glass")
-
+    sk.beam((-length * 0.22, base + height * 0.50), (-length * 0.16, roof), 0.12, "dark")
+    sk.beam((length * 0.20, base + height * 0.48), (length * 0.08, roof), 0.12, "dark")
+    sk.beam((-length * 0.20, roof), (length * 0.10, roof), 0.12, "accent")
+    sk.poly([(-length * 0.08, base + height * 0.50), (length * 0.16, base + height * 0.50),
+             (length * 0.08, roof - 0.12), (-length * 0.08, roof - 0.12)], "glass")
 
 MACHINE_FAMILIES = {
     "groomer": _build_groomer,
@@ -786,3 +841,222 @@ def machine_sketch(rec):
     sk = Sketch()
     MACHINE_FAMILIES[family](sk, rec, vis, tier)
     return sk, accent_for_tier(tier), size_fill(float(rec.get("MassKg") or 500), 150.0, 40000.0)
+
+
+# --------------------------------------------------------------------------- lifts
+# The pylon stands on the left and the carrier hangs on the right, at these coordinates in
+# metres. The carrier is what a player is choosing between, so it gets the space.
+PYLON_X = -4.6
+PYLON_H = 6.6
+ROPE_Y = 6.3
+CARRIER_X = 2.4
+
+
+def _pylon(sk, x, h, heavy=False):
+    """A tower: tapered mast, crossarm, sheave train. Heavy lines carry more rope and
+    stand on a wider base, which is the only thing that separates a tram tower from a
+    chairlift tower at this size."""
+    foot = h * (0.15 if heavy else 0.10)
+    top = foot * 0.45
+    sk.poly([(x - foot, 0.0), (x + foot, 0.0), (x + top, h), (x - top, h)], "shell_dim")
+    arm = h * (0.24 if heavy else 0.18)
+    sk.rect(x - arm, h, arm * 2.0, h * 0.06, "dark")
+    for side in (-1.0, 1.0):
+        sk.circle(x + side * arm * 0.62, h - h * 0.02, h * 0.035, "dark")
+
+
+def _ropes(sk, y, configuration, x0, x1):
+    """The haul rope, and the track ropes a bi, tri or funitel line adds beside it."""
+    offsets = {"Mono": (0.0,), "Bi": (-0.34, 0.34), "Tri": (-0.42, 0.0, 0.42),
+               "Funitel": (-0.26, 0.26), "Reversible": (-0.40, 0.32)}.get(
+                   configuration, (0.0,))
+    for dy in offsets:
+        sk.line([(x0, y + dy), (x1, y + dy * 0.6)], "ink")
+    return offsets
+
+
+def _grip(sk, x, y, detachable):
+    """A fixed grip is a clamp; a detachable is the clamp plus the jaw and lever that let
+    it let go in the terminal, and it is twice the ironmongery."""
+    sk.rect(x - 0.34, y - 0.22, 0.68, 0.44, "dark")
+    if detachable:
+        sk.rect(x - 0.46, y - 0.62, 0.92, 0.44, "shell_dim")
+        sk.beam((x + 0.30, y - 0.40), (x + 0.72, y + 0.16), 0.16, "dark")
+
+
+def _chair(sk, rec, x, rope_y):
+    seats = max(1, int(rec.get("SeatsOrCabinCapacity") or 1))
+    detach = rec.get("Grip") == "Detachable"
+    width = 0.52 * seats + 0.34
+    top = rope_y - 1.65
+    pan = top - 0.78
+    _grip(sk, x, rope_y, detach)
+    sk.beam((x, rope_y - 0.30), (x, top), 0.20, "shell_dim")
+    sk.rect(x - width * 0.5, pan, width, 0.80, "accent")
+    sk.rect(x - width * 0.5, pan - 0.26, width, 0.26, "shell_dim")
+    for i in range(1, seats):
+        sx = x - width * 0.5 + width * i / seats
+        sk.line([(sx, pan + 0.10), (sx, pan + 0.70)], "ink")
+    # The restraint bar is the one moving part on a chair and reads even at one seat.
+    sk.line([(x - width * 0.5 - 0.12, pan + 0.95), (x + width * 0.5 + 0.12, pan + 0.95)],
+            "ink")
+    sk.rect(x - width * 0.5, pan - 1.15, width * 0.9, 0.20, "shell_dim")
+    if float(rec.get("WeatherExposure") or 1.0) <= 0.5:
+        sk.arc(x, pan + 0.6, width * 0.62, 0.0, 180.0, 0.26, "glass")
+
+
+def _cabin(sk, rec, x, rope_y, width, height, doors=True):
+    detach = rec.get("Grip") == "Detachable"
+    _grip(sk, x, rope_y, detach)
+    top = rope_y - 1.25
+    sk.beam((x, rope_y - 0.30), (x, top + 0.15), 0.22, "shell_dim")
+    sk.rect(x - width * 0.5, top - height, width, height, "accent")
+    sk.rect(x - width * 0.42, top - height * 0.62, width * 0.84, height * 0.44, "glass")
+    if doors:
+        sk.line([(x, top - height * 0.95), (x, top - height * 0.12)], "ink")
+    sk.rect(x - width * 0.5, top - height - 0.16, width, 0.18, "shell_dim")
+
+
+def _build_chair(sk, rec):
+    _pylon(sk, PYLON_X, PYLON_H)
+    _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + 3.4)
+    _chair(sk, rec, CARRIER_X, ROPE_Y)
+
+
+def _build_gondola(sk, rec):
+    capacity = int(rec.get("SeatsOrCabinCapacity") or 8)
+    carriers = max(1, int(rec.get("CarriersPerHaulRope") or 1))
+    _pylon(sk, PYLON_X, PYLON_H, heavy=capacity >= 15)
+    _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + 3.4)
+    width = clamp(1.35 + 0.055 * capacity, 1.5, 3.0)
+    height = clamp(2.10 + 0.014 * capacity, 2.1, 2.9)
+    if carriers > 1:
+        # A pulse gondola runs its cabins in a train, and that train is the only thing
+        # that tells it from a continuous line at a glance.
+        for i in range(min(carriers, 3)):
+            _cabin(sk, rec, CARRIER_X - 0.2 + i * (width * 0.85 + 0.25), ROPE_Y,
+                   width * 0.78, height * 0.86, doors=False)
+    else:
+        _cabin(sk, rec, CARRIER_X + 0.4, ROPE_Y, width, height)
+
+
+def _build_aerial(sk, rec):
+    capacity = int(rec.get("SeatsOrCabinCapacity") or 40)
+    _pylon(sk, PYLON_X, PYLON_H, heavy=True)
+    offsets = _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + 3.6)
+    width = clamp(1.5 + 0.022 * capacity, 1.8, 3.6)
+    height = clamp(2.2 + 0.006 * capacity, 2.2, 3.0)
+    x = CARRIER_X + 0.6
+    # A tram or a 3S rides on track ropes through a bogie, not on a single grip, so the
+    # running gear is drawn as the carriage it is.
+    sk.rect(x - width * 0.42, ROPE_Y - 0.55, width * 0.84, 0.55, "shell_dim")
+    for i, dy in enumerate(offsets):
+        for side in (-0.26, 0.26):
+            sk.circle(x + width * side, ROPE_Y + dy, 0.24, "dark")
+    sk.beam((x, ROPE_Y - 0.40), (x, ROPE_Y - 1.35), 0.26, "shell_dim")
+    sk.rect(x - width * 0.5, ROPE_Y - 1.35 - height, width, height, "accent")
+    sk.rect(x - width * 0.42, ROPE_Y - 1.35 - height * 0.66, width * 0.84, height * 0.46,
+            "glass")
+    sk.line([(x, ROPE_Y - 1.35 - height * 0.96), (x, ROPE_Y - 1.45)], "ink")
+
+
+def _build_hybrid(sk, rec):
+    """A chondola carries both, so its icon has to as well."""
+    _pylon(sk, PYLON_X, PYLON_H)
+    _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + 4.2)
+    chair = dict(rec)
+    chair["SeatsOrCabinCapacity"] = max(2, int(rec.get("SeatsOrCabinCapacity") or 6) // 2)
+    _chair(sk, chair, CARRIER_X - 0.6, ROPE_Y)
+    _cabin(sk, rec, CARRIER_X + 3.1, ROPE_Y, 1.7, 2.3)
+
+
+def _build_rail(sk, rec):
+    """A funicular, a cog railway and an inclined elevator are a car on a slope: no
+    tower, no rope in the air, and a rack between the rails when the record says Rack."""
+    capacity = int(rec.get("SeatsOrCabinCapacity") or 40)
+    x0, x1 = -5.2, 5.2
+    rise = 0.42
+    sk.beam((x0, 0.25), (x1, 0.25 + (x1 - x0) * rise * 0.5), 0.30, "shell_dim")
+    for i in range(5):
+        t = i / 4.0
+        x = x0 + (x1 - x0) * t
+        y = 0.25 + (x - x0) * rise * 0.5
+        sk.rect(x - 0.22, y - 0.55, 0.44, 0.55, "dark")
+    if rec.get("RopeConfiguration") == "Rack":
+        for i in range(9):
+            x = x0 + (x1 - x0) * (i + 0.5) / 9.0
+            y = 0.25 + (x - x0) * rise * 0.5
+            sk.rect(x - 0.10, y + 0.12, 0.20, 0.26, "dark")
+    length = clamp(3.0 + 0.022 * capacity, 3.0, 5.6)
+    height = clamp(1.9 + 0.006 * capacity, 1.9, 2.6)
+    cx = 0.6
+    base = 0.25 + (cx - x0) * rise * 0.5 + 0.35
+    # The car sits level on a stepped floor while its body follows the slope: that step is
+    # what says funicular rather than tram.
+    sk.poly([(cx - length * 0.5, base), (cx + length * 0.5, base + length * rise * 0.5),
+             (cx + length * 0.5, base + length * rise * 0.5 + height),
+             (cx - length * 0.5, base + height)], "accent")
+    sk.poly([(cx - length * 0.40, base + height * 0.30),
+             (cx + length * 0.40, base + length * rise * 0.5 + height * 0.30),
+             (cx + length * 0.40, base + length * rise * 0.5 + height * 0.78),
+             (cx - length * 0.40, base + height * 0.78)], "glass")
+    sk.line([(cx, base + height * 0.10), (cx, base + height * 0.90)], "ink")
+
+
+def _build_surface(sk, rec):
+    """Surface lifts split by how their carriers are spaced and how comfortable they are.
+
+    A carrier every 2.4 m is a continuous belt, not a line of discrete hangers; two riders
+    on one carrier is a T-bar; a carrier a rider hangs onto with bare hands scores 0.2 for
+    comfort and is a rope tow; anything else is a platter.
+    """
+    spacing = float(rec.get("CarrierSpacingM") or 10.0)
+    capacity = int(rec.get("SeatsOrCabinCapacity") or 1)
+    comfort = float(rec.get("ComfortScore") or 0.3)
+    if spacing < 4.0:
+        x0, x1 = -4.4, 4.4
+        sk.poly([(x0 - 0.7, 0.0), (x0, 0.42), (x1, 0.42), (x1, 0.0)], "shell_dim")
+        sk.rect(x0, 0.42, x1 - x0, 0.34, "accent")
+        for i in range(6):
+            sk.circle(x0 + 0.6 + i * (x1 - x0 - 1.2) / 5.0, 0.30, 0.22, "dark")
+        # The entry portal is a carpet's landmark: it is the bit a beginner walks into.
+        sk.beam((x1 - 0.3, 0.42), (x1 - 0.3, 2.6), 0.26, "shell_dim")
+        sk.beam((x0 + 0.3, 0.42), (x0 + 0.3, 2.2), 0.22, "shell_dim")
+        sk.beam((x0 + 0.3, 2.2), (x1 - 0.3, 2.6), 0.22, "shell_dim")
+        if float(rec.get("WeatherExposure") or 1.0) < 0.6:
+            sk.arc(0.0, 0.76, 1.75, 8.0, 172.0, 0.30, "glass")
+        return
+    _pylon(sk, PYLON_X, PYLON_H)
+    _ropes(sk, ROPE_Y, "Mono", PYLON_X, CARRIER_X + 3.0)
+    x = CARRIER_X + 0.4
+    sk.rect(x - 0.30, ROPE_Y - 0.24, 0.60, 0.48, "dark")
+    if capacity >= 2:
+        sk.beam((x, ROPE_Y - 0.2), (x, 1.5), 0.22, "shell_dim")
+        sk.rect(x - 1.05, 1.1, 2.10, 0.40, "accent")
+    elif comfort <= 0.25:
+        # A rope tow has no carrier at all, only a grip handle on the rope.
+        sk.beam((x - 0.1, ROPE_Y - 0.1), (x + 0.5, ROPE_Y - 1.5), 0.20, "shell_dim")
+        sk.rect(x + 0.30, ROPE_Y - 2.05, 0.60, 0.65, "accent")
+    else:
+        sk.beam((x, ROPE_Y - 0.2), (x, 1.9), 0.20, "shell_dim")
+        sk.circle(x, 1.45, 0.72, "accent")
+        sk.circle(x, 1.45, 0.26, "shell_dim")
+
+
+LIFT_FAMILIES = {
+    "Chair": _build_chair,
+    "Gondola": _build_gondola,
+    "Aerial": _build_aerial,
+    "Hybrid": _build_hybrid,
+    "Rail": _build_rail,
+    "Surface": _build_surface,
+}
+
+
+def lift_sketch(rec):
+    """One lift type's icon: its tower, its rope and the carrier that identifies it."""
+    sk = Sketch()
+    LIFT_FAMILIES.get(rec.get("Family"), _build_chair)(sk, rec)
+    tier = datasrc.tier_of(rec)
+    return (sk, accent_for_tier(tier),
+            size_fill(float(rec.get("CapacityPph") or 1000), 500.0, 4000.0))
