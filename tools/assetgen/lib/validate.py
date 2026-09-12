@@ -151,7 +151,13 @@ def _check_geometry(model, name):
 
 def _check_required_nodes(name, record):
     family = record.get("family")
-    required = REQUIRED_NODES.get(family, ())
+    # An unknown family used to require nothing and pass, so a typo in a generator's
+    # family string silently switched off every transform check for that model.
+    if family not in REQUIRED_NODES:
+        _fail(name, "declares family '%s', which is not in validate.REQUIRED_NODES. Add the "
+                    "family there with the transforms it must publish, or fix the typo."
+              % family)
+    required = REQUIRED_NODES[family]
     present = set(record.get("nodes", [])) | set(record.get("sockets", []))
     missing = [n for n in required if n not in present]
     if missing:

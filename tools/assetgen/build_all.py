@@ -185,9 +185,14 @@ def main(argv=None):
         if not args.quiet:
             print(message, flush=True)
 
-    if args.clean and os.path.isdir(config.ART_ROOT):
-        shutil.rmtree(config.ART_ROOT)
-        log("cleaned " + config.rel_to_root(config.ART_ROOT))
+    if args.clean:
+        # The folder's own .meta is a sibling, so removing only the tree would leave Unity
+        # holding a meta for a folder that is no longer there.
+        if os.path.isdir(config.ART_ROOT):
+            shutil.rmtree(config.ART_ROOT)
+            log("cleaned " + config.rel_to_root(config.ART_ROOT))
+        if os.path.exists(config.ART_ROOT + ".meta"):
+            os.remove(config.ART_ROOT + ".meta")
 
     config.ensure_dirs()
     validate.reset()

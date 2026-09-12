@@ -64,7 +64,7 @@ assets-selftest: ## Check the pipeline's own guarantees: axes, pivots, LODs, bud
 # until it shipped.
 assets-clean: ## Delete Assets/Art/Generated
 	@test -n "$(ART_DIR)" || { echo "cannot locate the output tree; is $(PYTHON) on PATH?"; exit 1; }
-	rm -rf "$(ART_DIR)"
+	rm -rf "$(ART_DIR)" "$(ART_DIR).meta"
 	@echo "removed $(ART_DIR)"
 
 # What CI runs on a pull request that touches the data or the generators: a full build
