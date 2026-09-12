@@ -142,11 +142,12 @@ def crust(shape, rng):
     along it, so the lattice is stretched rather than square, and their edges are ragged
     because a slab fractures along its own grain and not along a Voronoi boundary.
     """
-    f1, f2, ident = cellular(shape, (19, 10), rng, jitter=0.9)
+    # The warp is what makes it a fracture rather than a tiled floor: a slab snaps along
+    # its own grain, so the boundary has to wander well off the straight line between two
+    # lattice sites.
+    f1, f2, ident = cellular(shape, (17, 8), rng, jitter=0.9, warp=0.45, warp_freq=12)
 
-    # A ragged fracture: modulating the edge width with noise breaks the straight cell
-    # boundary into something that snapped rather than something that was drawn.
-    width = 0.09 + 0.11 * fbm(shape, 36, 3, rng)
+    width = 0.09 + 0.13 * fbm(shape, 36, 3, rng)
     edge = np.clip(1.0 - (f2 - f1) / width, 0.0, 1.0)
 
     height = 0.5 + (ident - 0.5) * 0.42                   # each plate rides at its own level
@@ -155,9 +156,10 @@ def crust(shape, rng):
     lip = np.clip((edge - 0.35) * 2.2, 0.0, 1.0) * np.clip((0.85 - edge) * 2.0, 0.0, 1.0)
     height += lip * 0.16                                  # a broken plate lifts at its edge
 
-    # Sastrugi: the wind carves ridges along its own direction across the whole surface.
-    height += ridged(shape, (26, 5), 3, rng) * 0.16
-    height += fbm(shape, (40, 9), 3, rng) * 0.08
+    # Sastrugi: the wind carves ridges along its own direction across the whole surface,
+    # over the plates and not only between them.
+    height += ridged(shape, (30, 4), 4, rng) * 0.26
+    height += fbm(shape, (48, 7), 3, rng) * 0.10
     height += fbm(shape, 4, 4, rng) * 0.12                # the drift underneath
     pits = speckle(shape, rng, shape[0] // 6, 0.03, softness=12.0)
     height -= pits * 0.10                                 # where the glaze has blown out

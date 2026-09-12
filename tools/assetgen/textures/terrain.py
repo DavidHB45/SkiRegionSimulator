@@ -192,7 +192,7 @@ def _rock(shape, rng, spec):
     dip = (fbm(shape, (2, 4), 4, rng) - 0.5) * 0.75
     band = (_rows(shape) + dip) * 3.0 % 1.0
     bedding = 1.0 - np.abs(band - 0.5) * 2.0
-    height = np.power(np.clip(bedding, 0.0, 1.0), 2.2) * 0.34
+    height = np.power(np.clip(bedding, 0.0, 1.0), 1.8) * 0.52
 
     # A handful of metre-scale blocks, their boundaries bent well off the straight.
     f1, f2, ident = cellular(shape, (4, 3), rng, jitter=0.9, warp=0.55, warp_freq=5)
@@ -230,11 +230,11 @@ def _rock(shape, rng, spec):
     # Lichen colonises the sheltered, damp side of a block and the crack lines, never the
     # faces the wind scours, so it is keyed to cavity rather than sprinkled at random.
     patch = fbm(shape, 8, 4, rng)
-    crustose = np.clip((patch - 0.50) * 3.2, 0.0, 1.0) * (0.30 + 1.0 * cavity)
-    crustose = np.clip(crustose * speckle(shape, rng, shape[0] // 14, 0.45, softness=4.0)
-                       * 1.7, 0.0, 1.0)
+    crustose = np.clip((patch - 0.44) * 3.4, 0.0, 1.0) * (0.45 + 0.9 * cavity)
+    crustose = np.clip(crustose * speckle(shape, rng, shape[0] // 14, 0.55, softness=3.5)
+                       * 2.0, 0.0, 1.0)
     foliose = np.clip((fbm(shape, 20, 3, rng) - 0.60) * 4.0, 0.0, 1.0) * crustose
-    albedo = _toward(albedo, (0.34, 0.40, 0.20), crustose * 0.75)
+    albedo = _toward(albedo, (0.34, 0.40, 0.20), crustose * 0.85)
     albedo = _toward(albedo, (0.62, 0.60, 0.44), foliose * 0.65)
 
     rough = 0.80 + 0.14 * grain - crustose * 0.10 + joint * 0.05
@@ -381,6 +381,8 @@ def _grass_alpine(shape, rng, spec):
     albedo += stones[..., None] * 0.13
     albedo *= 1.0 - cavity[..., None] * 0.70
     albedo += (blades * clump)[..., None] * np.asarray((0.06, 0.09, 0.035), np.float32)
+    albedo *= (0.72 + 0.62 * np.clip(0.5 + (fbm(shape, 10, 3, rng) - 0.5) * 1.7
+                                     + (core - 0.3) * 0.8, 0.0, 1.0))[..., None]
 
     rough = 0.78 + 0.15 * dead + 0.08 * bare
     return np.clip(height, 0, 1), np.clip(albedo, 0, 1), np.clip(rough, 0.3, 1.0)

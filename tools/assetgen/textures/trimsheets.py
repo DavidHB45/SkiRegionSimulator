@@ -193,8 +193,8 @@ def _panel_large(shape, rng):
     tone -= seam * 0.28
     tone -= dents * 0.05
     albedo = _grey(tone)
-    albedo = np.where(head[..., None] > 0.3, np.stack((0.52, 0.53, 0.55)) * np.ones_like(albedo),
-                      albedo).astype(np.float32)
+    albedo = np.where(head[..., None] > 0.3,
+                      np.array((0.52, 0.53, 0.55), np.float32), albedo)
 
     rough = 0.44 + 0.10 * pbr.fbm(shape, 14, 2, rng) + seam * 0.10 - head * 0.08
     metal = np.full(shape, 0.02, np.float32) + head * 0.9
@@ -237,8 +237,8 @@ def _panel_small(shape, rng):
 
     tone = 0.72 + 0.05 * (pbr.fbm(shape, 10, 3, rng) - 0.5) - rim * 0.30
     albedo = _grey(tone)
-    albedo = np.where(bolts[..., None] > 0.3, np.stack((0.50, 0.51, 0.54)) * np.ones_like(albedo),
-                      albedo).astype(np.float32)
+    albedo = np.where(bolts[..., None] > 0.3,
+                      np.array((0.50, 0.51, 0.54), np.float32), albedo)
     rough = 0.45 + 0.09 * pbr.fbm(shape, 15, 2, rng) + rim * 0.10 - bolts * 0.10
     metal = np.full(shape, 0.02, np.float32) + bolts * 0.9
     return height, albedo, rough, metal
@@ -276,7 +276,7 @@ def _bolt_row(shape, rng):
     tone = 0.44 + 0.10 * (grime - 0.5) + flange * 0.05
     albedo = _grey(tone)
     albedo = np.where(heads[..., None] > 0.25,
-                      np.stack((0.46, 0.47, 0.50)) * np.ones_like(albedo), albedo).astype(np.float32)
+                      np.array((0.46, 0.47, 0.50), np.float32), albedo)
     rough = 0.48 + 0.18 * grime - heads * 0.14
     metal = np.full(shape, 0.85, np.float32)
     return height, albedo, rough, metal
