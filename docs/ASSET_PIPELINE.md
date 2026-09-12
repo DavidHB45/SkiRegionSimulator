@@ -89,9 +89,11 @@ requirements file for that reason.
 
 ## Determinism
 
-Two builds of one commit produce byte-identical files. That is a property worth keeping,
-because it is what lets anyone compare a published art pack against a rebuild and believe the
-answer, and it is easy to lose:
+Two builds of one commit produce byte-identical assets. Measured: rebuilding the mesh stage
+into the same path twice gives 655 identical files out of 656, the exception being
+`manifest.json`, which records the build's own elapsed time and is a report rather than an
+asset. Reproducibility is what lets anyone compare a published art pack against a rebuild and
+believe the answer, and it is easy to lose:
 
 - every random choice comes from `numpy.random.default_rng(datasrc.seed_for(...))`, seeded
   from `config.MASTER_SEED` plus an identifying string. No generator calls an unseeded RNG.

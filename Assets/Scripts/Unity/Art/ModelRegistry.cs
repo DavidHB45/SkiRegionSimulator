@@ -133,12 +133,13 @@ namespace AlpineSim.Unity.Art
             // not carry falls through to the generated folder, then to the primitive tier.
             string authored = string.IsNullOrEmpty(type.ModelOverride) ? null : type.ModelOverride.TrimEnd('/') + "/" + partName;
             string generated = LiftRoot + type.Id + "/" + partName;
+            bool heightClass = part == LiftPart.TowerLow || part == LiftPart.TowerHigh;
             var source = Resolve(key, authored, generated, type.Id + "_" + partName,
                                  part == LiftPart.Carrier ? GeneratedMaterials.SetMachine : GeneratedMaterials.SetLift,
-                                 GeneratedMaterials.SetLift, livery, accent);
+                                 GeneratedMaterials.SetLift, livery, accent, heightClass);
 
             // The nominal tower is the one to fall back on when a height class was not generated.
-            if (source.Prefab == null && (part == LiftPart.TowerLow || part == LiftPart.TowerHigh))
+            if (source.Prefab == null && heightClass)
             {
                 var nominal = ResolveLift(type, LiftPart.Tower, livery, accent);
                 _sources[key] = nominal;
@@ -182,11 +183,11 @@ namespace AlpineSim.Unity.Art
                                       string bodySet, string metalSet)
         {
             return Resolve(cacheKey, authoredPath, generatedPath, modelName, bodySet, metalSet,
-                           LiveryTint.DefaultLivery, LiveryTint.DefaultAccent);
+                           LiveryTint.DefaultLivery, LiveryTint.DefaultAccent, false);
         }
 
         private static Source Resolve(string cacheKey, string authoredPath, string generatedPath, string modelName,
-                                      string bodySet, string metalSet, Color livery, Color accent)
+                                      string bodySet, string metalSet, Color livery, Color accent, bool quiet)
         {
             if (_sources.TryGetValue(cacheKey, out var cached)) return cached;
 
@@ -214,7 +215,7 @@ namespace AlpineSim.Unity.Art
             if (source.Prefab != null) source.Slots = LiveryTint.SlotsFor(bodySet, metalSet, livery, accent);
 
             _sources[cacheKey] = source;
-            Record(source, cacheKey, usedPath);
+            if (!quiet || source.Prefab != null) Record(source, cacheKey, usedPath);
             return source;
         }
 
@@ -273,9 +274,10 @@ namespace AlpineSim.Unity.Art
                         if (bc != null) { bc.center = mesh.bounds.center; bc.size = mesh.bounds.size; }
                     }
                 }
+                // Switched off rather than destroyed: Destroy only takes effect at the end of the
+                // frame, and the LOD pass right below would still find the proxy renderer.
                 var mr = go.GetComponent<MeshRenderer>();
-                if (mr != null) UnityEngine.Object.Destroy(mr);
-                UnityEngine.Object.Destroy(mf);
+                if (mr != null) mr.enabled = false;
             }
         }
 
@@ -296,7 +298,12 @@ namespace AlpineSim.Unity.Art
                 int level = LodLevelOf(child.gameObject.name);
                 if (level < 0) continue;
                 if (levels[level] == null) levels[level] = new List<Renderer>();
-                levels[level].AddRange(child.GetComponentsInChildren<Renderer>(true));
+                var rends = child.GetComponentsInChildren<Renderer>(true);
+                for (int r = 0; r < rends.Length; r++)
+                {
+                    if (rends[r] == null || rends[r].gameObject.name.EndsWith("_col", System.StringComparison.Ordinal)) continue;
+                    levels[level].Add(rends[r]);
+                }
             }
             if (levels[0] == null || levels[0].Count == 0) return;   // a single-mesh model needs no group
 
