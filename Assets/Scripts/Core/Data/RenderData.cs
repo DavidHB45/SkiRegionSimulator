@@ -26,6 +26,30 @@ namespace AlpineSim.Core.Data
         public float SnowDisplacementScale = 1f;
         public float DebugOverlayAlpha = 0.75f;
         public float UiScale = 1f;
+
+        // Generated art (docs/ART_CONTRACT.md). The Unity layer reads these instead of hard-coding
+        // what a model looks like at range or how worn a machine reads at a given condition.
+
+        /// <summary>Screen-relative height below which a model drops from LOD0 to LOD1.</summary>
+        public float ModelLod0ScreenHeight = 0.35f;
+        /// <summary>Screen-relative height below which a model drops from LOD1 to LOD2.</summary>
+        public float ModelLod1ScreenHeight = 0.12f;
+        /// <summary>Screen-relative height below which a model culls entirely.</summary>
+        public float ModelLod2ScreenHeight = 0.02f;
+        /// <summary>Condition percentage at and above which a machine still looks factory fresh (wear 0).</summary>
+        public float WearStartConditionPct = 90f;
+        /// <summary>Condition percentage at and below which a machine looks worn out (wear 1).</summary>
+        public float WearFullConditionPct = 25f;
+        /// <summary>Seconds the wear blend takes to travel its whole range, so a repair fades rather than pops.</summary>
+        public float WearBlendSeconds = 4f;
+        /// <summary>Hours since the last service that read as a fully salted, filthy machine.</summary>
+        public float SoilingHoursForFull = 250f;
+        /// <summary>Log one line per resolved model instead of one summary line per tier.</summary>
+        public bool LogModelResolutionPerAsset;
+        /// <summary>Off sends every visual to the primitive tier, which is how the art pipeline is A/B tested.</summary>
+        public bool UseGeneratedModels = true;
+        /// <summary>Carriers above this count on one lift stay instanced from the merged proxy mesh.</summary>
+        public int MaxGeneratedCarrierObjects = 24;
         public string Comment = "";
     }
 }

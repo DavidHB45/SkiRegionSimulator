@@ -67,12 +67,17 @@ def meta_body(rel_path: str, is_dir: bool) -> str:
     return head + "DefaultImporter:\n  externalObjects: {}\n" + COMMON_TAIL
 
 
+def _skipped(rel_path):
+    """True for anything inside a SKIP_DIRS tree, or one of those trees itself."""
+    return any(rel_path == s or rel_path.startswith(s + "/") for s in SKIP_DIRS)
+
+
 def iter_assets():
     for dirpath, dirnames, filenames in os.walk(ASSETS):
         dirnames.sort()
         filenames.sort()
         rel_dir = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
-        if any(rel_dir == s or rel_dir.startswith(s + "/") for s in SKIP_DIRS):
+        if _skipped(rel_dir):
             dirnames[:] = []
             continue
         if rel_dir != "Assets":
@@ -101,12 +106,19 @@ def main(argv):
                 with open(meta, "w", newline="\n") as fh:
                     fh.write(meta_body(rel, is_dir))
                 print("created", rel + ".meta")
-    for dirpath, _, filenames in os.walk(ASSETS):
+    for dirpath, dirnames, filenames in os.walk(ASSETS):
+        rel_dir = os.path.relpath(dirpath, ROOT).replace(os.sep, "/")
+        if _skipped(rel_dir):
+            dirnames[:] = []
+            continue
         for f in filenames:
             if f.endswith(".meta"):
                 full = os.path.join(dirpath, f)
-                if full not in expected:
-                    orphans.append(os.path.relpath(full, ROOT))
+                rel = os.path.relpath(full, ROOT).replace(os.sep, "/")
+                # The generated tree writes its own .meta files, the folder's included, so
+                # the meta for the skipped folder itself is expected rather than orphaned.
+                if full not in expected and not _skipped(rel[:-len(".meta")]):
+                    orphans.append(rel)
     if check:
         for m in missing:
             print("MISSING META:", m)

@@ -16,5 +16,16 @@
   "CorduroyDepthM": 0.03,
   "SnowDisplacementScale": 1,
   "DebugOverlayAlpha": 0.75,
-  "UiScale": 1
+  "UiScale": 1,
+
+  "ModelLod0ScreenHeight": 0.35,
+  "ModelLod1ScreenHeight": 0.12,
+  "ModelLod2ScreenHeight": 0.02,
+  "WearStartConditionPct": 90,
+  "WearFullConditionPct": 25,
+  "WearBlendSeconds": 4,
+  "SoilingHoursForFull": 250,
+  "LogModelResolutionPerAsset": false,
+  "UseGeneratedModels": true,
+  "MaxGeneratedCarrierObjects": 24
 }

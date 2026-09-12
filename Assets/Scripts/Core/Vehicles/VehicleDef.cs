@@ -103,6 +103,12 @@ namespace AlpineSim.Core.Vehicles
         public WearRates WearRates = new WearRates();
         public List<VehicleRole> Roles = new List<VehicleRole>();
         public MeshRecipe Visual = new MeshRecipe();
+        /// <summary>
+        /// Optional Resources path to a hand-authored model, e.g. "Art/Authored/Groomers/flagship".
+        /// Tier 1 of the ModelRegistry ladder (docs/ART_CONTRACT.md section 9): set it and this machine
+        /// stops using the generated model. Empty means the generated model, then the primitive one.
+        /// </summary>
+        public string ModelOverride = "";
         /// <summary>Category-specific scalars, e.g. blowerCapacityTph, throwDistanceM, winchRopeM, winchPullT, pumpLps, pumpHeadM, compressorM3Min, workshopTier, fuelStorageL, partsSlots, garageBays, plowWidthM, spreaderHopperM3, blowerHeadTph, gunPowerKw, gunReachM, coneHalfAngleDeg, waterLpm, workRate, sirenSpeedBonus.</summary>
         public Dictionary<string, float> Specs = new Dictionary<string, float>();
         /// <summary>Category-specific curves, e.g. gunOutputByWetBulb: xs = wet-bulb C, ys = m3 snow per hour.</summary>
@@ -230,6 +236,8 @@ namespace AlpineSim.Core.Vehicles
         public List<VehicleCategory> ForCategories = new List<VehicleCategory>();
         public float MinHostPowerKw;
         public MeshRecipe Visual = new MeshRecipe();
+        /// <summary>Optional Resources path to a hand-authored implement model; see VehicleDef.ModelOverride.</summary>
+        public string ModelOverride = "";
         public string Comment = "";
 
         public bool FitsSlot(SlotPosition p) => CompatibleSlots.Contains(p);
