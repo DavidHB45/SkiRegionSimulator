@@ -75,6 +75,13 @@ if not. Names are unique within a model and are matched exactly, case included.
 | Name | Required for | Driven by |
 |---|---|---|
 | `track_L`, `track_R` | every `Tracked` chassis | belt scroll rate from ground speed |
+
+A machine that is tracked but does not have two belts still publishes both names, because
+gameplay drives what the ground drives and should not have to know the running gear: a
+snowmobile's single belt is built as two half-width belts, a four-kit bogie machine puts its
+left pair in `track_L` and its right pair in `track_R`, and a wheel-driven walk-behind names
+its two drive wheels the same way.
+
 | `wheel_FL FR RL RR`, `wheel_ML MR` | wheeled chassis with that axle | roll angle from wheel speed |
 | `steer_FL`, `steer_FR` | wheeled chassis with steered front axle | steering angle |
 | `pivot_center` | every `Artic` chassis | articulation angle between front and rear frames |
@@ -133,6 +140,12 @@ attachment model to the matching socket.
 | `seat_01 … seat_0n` | lift carrier seats |
 | `hitch` | tow point |
 
+**Sockets hang off the model root.** A socket on a part that slews or articulates - a
+work light on an excavator's house, a roof mount on a crane turret - would have to be a
+child of that transform, and neither `meshkit.Model.socket` nor this contract supports that
+yet. Until they do, geometry on a turret rotates with it and any socket placed there does
+not, so put sockets on the frame.
+
 ## 5. Materials
 
 **Three slots per model, in this order, and no more.** More than three means more than
@@ -143,6 +156,9 @@ three draw calls per machine, which defeats the shared trim sheet.
 | 0 | `body` | painted bodywork — tinted per machine by `LiveryTint` from `Visual.ColorHex` |
 | 1 | `metal` | dark metal, tracks, rubber, frames, unpainted steel |
 | 2 | `glass` | glazing and bubble canopies |
+
+Unpainted concrete - tower plinths, piers, pads - rides the `metal` slot. It has no slot of
+its own, and putting it on `body` would make every foundation take the lift's livery tint.
 
 Livery colour is a **tint on a shared texture set**, never a separate texture: a whole
 category shares one material instance and differs only in `_LiveryColor`.
@@ -248,6 +264,18 @@ room, a return end a tensioning carriage), and `barn` is present only on types w
 - a missing required articulation transform
 - a texture that is not a power of two, or the wrong size for its class
 - audio that clips, is silent, or has a discontinuous loop seam
+
+- a model whose declared `family` is not in `validate.REQUIRED_NODES` (a typo there used to
+  switch the articulation check off silently)
+- a texture whose wrap seam exceeds twice its own local gradient **along the same axis**;
+  atlases are exempt, because a trim or decal sheet is a page of cells whose outer edge
+  means nothing
+
+Two properties of `meshkit` worth knowing before writing a generator: it welds vertices at
+1e-5 on finalise, so two primitives that share a face become one manifold body rather than
+two overlapping shells; and `Model.array` repeats exactly the faces a primitive returned,
+so anything arrayed must be built with `bevel=False` - the chamfer adds faces the array
+never sees.
 
 and warns (build continues, reported in `Assets/Art/Generated/validation.json`) on
 under-budget meshes, collapsed UV unwraps, off-centre pivots and loop-seam clicks.
