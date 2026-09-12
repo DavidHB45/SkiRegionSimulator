@@ -15,6 +15,13 @@ PYTHON ?= python3
 DOTNET ?= dotnet
 CONFIGURATION ?= Release
 
+# Blender's FBX exporter numbers the objects it writes from Python's hash() of a key
+# string, and that hash is salted per interpreter unless the salt is pinned. Leave it
+# unpinned and two runs of one commit write the same geometry under different ids, so the
+# art pack differs between machines for no reason anyone can see. Pinning it here covers
+# every asset target; .github/workflows/assets.yml pins the same value in CI.
+export PYTHONHASHSEED := 0
+
 TESTS_PROJECT := sim/AlpineSim.Core.Tests.csproj
 CORE_PROJECT := sim/AlpineSim.Core.csproj
 COMPILE_CHECK_PROJECT := sim/AlpineSim.Unity.CompileCheck.csproj

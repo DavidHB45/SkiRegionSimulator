@@ -43,6 +43,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write          # only used to attach the art pack to a tagged release
+    env:
+      # Blender's FBX exporter numbers its objects from Python's salted hash(), so an
+      # unpinned salt makes two runs of one commit produce different files. See the
+      # Makefile, which pins the same value for a local build.
+      PYTHONHASHSEED: "0"
     steps:
       - uses: actions/checkout@v4
 
@@ -102,6 +107,8 @@ jobs:
     name: assets-validate (contract)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: "0"
     steps:
       - uses: actions/checkout@v4
 

@@ -28,11 +28,13 @@ import argparse
 import hashlib
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import traceback
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 
 import bpy                                                      # noqa: E402
 import numpy as np                                              # noqa: E402
@@ -45,6 +47,13 @@ from lib.meshkit import BODY, METAL                             # noqa: E402
 # A metre of machine round-tripped through single-precision FBX comes back within well
 # under a millimetre; anything looser would let a real axis error through.
 TOLERANCE_M = 1e-3
+
+# Blender's FBX exporter numbers its objects from Python's hash() of a key string, and
+# that hash is salted per interpreter unless the salt is pinned. Two runs of an unpinned
+# build therefore write the same geometry under different ids and produce different
+# files. The Makefile and .github/workflows/assets.yml pin it for the whole pipeline;
+# the subprocess check below pins the same value so it measures everything else.
+HASH_SEED = "0"
 
 
 class CheckFailed(AssertionError):
@@ -254,8 +263,39 @@ def check_determinism(work):
            "two builds of one model produced different files (%s vs %s); something in "
            "the export is still carrying the clock or the path"
            % (digest_a[:12], digest_b[:12]))
-    return "%s triangles, identical bounds, identical bytes (%s)" % (
-        first["triangles"], digest_a[:12])
+
+    # Same model again, but from two fresh interpreters, because a process carries more
+    # than the generator's own state: object addresses, dict iteration order, and the
+    # hash salt Blender's FBX exporter derives its object ids from. That last one is why
+    # the seed is pinned here as the Makefile and the CI workflow pin it; without it two
+    # machines produce two different art packs from one commit.
+    out_of_process = []
+    for sub in ("child_a", "child_b"):
+        path = os.path.join(work, sub, "determinism_probe.fbx")
+        _build_probe_in_subprocess(path)
+        with open(path, "rb") as f:
+            out_of_process.append(hashlib.sha256(f.read()).hexdigest())
+    expect(out_of_process[0] == out_of_process[1],
+           "two interpreters produced different files for one model (%s vs %s) even with "
+           "PYTHONHASHSEED pinned; something in the export is reading the process rather "
+           "than the model" % (out_of_process[0][:12], out_of_process[1][:12]))
+
+    return "%s triangles, identical bounds, identical bytes in and across processes (%s)" % (
+        first["triangles"], out_of_process[0][:12])
+
+
+def _build_probe_in_subprocess(path):
+    """Build the determinism probe in a fresh interpreter with the hash salt pinned."""
+    code = ("import sys; sys.path.insert(0, %r); "
+            "import selftest; from lib import export; "
+            "export.emit(selftest.demo_machine('determinism_probe'), %r, "
+            "extra={'family': 'tracked', 'kind': 'machine'})" % (HERE, path))
+    env = dict(os.environ, PYTHONHASHSEED=HASH_SEED)
+    result = subprocess.run([sys.executable, "-c", code], env=env,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        raise CheckFailed("a subprocess build of the probe failed: %s"
+                          % result.stderr.decode("utf-8", "replace").strip()[-400:])
 
 
 def check_budget_enforced(work):

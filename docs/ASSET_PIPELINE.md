@@ -98,9 +98,18 @@ answer, and it is easy to lose:
 - records are iterated in file order, never over an unordered dict.
 - `lib/export.py` overwrites the FBX creation timestamp, which Blender would otherwise stamp
   with the wall clock.
+- **`PYTHONHASHSEED` is pinned to `0`.** Blender's FBX exporter numbers the objects it writes
+  from Python's `hash()` of a key string, and that hash is salted per interpreter. Unpinned,
+  two runs write the same geometry under different object ids and the files differ for no
+  visible reason. The `Makefile` exports it for every asset target and
+  `.github/workflows/assets.yml` sets it on both jobs; hash randomisation is fixed when the
+  interpreter starts, so it has to come from the environment. Running `build_all.py` by hand
+  outside `make` is the one case that misses it - harmless for looking at a model, wrong for
+  anything that compares two builds.
 
-The self-test builds one model twice and compares the file hashes, so a regression here fails
-the build rather than being discovered as churn in a diff.
+The self-test builds one model twice in-process and twice more in fresh interpreters, and
+compares file hashes, so a regression here fails the build rather than being discovered as
+churn in a diff.
 
 ## Adding a machine
 
