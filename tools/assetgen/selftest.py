@@ -25,6 +25,7 @@ landmark is exactly where it was authored.
 Exits 0 when every check passes, 1 otherwise.
 """
 import argparse
+import hashlib
 import os
 import shutil
 import sys
@@ -222,13 +223,23 @@ def check_collider_cap(work):
 
 
 def check_determinism(work):
-    """The same model built twice is the same model, down to the triangle."""
-    first = export.emit(demo_machine("determinism_probe"),
-                        os.path.join(work, "determinism_a.fbx"),
-                        extra={"family": "tracked", "kind": "machine"})
-    second = export.emit(demo_machine("determinism_probe"),
-                         os.path.join(work, "determinism_b.fbx"),
-                         extra={"family": "tracked", "kind": "machine"})
+    """The same model built twice is the same model, down to the byte.
+
+    Two runs have to agree or the pipeline stops being a build step and becomes a source
+    of churn: the same commit would produce a different art pack on every machine, and
+    nobody could tell a real change from a re-run. The two builds go to different
+    directories deliberately, because an output path is exactly the kind of thing that
+    leaks into an FBX header alongside the clock.
+    """
+    built = []
+    for sub in ("first", "second"):
+        path = os.path.join(work, sub, "determinism_probe.fbx")
+        record = export.emit(demo_machine("determinism_probe"), path,
+                             extra={"family": "tracked", "kind": "machine"})
+        with open(path, "rb") as f:
+            built.append((record, hashlib.sha256(f.read()).hexdigest()))
+    (first, digest_a), (second, digest_b) = built
+
     expect(first["triangles"] == second["triangles"],
            "two builds of one model disagree on triangles: %s vs %s"
            % (first["triangles"], second["triangles"]))
@@ -239,7 +250,12 @@ def check_determinism(work):
               second["boundsMin"], second["boundsMax"]))
     expect(first["nodes"] == second["nodes"],
            "two builds of one model disagree on their node list")
-    return "%s triangles and identical bounds twice" % (first["triangles"],)
+    expect(digest_a == digest_b,
+           "two builds of one model produced different files (%s vs %s); something in "
+           "the export is still carrying the clock or the path"
+           % (digest_a[:12], digest_b[:12]))
+    return "%s triangles, identical bounds, identical bytes (%s)" % (
+        first["triangles"], digest_a[:12])
 
 
 def check_budget_enforced(work):

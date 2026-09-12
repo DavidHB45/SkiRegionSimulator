@@ -25,6 +25,7 @@
   "WearFullConditionPct": 25,
   "WearBlendSeconds": 4,
   "SoilingHoursForFull": 250,
+  "BeltUvPerMetre": 1,
   "LogModelResolutionPerAsset": false,
   "UseGeneratedModels": true,
   "MaxGeneratedCarrierObjects": 24

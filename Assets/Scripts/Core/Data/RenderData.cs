@@ -44,6 +44,8 @@ namespace AlpineSim.Core.Data
         public float WearBlendSeconds = 4f;
         /// <summary>Hours since the last service that read as a fully salted, filthy machine.</summary>
         public float SoilingHoursForFull = 250f;
+        /// <summary>Track texture repeats per metre travelled, for the belt scroll on track_L / track_R.</summary>
+        public float BeltUvPerMetre = 1f;
         /// <summary>Log one line per resolved model instead of one summary line per tier.</summary>
         public bool LogModelResolutionPerAsset;
         /// <summary>Off sends every visual to the primitive tier, which is how the art pipeline is A/B tested.</summary>

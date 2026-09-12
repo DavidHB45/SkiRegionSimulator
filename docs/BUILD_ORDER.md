@@ -74,3 +74,26 @@ Winch cats (anchors, rope tension, pull-assisted climbs), terrain park shaping (
 ## M8 — Deferred scaffold
 
 Five-act campaign beats (`campaign.json`), region expansion tiles beyond the 4.2 km² envelope (`regions.json`) and a mod loader (`mod.json` manifests overlaying data by id). `M8Scaffold.cs` holds the interfaces and schemas; `M8ScaffoldSystem` ticks as a no-op in the Campaign slot. Kill criterion when built: expansion that does not change the guest mix or the fleet needs is scope creep.
+
+## Art pipeline (cross-cutting)
+
+Not a milestone: it has no gameplay of its own, no milestone waits on it, and the game stays
+fully playable with none of its output present. It is tracked here because it is work with a
+status, and because that last sentence is its kill criterion - generated art that the game
+cannot run without has replaced a fallback path that was worth keeping.
+
+`tools/assetgen` builds every mesh, texture, icon and sound from the same
+`Assets/StreamingAssets/Data/*.json` the simulation reads, into the gitignored
+`Assets/Art/Generated/`. `docs/ART_CONTRACT.md` is the interface it is held to and
+`docs/ASSET_PIPELINE.md` is how to run and extend it.
+
+| Piece | Where | Status |
+| --- | --- | --- |
+| Contract and validator | `docs/ART_CONTRACT.md`, `tools/assetgen/lib/validate.py` | **Done** |
+| Mesh construction and export | `tools/assetgen/lib/meshkit.py`, `lib/export.py` | **Done** |
+| Generators: chassis, attachments, lifts, props | `tools/assetgen/meshes/` | **Done** |
+| Generators: trim sheet, material sets, terrain and snow | `tools/assetgen/textures/` | **Done** |
+| Generators: icons, HUD glyphs, markers | `tools/assetgen/ui/` | **Done** |
+| Generators: engines, machinery, ambience | `tools/assetgen/audio/` | **Done** (engine set is placeholder by design) |
+| Build harness, self-test, CI | `Makefile`, `tools/assetgen/selftest.py`, `.github/workflows/assets.yml` | **Done** |
+| Runtime resolution: three-tier lookup, articulation, livery, wear | `Assets/Scripts/Unity/Art/` | In progress |
