@@ -83,11 +83,11 @@ Shader "AlpineSim/MachinePBR"
             albedo = lerp(albedo, _SaltColor.rgb, salt * 0.6);
 
             half3 orm = tex2D(_ORM, uv).rgb;
-            half occlusion = lerp(1.0h, orm.r, _UseOrm);
-            half smoothness = lerp(_Glossiness, 1.0h - orm.g, _UseOrm);
+            half occlusion = lerp(1.0, orm.r, _UseOrm);
+            half smoothness = lerp(_Glossiness, 1.0 - orm.g, _UseOrm);
             half metallic = lerp(_Metallic, orm.b, _UseOrm);
-            smoothness *= (1.0h - 0.55h * salt) * (1.0h - 0.45h * rust);
-            metallic = saturate(metallic + edge * 0.5h - rust * 0.3h);
+            smoothness *= (1.0 - 0.55 * salt) * (1.0 - 0.45 * rust);
+            metallic = saturate(metallic + edge * 0.5 - rust * 0.3);
 
             half3 n = UnpackNormal(tex2D(_BumpMap, uv));
             n.xy *= _NormalStrength;
