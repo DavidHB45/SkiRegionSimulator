@@ -357,12 +357,12 @@ def _moon(sk, cx, cy, r):
     sk.arc(cx, cy, r, 40.0, 320.0, r * 0.62, "accent")
 
 
-def _fall(sk, count, maker, rows=2):
+def _fall(count, maker):
     """Precipitation under a cloud, laid out on a fixed lattice so light, moderate and
     heavy read as the same symbol with more of it rather than three different symbols."""
-    slots = [(15, 16), (32, 13), (49, 16), (23, 6), (41, 6), (32, 22)]
-    for i in range(min(count, len(slots))):
-        maker(slots[i])
+    slots = ((15, 16), (32, 13), (49, 16), (23, 6), (41, 6), (32, 22))
+    for slot in slots[:count]:
+        maker(slot)
 
 
 def _w_clear(sk):
@@ -381,17 +381,17 @@ def _w_overcast(sk):
 
 def _w_snow_light(sk):
     _cloud(sk, 32, 36, 44, "shell")
-    _fall(sk, 2, lambda p: _flake(sk, p[0], p[1], 5.5))
+    _fall(2, lambda p: _flake(sk, p[0], p[1], 5.5))
 
 
 def _w_snow_moderate(sk):
     _cloud(sk, 32, 36, 44, "shell")
-    _fall(sk, 4, lambda p: _flake(sk, p[0], p[1], 5.5))
+    _fall(4, lambda p: _flake(sk, p[0], p[1], 5.5))
 
 
 def _w_snow_heavy(sk):
     _cloud(sk, 32, 38, 46, "shell")
-    _fall(sk, 6, lambda p: _flake(sk, p[0], p[1], 5.5))
+    _fall(6, lambda p: _flake(sk, p[0], p[1], 5.5))
 
 
 def _w_rain(sk):
@@ -426,7 +426,7 @@ def _w_night_clear(sk):
 def _w_night_snow(sk):
     _moon(sk, 42, 46, 11)
     _cloud(sk, 30, 32, 40, "shell")
-    _fall(sk, 3, lambda p: _flake(sk, p[0], p[1], 5.0))
+    _fall(3, lambda p: _flake(sk, p[0], p[1], 5.0))
 
 
 WEATHER = (
@@ -467,7 +467,7 @@ UI_SHEETS = (
 )
 
 
-def _sheet_svg(fill, opacity, border, inset, highlight):
+def _sheet_svg(fill, opacity, border, highlight):
     """One 9-slice sheet: a rounded frame whose detail all lands inside the border insets,
     so stretching the middle never stretches anything that has to keep its shape."""
     pad = STROKE * 0.5
@@ -508,8 +508,8 @@ def build_sheets(out_dir):
     records = []
     slices = {}
     for name, fill, opacity, border, inset, highlight in UI_SHEETS:
-        path = _write_png(_sheet_svg(fill, opacity, border, inset, highlight), out_dir,
-                          name, GRID)
+        path = _write_png(_sheet_svg(fill, opacity, border, highlight), out_dir, name,
+                          GRID)
         slices[name] = {"left": inset, "bottom": inset, "right": inset, "top": inset}
         records.append({
             "id": name,
