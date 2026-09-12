@@ -18,6 +18,7 @@ tools/assetgen/selftest.py, which re-reads an exported file and checks the landm
 Nothing needs rotating on import.
 """
 import os
+import struct
 
 import bpy
 import numpy as np
@@ -172,6 +173,41 @@ def assemble(model, *, colliders=True, box_colliders=(), lod_ratios=LOD_RATIOS):
     }
 
 
+# Blender stamps the wall-clock export time into the FBX header, so two builds of
+# identical geometry differ by a handful of bytes. Freezing it is what makes `make assets`
+# reproducible, and reproducibility is what lets CI compare a published artifact against a
+# rebuild and believe the answer.
+_FBX_TIME_FIELDS = ((b"\x04Year", 1970), (b"\x05Month", 1), (b"\x03Day", 1),
+                    (b"\x04Hour", 0), (b"\x06Minute", 0), (b"\x06Second", 0),
+                    (b"\x0bMillisecond", 0))
+_FBX_FROZEN_TIME = b"1970-01-01 00:00:00:000"
+
+
+def freeze_timestamp(path):
+    """Rewrite the FBX creation time to a fixed value, in place.
+
+    The header holds the time twice: as seven integer fields under CreationTimeStamp, and
+    as a text CreationTime. Both are overwritten, the string in place so the record length
+    stays valid.
+    """
+    with open(path, "rb") as f:
+        data = bytearray(f.read())
+    for name, value in _FBX_TIME_FIELDS:
+        key = name + b"I"
+        at = data.find(key)
+        if at >= 0:
+            start = at + len(key)
+            data[start:start + 4] = struct.pack("<i", value)
+    at = data.find(b"CreationTimeS")
+    if at >= 0:
+        start = at + len(b"CreationTimeS")
+        length = struct.unpack_from("<I", data, start)[0]
+        if length == len(_FBX_FROZEN_TIME):
+            data[start + 4:start + 4 + length] = _FBX_FROZEN_TIME
+    with open(path, "wb") as f:
+        f.write(data)
+
+
 def write_fbx(path):
     """Export the whole scene. Unity axis conversion is baked into the export settings."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -195,6 +231,7 @@ def write_fbx(path):
         bake_anim=False,
         path_mode="STRIP",
     )
+    freeze_timestamp(path)
     unitymeta.write(path)
     return path
 
