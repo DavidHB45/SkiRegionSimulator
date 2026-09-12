@@ -198,7 +198,8 @@ def _geometry(kind, geom, xform):
 
 
 def _passes(sketch, xform, accent):
-    """Rim pass, then fills, then strokes. The order is the style: see the module docstring."""
+    """Rim pass, then fills, then strokes. That order is the style: see the module
+    docstring."""
     shapes, lines = [], []
     for kind, geom, style in sketch.ops:
         tag, attrs = _geometry(kind, geom, xform)
@@ -476,16 +477,17 @@ def _build_truck(sk, rec, vis, tier):
     elif sil == "mixer":
         # A mixer drum is a cone lying down: wide at the chute end, tapered over the cab.
         sk.poly([(body_back + 0.30, deck + 0.20), (body_front, deck + 0.70),
-                 (body_front, deck + height * 1.10), (body_back + 0.30, deck + height * 1.60)],
-                "shell")
+                 (body_front, deck + height * 1.10),
+                 (body_back + 0.30, deck + height * 1.60)], "shell")
         sk.circle(body_back + 0.40, deck + height * 0.90, height * 0.70, "shell")
         sk.poly([(body_back - 0.05, deck + 1.05), (body_back - 0.85, deck + 0.45),
-                 (body_back - 0.50, deck + 0.05), (body_back + 0.15, deck + 0.60)], "accent")
+                 (body_back - 0.50, deck + 0.05), (body_back + 0.15, deck + 0.60)],
+                "accent")
     elif sil == "lowboy":
         sk.rect(body_back, deck - 0.62, span * 0.70, 0.34, "shell")
         sk.poly([(body_back + span * 0.62, deck - 0.28), (body_front, deck + 0.70),
-                 (body_front - span * 0.16, deck + 0.70), (body_back + span * 0.48, deck - 0.28)],
-                "shell_dim")
+                 (body_front - span * 0.16, deck + 0.70),
+                 (body_back + span * 0.48, deck - 0.28)], "shell_dim")
         sk.rect(body_back + span * 0.10, deck - 0.34, span * 0.30, 0.30, "accent")
     elif sil == "pickup":
         sk.rect(body_back, deck, span, height * 0.80, "shell")
@@ -493,7 +495,8 @@ def _build_truck(sk, rec, vis, tier):
     else:
         # A tipper body is taller than the frame it sits on and slopes at the headboard.
         sk.poly([(body_back - 0.25, deck), (body_front, deck),
-                 (body_front, deck + height * 1.25), (body_back - 0.25, deck + height * 1.25),
+                 (body_front, deck + height * 1.25),
+                 (body_back - 0.25, deck + height * 1.25),
                  (body_back - 0.70, deck + height * 0.65)], "shell")
     _cab(sk, cab_x, vis["CabL"], vis["CabH"], deck, tier)
     _front_implement(sk, rec, length * 0.5, deck * 0.55)
@@ -566,7 +569,8 @@ def _build_grader(sk, rec, vis, tier):
     radius = vis["WheelRadiusM"]
     frame_y = radius * 1.30
     sk.poly([(-length * 0.30, frame_y - 0.22), (length * 0.48, frame_y - 0.02),
-             (length * 0.48, frame_y + 0.30), (-length * 0.30, frame_y + 0.34)], "shell_dim")
+             (length * 0.48, frame_y + 0.30), (-length * 0.30, frame_y + 0.34)],
+            "shell_dim")
     sk.rect(-length * 0.48, radius * 0.70, length * 0.36, height * 1.05, "shell")
     _cab(sk, -length * 0.14, vis["CabL"], vis["CabH"], radius * 0.70 + height * 1.05, tier)
     # The mouldboard hangs off a turntable circle halfway along the frame.
@@ -603,9 +607,10 @@ def _build_excavator(sk, rec, vis, tier):
     tip = (knee[0] + boom * 0.42, base * 0.35)
     sk.beam(root, knee, boom * 0.13, "shell")
     sk.beam(knee, tip, boom * 0.10, "shell_dim")
-    sk.poly([(tip[0] - 0.15, tip[1] + boom * 0.10), (tip[0] + boom * 0.16, tip[1] + boom * 0.06),
-             (tip[0] + boom * 0.20, tip[1] - boom * 0.12), (tip[0] - 0.20, tip[1] - boom * 0.06)],
-            "accent")
+    sk.poly([(tip[0] - 0.15, tip[1] + boom * 0.10),
+             (tip[0] + boom * 0.16, tip[1] + boom * 0.06),
+             (tip[0] + boom * 0.20, tip[1] - boom * 0.12),
+             (tip[0] - 0.20, tip[1] - boom * 0.06)], "accent")
 
 
 def _build_crane(sk, rec, vis, tier):
@@ -638,7 +643,8 @@ def _build_blower(sk, rec, vis, tier):
     _wheels(sk, length, radius, max(2, vis["Axles"]))
     deck = radius * 0.85
     sk.rect(-length * 0.46, deck, length * 0.62, height, "shell")
-    _cab(sk, vis["CabOffset"] - length * 0.26, vis["CabL"], vis["CabH"], deck + height, tier)
+    _cab(sk, vis["CabOffset"] - length * 0.26, vis["CabL"], vis["CabH"], deck + height,
+         tier)
     # The intake head is as tall as the machine and as wide as the record says: a blower
     # is a mouth on wheels, and the mouth has to dominate or it reads as a truck.
     intake = float((rec.get("Specs") or {}).get("intakeWidthM") or 1.6)
@@ -715,7 +721,8 @@ def _build_station(sk, rec, vis, tier):
                  (length * 0.42, height * 0.95), (-length * 0.42, height * 0.95)], "shell")
         sk.rect(-length * 0.30, height * 0.40, length * 0.26, height * 0.34, "accent")
         sk.poly([(length * 0.06, height * 0.95), (length * 0.30, height * 0.95),
-                 (length * 0.30, height * 1.12), (length * 0.06, height * 1.12)], "shell_dim")
+                 (length * 0.30, height * 1.12), (length * 0.06, height * 1.12)],
+                "shell_dim")
         sk.beam((length * 0.18, height * 1.05), (length * 0.18, height * 1.45), 0.22,
                 "shell_dim")
         sk.line([(length * 0.18, height * 1.45), (length * 0.46, height * 1.45)], "ink")
@@ -767,9 +774,10 @@ def _build_snowmobile(sk, rec, vis, tier):
     sk.poly([(-length * 0.40, track * 0.8), (length * 0.22, track * 0.8),
              (length * 0.34, track + height * 0.45), (length * 0.02, track + height * 0.75),
              (-length * 0.34, track + height * 0.60)], "shell")
-    sk.poly([(length * 0.04, track + height * 0.72), (length * 0.26, track + height * 0.50),
-             (length * 0.30, track + height * 1.05), (length * 0.06, track + height * 1.10)],
-            "glass")
+    sk.poly([(length * 0.04, track + height * 0.72),
+             (length * 0.26, track + height * 0.50),
+             (length * 0.30, track + height * 1.05),
+             (length * 0.06, track + height * 1.10)], "glass")
     sk.rect(-length * 0.30, track + height * 0.58, length * 0.26, height * 0.22, "accent")
 
 
@@ -840,7 +848,8 @@ def machine_sketch(rec):
     family = SILHOUETTE_FAMILY.get(vis["Silhouette"], "truck")
     sk = Sketch()
     MACHINE_FAMILIES[family](sk, rec, vis, tier)
-    return sk, accent_for_tier(tier), size_fill(float(rec.get("MassKg") or 500), 150.0, 40000.0)
+    return (sk, accent_for_tier(tier),
+            size_fill(float(rec.get("MassKg") or 500), 150.0, 40000.0))
 
 
 # --------------------------------------------------------------------------- lifts
@@ -922,7 +931,8 @@ def _cabin(sk, rec, x, rope_y, width, height, doors=True):
 def _build_chair(sk, rec):
     seats = max(1, int(rec.get("SeatsOrCabinCapacity") or 1))
     _pylon(sk, PYLON_X, PYLON_H)
-    _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + seats * 0.36 + 1.2)
+    _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X,
+           CARRIER_X + seats * 0.36 + 1.2)
     _chair(sk, rec, CARRIER_X, ROPE_Y)
 
 
@@ -942,7 +952,8 @@ def _build_gondola(sk, rec):
             _cabin(sk, rec, CARRIER_X - 0.3 + i * width * 0.80, ROPE_Y,
                    width * 0.70, height * 0.84, doors=False)
     else:
-        _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X, CARRIER_X + width * 0.5 + 1.0)
+        _ropes(sk, ROPE_Y, rec.get("RopeConfiguration"), PYLON_X,
+               CARRIER_X + width * 0.5 + 1.0)
         _cabin(sk, rec, CARRIER_X, ROPE_Y, width, height)
 
 
@@ -1008,8 +1019,9 @@ def _build_rail(sk, rec):
     sk.poly([(cx - length * 0.5, base), (cx + length * 0.5, base + lift),
              (cx + length * 0.5, base + lift + height),
              (cx - length * 0.5, base + height)], "accent")
-    sk.poly([(cx - length * 0.46, base + height * 0.86), (cx + length * 0.46, base + lift * 0.94 + height * 0.86),
-             (cx + length * 0.46, base + lift * 0.94 + height * 1.06),
+    roof = base + lift * 0.94 + height * 0.86
+    sk.poly([(cx - length * 0.46, base + height * 0.86), (cx + length * 0.46, roof),
+             (cx + length * 0.46, roof + height * 0.20),
              (cx - length * 0.46, base + height * 1.06)], "shell_dim")
     for side in (-0.23, 0.23):
         wx = cx + length * side
@@ -1411,6 +1423,7 @@ def build_all(out_dir):
                              extra={"sourceId": rec["Id"],
                                     "displayName": rec.get("DisplayName", ""),
                                     "kindName": rec.get("Kind", "")})
+    audit(records)
     return records
 
 
@@ -1422,7 +1435,7 @@ def audit(records):
     """
     have = set()
     for r in records:
-        have.add((r["group"], r.get("sourceId"), r["scale"]))
+        have.add((r.get("group"), r.get("sourceId"), r.get("scale")))
     missing = []
     for group, rows in (("machine", datasrc.vehicles()), ("lift", datasrc.lifts()),
                         ("attachment", datasrc.attachments())):
