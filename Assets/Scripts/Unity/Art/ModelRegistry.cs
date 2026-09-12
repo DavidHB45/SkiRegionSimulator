@@ -253,9 +253,7 @@ namespace AlpineSim.Unity.Art
 
         private static GameObject Spawn(Source source, Transform parent, string name, MeshRecipe visual)
         {
-            var livery = LiveryTint.Parse(visual != null ? visual.ColorHex : null, LiveryTint.DefaultLivery);
-            var accent = LiveryTint.Parse(visual != null ? visual.AccentHex : null, LiveryTint.DefaultAccent);
-            return Spawn(source, parent, name, livery, accent);
+            return Spawn(source, parent, name, LiveryTint.LiveryOf(visual), LiveryTint.AccentOf(visual));
         }
 
         private static GameObject Spawn(Source source, Transform parent, string name, Color livery, Color accent)
@@ -295,7 +293,10 @@ namespace AlpineSim.Unity.Art
                 var mesh = mf.sharedMesh;
                 if (mesh != null)
                 {
-                    if (go.name == hullName)
+                    // A collider assigned at runtime needs the mesh on the CPU, and the model importer
+                    // only keeps it there when the asset is marked readable. A hull that is not readable
+                    // falls back to its own bounding box: a rough collider beats an error and none.
+                    if (go.name == hullName && mesh.isReadable)
                     {
                         var mc = go.AddComponent<MeshCollider>();
                         if (mc != null) { mc.sharedMesh = mesh; mc.convex = true; }

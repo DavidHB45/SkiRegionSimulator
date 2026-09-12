@@ -27,13 +27,11 @@ namespace AlpineSim.Unity.Art
         /// <summary>Body, metal and glass, in contract slot order.</summary>
         public Material[] Slots { get; private set; }
 
-        /// <summary>Paint this model in the colours its record carries (vehicles.json / attachments.json "Visual").</summary>
-        public void ApplyRecipe(string bodySet, string metalSet, MeshRecipe visual)
-        {
-            Apply(bodySet, metalSet,
-                  Parse(visual != null ? visual.ColorHex : null, DefaultLivery),
-                  Parse(visual != null ? visual.AccentHex : null, DefaultAccent));
-        }
+        /// <summary>The paint colour a record asks for (the "Visual" block in vehicles.json / attachments.json).</summary>
+        public static Color LiveryOf(MeshRecipe visual) => Parse(visual != null ? visual.ColorHex : null, DefaultLivery);
+
+        /// <summary>The second colour: grilles, guards and the stripe down the hood.</summary>
+        public static Color AccentOf(MeshRecipe visual) => Parse(visual != null ? visual.AccentHex : null, DefaultAccent);
 
         /// <summary>Resolve the slot materials for one livery and assign them to every renderer below this object.</summary>
         public void Apply(string bodySet, string metalSet, Color livery, Color accent)
