@@ -45,21 +45,21 @@ CHANNELS = {
 # a rolled asphalt surface barely shades itself at all.
 SETS = (
     {"id": "rock", "surface": "rock", "size": config.TEX_SIZE_PROP,
-     "world_m": 4.0, "relief_m": 0.22, "ao_gain": 1.6},
+     "world_m": 4.0, "relief_m": 0.22, "ao_gain": 5.0},
     {"id": "scree", "surface": "scree", "size": config.TEX_SIZE_PROP,
-     "world_m": 3.0, "relief_m": 0.13, "ao_gain": 2.2},
+     "world_m": 3.0, "relief_m": 0.13, "ao_gain": 7.5},
     {"id": "dirt", "surface": "dirt", "size": config.TEX_SIZE_PROP,
-     "world_m": 4.0, "relief_m": 0.055, "ao_gain": 1.3},
+     "world_m": 4.0, "relief_m": 0.055, "ao_gain": 4.5},
     {"id": "grass_alpine", "surface": "grass_alpine", "size": config.TEX_SIZE_PROP,
-     "world_m": 2.0, "relief_m": 0.07, "ao_gain": 2.0},
+     "world_m": 2.0, "relief_m": 0.07, "ao_gain": 6.5},
     {"id": "bark", "surface": "bark", "size": config.TEX_SIZE_SMALL,
-     "world_m": 1.2, "relief_m": 0.035, "ao_gain": 2.4},
+     "world_m": 1.2, "relief_m": 0.035, "ao_gain": 8.0},
     {"id": "concrete", "surface": "concrete", "size": config.TEX_SIZE_PROP,
-     "world_m": 2.5, "relief_m": 0.016, "ao_gain": 1.1},
+     "world_m": 2.5, "relief_m": 0.016, "ao_gain": 3.5},
     {"id": "asphalt", "surface": "asphalt", "size": config.TEX_SIZE_PROP,
-     "world_m": 4.0, "relief_m": 0.022, "ao_gain": 1.4},
+     "world_m": 4.0, "relief_m": 0.022, "ao_gain": 4.5},
     {"id": "gravel", "surface": "gravel", "size": config.TEX_SIZE_PROP,
-     "world_m": 2.0, "relief_m": 0.045, "ao_gain": 1.8},
+     "world_m": 2.0, "relief_m": 0.045, "ao_gain": 6.0},
 )
 
 
@@ -72,7 +72,7 @@ def norm01(a):
     return (a - lo) / np.float32(hi - lo)
 
 
-def cellular(shape, cells, rng, jitter=1.0):
+def cellular(shape, cells, rng, jitter=1.0, warp=0.0, warp_freq=6):
     """Tileable jittered-lattice distance field: F1, F2 and a per-cell random value.
 
     Loose ground is cells, not noise. A scree slope is angular fragments with a shadowed
@@ -81,6 +81,12 @@ def cellular(shape, cells, rng, jitter=1.0):
     scattered site. Distances come out in cell units, so an anisotropic `cells` count
     stretches the cells along one axis: that is how a plate ends up longer across the
     wind than along it without a second code path.
+
+    `warp` is what stops it looking like paving. A bare Voronoi has straight boundaries
+    meeting at tidy vertices, and no natural material does: rock splits along a crooked
+    line and a tussock has no edge at all. Displacing the sample position by a noise field
+    before the distance is measured bends every boundary by that much, in cell units, and
+    it stays seamless because the displacement field tiles too.
 
     Wrapping the lattice index but not the site position is what keeps it seamless: the
     site a pixel near the right edge measures against is the one that will arrive from
@@ -96,10 +102,13 @@ def cellular(shape, cells, rng, jitter=1.0):
 
     v = (np.arange(h, dtype=np.float32) + 0.5) * (np.float32(cy) / np.float32(h))
     u = (np.arange(w, dtype=np.float32) + 0.5) * (np.float32(cx) / np.float32(w))
-    iv = np.floor(v).astype(np.int32)[:, None]
-    iu = np.floor(u).astype(np.int32)[None, :]
-    v = v[:, None]
-    u = u[None, :]
+    v = v[:, None] + np.zeros((1, w), np.float32)
+    u = u[None, :] + np.zeros((h, 1), np.float32)
+    if warp:
+        v = v + (fbm(shape, warp_freq, 3, rng) - 0.5) * np.float32(2.0 * warp)
+        u = u + (fbm(shape, warp_freq, 3, rng) - 0.5) * np.float32(2.0 * warp)
+    iv = np.floor(v).astype(np.int32)
+    iu = np.floor(u).astype(np.int32)
 
     f1 = np.full(shape, 1.0e9, np.float32)
     f2 = np.full(shape, 1.0e9, np.float32)
@@ -199,7 +208,9 @@ def _rock(shape, rng, spec):
 
     dark = (0.335, 0.325, 0.315)
     pale = (0.560, 0.545, 0.520)
-    albedo = _mix(dark, pale, np.clip(0.35 + 0.55 * grain + 0.35 * (ident - 0.5), 0.0, 1.0))
+    coarse = fbm(shape, 7, 3, rng)
+    albedo = _mix(dark, pale, np.clip(0.10 + 0.95 * grain + 0.55 * (ident - 0.5)
+                                      + 0.45 * (coarse - 0.5), 0.0, 1.0))
     albedo += spall[..., None] * np.asarray((0.10, 0.095, 0.085), np.float32)  # fresh break
     albedo *= 1.0 - cavity[..., None] * 0.55
 
@@ -275,8 +286,8 @@ def _dirt(shape, rng, spec):
     crown = np.clip(1.0 - rut * 1.8, 0.0, 1.0)
     height += crown * fbm(shape, 22, 3, rng) * 0.12       # loose material on the crown
 
-    tread = 0.5 + 0.5 * np.cos((cols * 14.0 + np.abs(_rows(shape) - 0.5) * 3.0)
-                               * 2.0 * np.pi)
+    chevron = np.abs(((_rows(shape) + 0.25) % 1.0) - 0.5)
+    tread = 0.5 + 0.5 * np.cos((cols * 14.0 + chevron * 3.0) * 2.0 * np.pi)
     height -= np.power(tread, 2.0) * rut * 0.14
     stones = speckle(shape, rng, shape[0] // 7, 0.055, softness=9.0)
     height += stones * 0.16 * (0.4 + 0.8 * rut)           # gravel pressed into the rut
@@ -329,6 +340,9 @@ def _grass_alpine(shape, rng, spec):
     green = _mix((0.150, 0.235, 0.105), (0.285, 0.330, 0.145), fbm(shape, 26, 3, rng))
     straw = _mix((0.330, 0.290, 0.165), (0.455, 0.395, 0.230), fbm(shape, 19, 3, rng))
     albedo = green + (straw - green) * dead[..., None]
+    albedo *= (0.70 + 0.60 * np.clip(0.5 + (ident - 0.5) * 1.3
+                                     + (fbm(shape, 12, 3, rng) - 0.5) * 1.1,
+                                     0.0, 1.0))[..., None]
     soil = _mix((0.255, 0.215, 0.170), (0.335, 0.295, 0.240), fbm(shape, 30, 3, rng))
     albedo = albedo + (soil - albedo) * np.clip(bare * 0.9, 0.0, 1.0)[..., None]
     albedo += stones[..., None] * 0.13
@@ -414,7 +428,7 @@ def _concrete(shape, rng, spec):
     albedo *= 1.0 - cavity[..., None] * 0.60
     # Rain runs off the pour lip and stains the face under it, which is most of what makes
     # concrete outdoors look like it has been outdoors.
-    below = (rows * 4.0) % 1.0
+    below = (rows * 4.0 - 0.5) % 1.0
     stain = np.exp(-below * 7.0) * np.clip(fbm(shape, (5, 22), 3, rng) * 1.5 - 0.30,
                                            0.0, 1.0)
     albedo *= 1.0 - stain[..., None] * 0.26
@@ -437,7 +451,7 @@ def _asphalt(shape, rng, spec):
 
     ravel = np.clip((fbm(shape, 13, 4, rng) - 0.48) * 2.6, 0.0, 1.0)
     stones = speckle(shape, rng, shape[0] // 6, 0.09, softness=11.0)
-    height += stones * ravel * 0.28                        # stones standing out of the binder
+    height += stones * ravel * 0.28                       # stones out of the binder
     height -= ravel * 0.06
 
     cf1, cf2, cident = cellular(shape, (7, 7), rng, jitter=1.0)

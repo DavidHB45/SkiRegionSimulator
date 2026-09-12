@@ -155,7 +155,7 @@ def _panel_large(shape, rng):
     h, w = shape
     x, y = _axis(shape)
     height = 0.55 + pbr.fbm(shape, 16, 3, rng) * 0.07
-    height += pbr.micro_relief(shape, rng, 0.09, freq_divisor=6)
+    height += pbr.micro_relief(shape, rng, 0.05, freq_divisor=4, octaves=2)
 
     seam = np.zeros(shape, np.float32)
     lip = np.zeros(shape, np.float32)
@@ -206,7 +206,7 @@ def _panel_small(shape, rng):
     h, w = shape
     x, y = _axis(shape)
     height = 0.55 + pbr.fbm(shape, 18, 3, rng) * 0.06
-    height += pbr.micro_relief(shape, rng, 0.09, freq_divisor=6)
+    height += pbr.micro_relief(shape, rng, 0.05, freq_divisor=4, octaves=2)
 
     inset = 0.12
     dx = np.maximum(inset - x, x - (1.0 - inset)) * w
@@ -284,7 +284,6 @@ def _bolt_row(shape, rng):
 
 def _grip_plate(shape, rng):
     """Diamond tread: the raised lozenges on a step, a walkway or a bonnet top."""
-    h, w = shape
     x, y = _axis(shape)
     height = 0.35 + pbr.fbm(shape, 24, 2, rng) * 0.05
     height += pbr.micro_relief(shape, rng, 0.08, freq_divisor=5)
@@ -343,16 +342,18 @@ def _vent(shape, rng):
 
 def _louvre(shape, rng):
     """Angled louvre blades: engine-bay air, rain kept out."""
-    h, w = shape
     x, y = _axis(shape)
     blades = 8                                        # divides the cell height
-    t = (y * blades) % 1.0
+    # Half a blade of phase, so the vertical back edge of a blade - the one place a
+    # louvre's height field is genuinely discontinuous - lands inside the cell instead of
+    # on the join, where it would read as a seam down a run of them.
+    t = (y * blades + 0.5) % 1.0
     ramp = t                                          # each blade rises then steps back
     step = np.clip((t - 0.82) / 0.18, 0.0, 1.0)
     height = np.zeros(shape, np.float32) + 0.30 + ramp * 0.46 - step * 0.44
     height += pbr.micro_relief(shape, rng, 0.05, freq_divisor=6)
 
-    frame = np.clip(1.0 - np.minimum(x, 1.0 - x) * w / (0.04 * w), 0.0, 1.0)
+    frame = np.clip(1.0 - np.minimum(x, 1.0 - x) / 0.04, 0.0, 1.0)
     height = height * (1.0 - frame) + frame * 0.80    # side rails carry the blades
     height = np.clip(height, 0.0, 1.0)
 
@@ -367,7 +368,6 @@ def _louvre(shape, rng):
 
 def _hydraulic(shape, rng):
     """A hose run: two hoses, their crimped fittings and the P-clip that holds them."""
-    h, w = shape
     x, y = _axis(shape)
     height = np.full(shape, 0.18, np.float32) + pbr.fbm(shape, 20, 2, rng) * 0.04
     hose_mask = np.zeros(shape, np.float32)
@@ -408,7 +408,7 @@ def _hydraulic(shape, rng):
 
 def _weld_bead(shape, rng):
     """A run of MIG weld, with the heat tint either side that says it was never painted."""
-    h, w = shape
+    w = shape[1]
     x, y = _axis(shape)
     height = 0.40 + pbr.fbm(shape, 26, 3, rng) * 0.06
     height += pbr.micro_relief(shape, rng, 0.08, freq_divisor=5)
@@ -441,7 +441,6 @@ def _weld_bead(shape, rng):
 
 def _tread_plate(shape, rng):
     """Five-bar chequer plate: the floor of every walkway and machine deck."""
-    h, w = shape
     x, y = _axis(shape)
     height = 0.30 + pbr.fbm(shape, 22, 2, rng) * 0.05
     height += pbr.micro_relief(shape, rng, 0.07, freq_divisor=5)
@@ -470,19 +469,18 @@ def _tread_plate(shape, rng):
 def _rubber_track(shape, rng):
     """Track belt: grouser bars across the belt, guide lugs down the middle, and the
     pebbled rubber they are moulded from."""
-    h, w = shape
     x, y = _axis(shape)
     pebble = pbr.fbm(shape, 40, 3, rng)
     height = 0.22 + pebble * 0.10
     height += pbr.micro_relief(shape, rng, 0.10, freq_divisor=5)
 
-    grousers = 8                                       # divides the belt length exactly
+    grousers = 8                                       # a 250 mm pitch across a 2 m tile
     t = ((x * grousers) % 1.0)
-    bar = np.clip((0.30 - np.abs(t - 0.5)) / 0.10, 0.0, 1.0)
+    bar = np.clip((0.17 - np.abs(t - 0.5)) / 0.05, 0.0, 1.0)
     height += bar * 0.55
 
     lug = np.clip((0.10 - np.abs(y - 0.5)) / 0.04, 0.0, 1.0) * np.clip(
-        (0.36 - np.abs(t - 0.5)) / 0.08, 0.0, 1.0)
+        (0.26 - np.abs(t - 0.5)) / 0.06, 0.0, 1.0)
     height += lug * 0.22                               # the guide lug the sprocket drives
 
     cord = np.abs(((y * 26.0) % 1.0) - 0.5) * 2.0      # reinforcing cord through the rubber
@@ -490,8 +488,8 @@ def _rubber_track(shape, rng):
     height = np.clip(height, 0.0, 1.0)
 
     packed = pbr.fbm(shape, 6, 3, rng)                 # snow packed into the tread
-    tone = 0.055 + 0.025 * pebble + bar * 0.02
-    tone += np.clip(packed - 0.62, 0.0, 1.0) * 0.5 * (1.0 - bar)
+    tone = 0.062 + 0.028 * pebble + bar * 0.03
+    tone += np.clip(packed - 0.55, 0.0, 1.0) * 0.9 * (1.0 - bar)   # snow packed in behind
     albedo = np.stack((tone, tone * 1.0, tone * 1.02), axis=-1)
     rough = 0.86 + 0.10 * pebble - bar * 0.06
     metal = np.zeros(shape, np.float32)
@@ -500,7 +498,6 @@ def _rubber_track(shape, rng):
 
 def _glass_clean(shape, rng):
     """Glazing as it leaves the wash: flat, dark, and only as rough as float glass is."""
-    h, w = shape
     height = 0.5 + (pbr.fbm(shape, 4, 2, rng) - 0.5) * 0.25
     height += pbr.micro_relief(shape, rng, 0.03, freq_divisor=6)
     height = np.clip(height, 0.0, 1.0)
@@ -515,10 +512,10 @@ def _glass_clean(shape, rng):
 
 def _steel_plain(shape, rng):
     """The plain unpainted field: rolled steel, brushed one way, with mill scale left."""
-    h, w = shape
+    w = shape[1]
     height = 0.45 + pbr.fbm(shape, (6, 90), 4, rng) * 0.28
     height += pbr.fbm(shape, 30, 3, rng) * 0.10
-    height += pbr.micro_relief(shape, rng, 0.14, freq_divisor=5)
+    height += pbr.micro_relief(shape, rng, 0.08, freq_divisor=4, octaves=2)
     brush = pbr.scratch_field(shape, rng, 220, w * 0.4, width=1, angle_deg=0.0, spread=6.0)
     brush = np.clip(pbr.blur(brush, 1) * 1.8, 0.0, 1.0)
     height += brush * 0.05
@@ -539,10 +536,10 @@ def _paint_plain(shape, rng):
     texture, so a machine's colour comes from its record in vehicles.json and this cell
     supplies only the orange peel, the polish and the dirt.
     """
-    h, w = shape
+    w = shape[1]
     height = 0.52 + pbr.fbm(shape, 40, 3, rng) * 0.16         # orange peel
     height += pbr.fbm(shape, 5, 3, rng) * 0.10                # sheet not dead flat
-    height += pbr.micro_relief(shape, rng, 0.12, freq_divisor=6)
+    height += pbr.micro_relief(shape, rng, 0.06, freq_divisor=4, octaves=2)
     sanding = pbr.scratch_field(shape, rng, 120, w * 0.12, width=1, angle_deg=35.0,
                                 spread=30.0)
     sanding = np.clip(pbr.blur(sanding, 1) * 1.6, 0.0, 1.0)
@@ -612,7 +609,7 @@ def build_industrial(out_dir, size=SHEET):
             pbr.height_to_normal(height, spec["relief_m"], texel_m))
         ao = pbr.ambient_occlusion(height, spec["cavity"],
                                    radii=(2, 6, max(8, shape[0] // 16)))
-        cell_albedo = np.clip(cell_albedo * (0.45 + 0.55 * ao[..., None]), 0.0, 1.0)
+        cell_albedo = pbr.apply_occlusion(cell_albedo, ao)
 
         albedo[y0:y1, x0:x1] = cell_albedo
         normal[y0:y1, x0:x1] = cell_normal
@@ -955,11 +952,30 @@ def build_all(out_dir):
     return records
 
 
+def seam_report(out_dir, size=SHEET):
+    """Per-cell wrap error for the painted sheet.
+
+    The sheet as a whole is not a tiling texture - its cells butt against each other - so
+    the only seam measurement that means anything is taken inside a cell. A ratio near or
+    below 1 says the cell's own repeat is invisible; a large one says a run of that trim
+    will show a line where it joins.
+    """
+    path = os.path.join(out_dir, "trim_industrial_albedo.png")
+    sheet = np.asarray(Image.open(path).convert("L"), np.float32) / 255.0
+    print("%-16s %-12s %s" % ("cell", "pixels", "seam u/v (ratio to internal variation)"))
+    for name, uv in trim_cells().items():
+        x0, y0, x1, y1 = _cell_rect(uv, size)
+        u, v = pbr.seam_error(sheet[y0:y1, x0:x1])
+        print("%-16s %-12s %.2f / %.2f" % (name, "%dx%d" % (x1 - x0, y1 - y0), u, v))
+
+
 if __name__ == "__main__":
     import sys
 
     target = sys.argv[1] if len(sys.argv) > 1 else config.TEXTURES_DIR
     validate.reset()
-    pbr.report(build_all(target))
+    pbr.report(build_all(target), seams=False)
+    print()
+    seam_report(target)
     for issue in validate.issues():
         print("warning [%s] %s: %s" % (issue["kind"], issue["asset"], issue["message"]))

@@ -48,7 +48,7 @@ CHANNELS = {
 # and paint rust and chip, glass and rubber do neither, and everything collects salt.
 SETS = (
     {"id": "machine", "surface": "painted_steel", "size": config.TEX_SIZE_HERO,
-     "world_m": 2.0, "relief_m": 0.007, "cavity": 6.0,
+     "world_m": 2.0, "relief_m": 0.007, "cavity": 4.0,
      "wear": (1.0, 1.0, 1.0, 1.0)},
     {"id": "lift", "surface": "galvanised", "size": config.TEX_SIZE_HERO,
      "world_m": 2.0, "relief_m": 0.005, "cavity": 5.0,
@@ -122,6 +122,56 @@ def fbm(shape, freq, octaves, rng, gain=0.5, lacunarity=2.0):
         fy *= lacunarity
         fx *= lacunarity
     return total / np.float32(norm)
+
+
+def worley(shape, freq, rng, jitter=0.85):
+    """Tileable cellular noise: distance to the nearest feature point, and that point's
+    own random value.
+
+    Some surfaces are not made of blobs, they are made of cells - the crystal spangle in
+    hot-dip galvanising, aggregate in concrete, the pebbling out of a rubber mould.
+    Layered value noise never produces a cell boundary, so cells get their own primitive.
+    """
+    h, w = shape
+    fy, fx = freq if isinstance(freq, (tuple, list)) else (freq, freq)
+    fy = max(2, min(int(fy), h))
+    fx = max(2, min(int(fx), w))
+    off = (1.0 - jitter) * 0.5
+    px = rng.random((fy, fx), dtype=np.float32) * jitter + off
+    py = rng.random((fy, fx), dtype=np.float32) * jitter + off
+    val = rng.random((fy, fx), dtype=np.float32)
+
+    gx = np.arange(w, dtype=np.float32) * (np.float32(fx) / np.float32(w))
+    gy = np.arange(h, dtype=np.float32) * (np.float32(fy) / np.float32(h))
+    ix = np.floor(gx).astype(np.int32)
+    iy = np.floor(gy).astype(np.int32)
+    ux = (gx - ix)[None, :]
+    uy = (gy - iy)[:, None]
+
+    best = np.full(shape, 9.0, np.float32)
+    best_val = np.zeros(shape, np.float32)
+    for oy in (-1, 0, 1):
+        rows = (iy + oy) % fy
+        for ox in (-1, 0, 1):
+            cols = (ix + ox) % fx
+            dx = (px[np.ix_(rows, cols)] + np.float32(ox)) - ux
+            dy = (py[np.ix_(rows, cols)] + np.float32(oy)) - uy
+            d = dx * dx + dy * dy
+            closer = d < best
+            best = np.where(closer, d, best)
+            best_val = np.where(closer, val[np.ix_(rows, cols)], best_val)
+    return np.sqrt(best), best_val
+
+
+def micro_relief(shape, rng, amount, freq_divisor=8, octaves=3):
+    """Detail near texel scale, which is the only thing a normal map can actually show.
+
+    A height field built only from metre-scale noise differentiates to nothing: the slope
+    between two adjacent texels is tiny however deep the shape is. Real surfaces carry
+    grain a few texels wide, and this is it.
+    """
+    freq = max(4, min(shape[0], shape[0] // freq_divisor))
+    return (fbm(shape, freq, octaves, rng) - 0.5) * np.float32(amount)
 
 
 def ridged(shape, freq, octaves, rng):
@@ -266,6 +316,18 @@ def encode_normal(normal):
     return np.clip(normal * 0.5 + 0.5, 0.0, 1.0)
 
 
+# How much of the derived occlusion is baked into the albedo. Most of it belongs in the
+# ORM pack, where the shader can use it as occlusion; this much goes into the colour so a
+# crevice still reads dark under a light rig that never samples that channel.
+ALBEDO_OCCLUSION = 0.38
+
+
+def apply_occlusion(albedo, ao):
+    """Darken an albedo by its own cavity, the same way for every map in the pipeline."""
+    return np.clip(albedo * ((1.0 - ALBEDO_OCCLUSION) + ALBEDO_OCCLUSION * ao[..., None]),
+                   0.0, 1.0)
+
+
 # --------------------------------------------------------------------------- writing
 def _to_u8(a):
     return np.clip(a * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
@@ -309,8 +371,8 @@ def _painted_steel(shape, rng, spec):
     shared set (_LiveryColor), so anything saturated here would fight every machine in
     the fleet; what the albedo carries is the dirt, the polish and the stamping shadow.
     """
-    h = fbm(shape, 3, 4, rng) * 0.55                        # sheet not quite flat
-    h += fbm(shape, 48, 3, rng) * 0.12                      # orange peel in the paint
+    h = fbm(shape, 3, 3, rng) * 0.55                        # sheet not quite flat
+    h += fbm(shape, 24, 2, rng) * 0.07                      # the waviness of a sprayed coat
     h += fbm(shape, (7, 200), 2, rng) * 0.05                # roller drag along the panel
 
     # Two shallow stiffening ribs, the kind pressed into a bonnet so it does not drum.
@@ -320,7 +382,9 @@ def _painted_steel(shape, rng, spec):
         d = np.abs(((rows - centre + 0.5) % 1.0) - 0.5) / wide
         rib += np.clip(1.0 - d * d, 0.0, 1.0)
     h += rib * 0.22
-    h += micro_relief(shape, rng, 0.26, freq_divisor=6)      # grain in the topcoat
+    # Orange peel is a millimetre across, so it belongs a few texels wide and shallow.
+    # Any wider and the same amplitude reads as stucco instead of as a paint finish.
+    h += micro_relief(shape, rng, 0.05, freq_divisor=4, octaves=2)
     h = _norm01(h)
 
     scuff = scratch_field(shape, rng, 90, shape[1] * 0.10, width=1, angle_deg=8.0,
@@ -348,12 +412,12 @@ def _galvanised(shape, rng, spec):
     so it is built as banded facets rather than as another blob of noise.
     """
     base = fbm(shape, 5, 4, rng)
-    facet_seed = fbm(shape, 26, 2, rng)
-    facets = np.abs(((facet_seed * 7.0) % 1.0) - 0.5) * 2.0   # crystal boundaries
-    h = base * 0.45 + facets * 0.22
+    dist, facets = worley(shape, 26, rng)                     # the zinc crystal spangle
+    grain = np.clip((dist - 0.42) * 3.2, 0.0, 1.0)            # where two crystals meet
+    h = base * 0.45 + facets * 0.16 + grain * 0.10
     h += fbm(shape, (9, 120), 3, rng) * 0.16                  # rolling direction
     h += ridged(shape, 60, 2, rng) * 0.08                     # mill scale
-    h += micro_relief(shape, rng, 0.18, freq_divisor=6)
+    h += micro_relief(shape, rng, 0.10, freq_divisor=4, octaves=2)
     h = _norm01(h)
 
     brush = scratch_field(shape, rng, 160, shape[1] * 0.25, width=1, angle_deg=0.0,
@@ -362,7 +426,7 @@ def _galvanised(shape, rng, spec):
     h += brush * 0.02
 
     mottle = fbm(shape, 8, 4, rng)
-    tone = 0.52 + 0.13 * (facets - 0.5) + 0.09 * (mottle - 0.5)
+    tone = 0.52 + 0.11 * (facets - 0.5) + 0.09 * (mottle - 0.5) - grain * 0.05
     tone -= np.clip(blur(h, 10) - h, 0.0, 1.0) * 0.30
     albedo = np.stack((tone * 0.97, tone * 0.99, tone * 1.03), axis=-1)   # zinc runs cool
 
@@ -380,7 +444,7 @@ def _weathered_paint(shape, rng, spec):
     boards = np.abs(((np.arange(shape[0], dtype=np.float32)[:, None] / shape[0] * 6.0)
                      % 1.0) - 0.5) * 2.0
     h -= np.clip(1.0 - boards * 14.0, 0.0, 1.0) * 0.30        # gaps between boards
-    h += micro_relief(shape, rng, 0.24, freq_divisor=6)       # chalked, open surface
+    h += micro_relief(shape, rng, 0.09, freq_divisor=4, octaves=2)   # chalked, open
     h = _norm01(h)
 
     nicks = speckle(shape, rng, shape[0] // 6, 0.012, softness=12.0)
@@ -466,17 +530,6 @@ def _concrete(shape, rng, spec):
     return h, albedo, np.clip(rough, 0.2, 1.0), metal
 
 
-def micro_relief(shape, rng, amount, freq_divisor=8, octaves=3):
-    """Detail near texel scale, which is the only thing a normal map can actually show.
-
-    A height field built only from metre-scale noise differentiates to nothing: the slope
-    between two adjacent texels is tiny however deep the shape is. Real surfaces carry
-    grain a few texels wide, and this is it.
-    """
-    freq = max(4, min(shape[0], shape[0] // freq_divisor))
-    return (fbm(shape, freq, octaves, rng) - 0.5) * np.float32(amount)
-
-
 SURFACES = {
     "painted_steel": _painted_steel,
     "galvanised": _galvanised,
@@ -494,17 +547,24 @@ def wear_masks(height, spec, rng):
     R edge wear   convex curvature: the rubbed corners, rib crests and door edges.
     G rust        starts in the concave curvature where water sits, then runs downward.
     B salt/dirt   the road film: heaviest at the bottom of the tile, thinning upward.
-    A chipping    sparse, hard-edged flecks, thrown at the same edges as R but rarer.
+    A chipping    sparse, hard-edged flecks where the paint has let go of an edge.
 
-    They are deliberately disjoint in where they live. ConditionVisuals brings them in at
-    different thresholds, and four masks that all covered the same texels would just make
-    one dirtier mask instead of a machine that ages in stages.
+    Each one covers a different part of the surface, and a different amount of it: edge
+    wear is broad and soft, rust is local and directional, salt is a gradient, chipping is
+    a few per cent of the texels. ConditionVisuals brings them in at different thresholds,
+    and four masks that all landed on the same texels would only make one dirtier mask
+    instead of a machine that ages in stages.
     """
     shape = height.shape
-    convex = np.clip(curvature(height, 2), 0.0, 1.0)
-    convex = np.maximum(convex, np.clip(curvature(height, 6), 0.0, 1.0) * 0.8)
-    concave = np.clip(-curvature(height, 4), 0.0, 1.0)
-    concave = np.maximum(concave, np.clip(-curvature(height, 12), 0.0, 1.0) * 0.9)
+    # Wear follows the form, not the grain: a hand, a boot or a ski rubs a rib or an edge
+    # and never finds the orange peel. So curvature is measured on a height with the micro
+    # detail taken off it, at radii that mean the same thing on a 512 map as on a 2048 one.
+    scale = max(1, shape[0] // 512)
+    form = blur(height, 2 * scale)
+    convex = np.clip(curvature(form, 3 * scale), 0.0, 1.0)
+    convex = np.maximum(convex, np.clip(curvature(form, 10 * scale), 0.0, 1.0) * 0.85)
+    concave = np.clip(-curvature(form, 4 * scale), 0.0, 1.0)
+    concave = np.maximum(concave, np.clip(-curvature(form, 14 * scale), 0.0, 1.0) * 0.9)
 
     # Where on the part the wear is: a machine is not worn evenly, it is worn where it is
     # climbed on, loaded and brushed past.
@@ -552,7 +612,7 @@ def build_set(spec, out_dir):
     normal = encode_normal(height_to_normal(height, spec["relief_m"], texel_m))
 
     ao = ambient_occlusion(height, spec["cavity"])
-    albedo = np.clip(albedo * (0.45 + 0.55 * ao[..., None]), 0.0, 1.0)
+    albedo = apply_occlusion(albedo, ao)
     orm = np.stack((ao, np.clip(rough, 0.0, 1.0), np.clip(metal, 0.0, 1.0)), axis=-1)
 
     wear = wear_masks(height, spec, rng_for("pbr", spec["id"], "wear"))
@@ -574,20 +634,43 @@ def build_all(out_dir):
 
 
 # --------------------------------------------------------------------------- self-test
-def report(records):
+def seam_error(a):
+    """How hard a map jumps where it wraps, against how hard it jumps just inside it.
+
+    A tiling map's last column is adjacent to its first, so the step across that join has
+    to be no larger than the steps on either side of it. Measuring against the local
+    gradient rather than the map's average is what lets a groove or a louvre step sit
+    deliberately on the boundary: those are continuous features crossing the join, not
+    seams. Anything much above 1 is a real seam and will show as a line on a long run.
+    """
+    a = a.astype(np.float32)
+
+    def ratio(edge_a, edge_b, inner_a, inner_b):
+        jump = float(np.mean(np.abs(edge_a - edge_b)))
+        local = 0.5 * (float(np.mean(np.abs(inner_a - edge_a)))
+                       + float(np.mean(np.abs(inner_b - edge_b))))
+        return jump / max(local, 1e-4)
+
+    return (ratio(a[:, 0], a[:, -1], a[:, 1], a[:, -2]),
+            ratio(a[0, :], a[-1, :], a[1, :], a[-2, :]))
+
+
+def report(records, seams=True):
     """Read back what was written and print the structure that is actually in it.
 
     A flat fill and a painted surface both pass validation; only the per-channel spread
-    tells them apart, so the build prints it.
+    tells them apart, so the build prints it, along with what the wrap costs.
     """
-    print("%-18s %6s %-28s %s" % ("map", "size", "channels", "mean/std per channel"))
+    print("%-24s %6s %-30s %-42s %s"
+          % ("map", "size", "channels", "mean/std per channel", "seam u/v" if seams else ""))
     for r in records:
         path = os.path.join(config.ROOT, r["path"])
         a = np.asarray(Image.open(path), np.float32) / 255.0
-        stats = "  ".join("%s %.3f/%.3f" % (n[:4], a[..., i].mean(), a[..., i].std())
-                          for i, n in enumerate(r["channels"]))
-        print("%-18s %6d %-28s %s"
-              % (r["id"], r["size"], ",".join(r["channels"]), stats))
+        stats = " ".join("%.3f/%.3f" % (a[..., i].mean(), a[..., i].std())
+                         for i in range(a.shape[2]))
+        seam = "%.2f/%.2f" % seam_error(a[..., 0]) if seams else ""
+        print("%-24s %6d %-30s %-42s %s"
+              % (r["id"], r["size"], ",".join(r["channels"]), stats, seam))
 
 
 if __name__ == "__main__":

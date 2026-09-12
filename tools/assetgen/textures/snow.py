@@ -67,10 +67,6 @@ def _rows(shape):
     return np.arange(shape[0], dtype=np.float32)[:, None] / np.float32(shape[0])
 
 
-def _cols(shape):
-    return np.arange(shape[1], dtype=np.float32)[None, :] / np.float32(shape[1])
-
-
 def _rgb(colour):
     return np.asarray(colour, np.float32)[None, None, :]
 
@@ -157,7 +153,7 @@ def crust(shape, rng):
     height += np.clip(1.0 - f1 * 1.5, 0.0, 1.0) * 0.10    # and is domed by the wind
     height -= edge * 0.45                                 # the crack between them
     lip = np.clip((edge - 0.35) * 2.2, 0.0, 1.0) * np.clip((0.85 - edge) * 2.0, 0.0, 1.0)
-    height += lip * 0.16                                  # the broken plate lifts at its edge
+    height += lip * 0.16                                  # a broken plate lifts at its edge
 
     # Sastrugi: the wind carves ridges along its own direction across the whole surface.
     height += ridged(shape, (26, 5), 3, rng) * 0.16
@@ -217,9 +213,10 @@ def dirty_albedo(shape, rng):
     the ground is coming through. It is authored as a full albedo rather than a mask so
     the lerp is one texture read and the contamination keeps its own colour.
     """
-    base = np.full(shape + (3,), 0.0, np.float32)
     clean = fbm(shape, 18, 4, rng)
-    base += _rgb((0.865, 0.885, 0.925)) + _rgb((0.055, 0.050, 0.045)) * (clean - 0.5)[..., None]
+    base = (_rgb((0.865, 0.885, 0.925))
+            + _rgb((0.055, 0.050, 0.045)) * (clean - 0.5)[..., None])
+    base = np.broadcast_to(base, shape + (3,)).astype(np.float32)
 
     # Refrozen, dirt-laden melt: grey, and pooled in the low ground rather than sprinkled.
     grime = np.clip((fbm(shape, 6, 5, rng) - 0.42) * 2.2, 0.0, 1.0)
