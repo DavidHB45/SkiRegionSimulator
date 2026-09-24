@@ -50,6 +50,15 @@ crashlytics-build.properties
 .DS_Store
 Thumbs.db
 
+# generated art: assets are build output, not repository content. `make assets`
+# rebuilds every mesh, texture, icon and sound from Data/*.json.
+/Assets/Art/Generated/
+/Assets/Art/Generated.meta
+
 # agent worktrees
 .claude/worktrees/
 !/sim/UnityStubs/UnityStubs.csproj
+
+# python bytecode from tools/
+__pycache__/
+*.pyc

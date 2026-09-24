@@ -22,7 +22,8 @@ Then open the folder in **Unity 6 LTS (6000.0.61f1 or later 6000.0.x)** via Unit
 
 Requirements: .NET SDK 8.0 (for the `dotnet` mirror build), Unity 6000.0.x with the
 build support module for whichever platform you build locally (the project opens and plays
-without either), Python 3 (for `tools/gen_meta.py`).
+without either), Python 3 (for `tools/gen_meta.py`). The art pipeline additionally wants
+Python 3.11 and its own pinned toolchain; it is optional, and `make help` lists everything.
 
 ## Controls
 
@@ -65,9 +66,36 @@ ProjectSettings/                    hand-authored YAML
 Packages/manifest.json              Input System, uGUI, Test Framework
 sim/                                netstandard2.1 mirror csproj of Core + tests + Unity API stubs
 tools/gen_meta.py                   deterministic .meta generator (run after adding assets)
+tools/assetgen/                     the art pipeline: meshes, textures, icons, audio from Data/*.json
+Assets/Art/Generated/               its output; gitignored build output, safe to delete
+Makefile                            make check, make test, make assets (make help lists them)
 docs/                               DESIGN, ARCHITECTURE, BUILD_ORDER, TUNING, DECISIONS
 .github/workflows/ci.yml            sim-test (always), unity-test and build (with secrets)
+.github/workflows/assets.yml        the art pipeline: full build, and the contract gate on PRs
 ```
+
+## Asset pipeline
+
+Machines, lifts, attachments, props, textures, icons and sounds are generated, not modelled.
+`tools/assetgen` reads the same `Assets/StreamingAssets/Data/*.json` the simulation reads and
+writes `Assets/Art/Generated/`, so a machine's model follows from its record: change
+`MassKg` or `TrackWidthM` in `vehicles.json` and the model changes on the next build.
+
+```
+make assets-deps        # the pinned Python 3.11 toolchain (bpy is a ~500 MB wheel)
+make assets             # a full build, about three minutes
+make assets-selftest    # the pipeline's own guarantees: axes, pivots, LODs, budgets
+```
+
+The output tree is build output: gitignored, and optional. Delete it and every visual falls
+back to the procedural primitives the game shipped with, which stay fully playable. Neither
+the build nor its CI job needs a Unity licence.
+
+- `docs/ART_CONTRACT.md` — the interface: axes, pivots, LOD and articulation names, material
+  slots, texture channels, triangle budgets. Both the generator and the game are checked
+  against it.
+- `docs/ASSET_PIPELINE.md` — how to run it, how to add a machine, how to tune a generator,
+  what is final and what is placeholder.
 
 ## Building players
 
@@ -92,6 +120,12 @@ The macOS build is forced to Universal (Apple Silicon + Intel) by the build scri
    below; logs a notice and skips otherwise.
 3. **build** — `game-ci/unity-builder@v4` for `StandaloneWindows64` and `StandaloneOSX`,
    uploads an artifact per target. Runs on `v*` tags and manual dispatch; skips without secrets.
+
+`.github/workflows/assets.yml` has two more, neither of which needs a licence: **assets-build**
+rebuilds the whole art pack and uploads it (and attaches it to a tagged release), and
+**assets-validate** runs the same build as a gate on pull requests that touch the data, the
+generators or the art contract. `make check` and `make assets-validate` run the same steps
+locally.
 
 ### CI secrets (Unity licence activation)
 
@@ -140,6 +174,8 @@ subsystem. The suite pins the design pillars, not just the code:
 - `docs/DESIGN.md` — pillars, systems, act structure.
 - `docs/ARCHITECTURE.md` — tick order, system boundaries, Core/Unity separation, save format.
 - `docs/BUILD_ORDER.md` — milestones M0–M8 with kill criteria and status.
+- `docs/ART_CONTRACT.md` — what generated art must satisfy for the game to bind to it.
+- `docs/ASSET_PIPELINE.md` — running and extending the asset build.
 - `docs/TUNING.md` — every anchor with its basis and the knob that changes it.
 - `docs/DECISIONS.md` — decisions taken where the brief was silent.
 - `CLAUDE.md` — how to work in this repository.

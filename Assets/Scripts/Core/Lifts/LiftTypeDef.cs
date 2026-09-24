@@ -64,6 +64,12 @@ namespace AlpineSim.Core.Lifts
         public float CarrierSpacingM;
         public float SummerRevenueFactor;
         public float NonSkierRidership;
+        /// <summary>
+        /// Optional Resources path to a folder of hand-authored lift models. The registry looks inside
+        /// it for tower, tower_low, tower_high, terminal_drive, terminal_return, carrier and barn, and
+        /// falls back to the generated folder for anything the override does not provide.
+        /// </summary>
+        public string ModelOverride = "";
         public string Comment = "";
 
         public bool IsSurface => Family == LiftFamily.Surface;
